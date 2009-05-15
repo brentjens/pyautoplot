@@ -5,6 +5,7 @@ from math import pi
 
 
 class AngleTest(unittest.TestCase):
+
     def test_init_adjust(self):
         self.assertAlmostEquals(Angle(-0.2, 1.0, 3.0).value, 1.8)
         self.assertAlmostEquals(Angle(0.3, -2.0, 5.0).value, 0.3)
@@ -45,6 +46,7 @@ class AngleTest(unittest.TestCase):
 
 
 
+
 class EquatorialDirectionTest(unittest.TestCase):
     
     def test__str__(self):
@@ -52,6 +54,20 @@ class EquatorialDirectionTest(unittest.TestCase):
         self.assertEquals(str(EquatorialDirection(6.12348768+pi, 1.024)), 'RA: 11:23:24, DEC: +58:40:15')
         pass
     
+    pass
+
+
+
+class TargetTest(unittest.TestCase):
+    
+    def test_init(self):
+        target = Target('Cas A', 
+                        EquatorialDirection(Angle((23, 58, 12),type='hms').value,
+                                            Angle(('+', 58, 12,13.500001), type='sdms').value))
+        self.assertEquals(target.name, 'Cas A')
+        self.assertEquals(target.direction.ra.as_hms(), '23:58:12')
+        self.assertEquals(target.direction.dec.as_sdms(), '+58:12:14')
+        pass
     pass
 
 

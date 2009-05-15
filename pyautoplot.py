@@ -1,7 +1,7 @@
-from pyrap import tables as tb
+from pyrap import tables as tables
 import pylab as pl
 from pylab import pi,floor,sign
-import datetime
+
 
 
 class Angle:
@@ -131,22 +131,14 @@ class EquatorialDirection:
         
 
 
-def subtable(table, subtable_name):
-    return tb.table(table.getkeyword(subtable_name))
-    
+class Target:
+    name=''
+    direction=None
+    def __init__(self, name, direction):
+        self.name = name
+        self.direction = direction
+        pass
 
-
-def sdms_from_rad(rad,lower_bound=-pi/2, upper_bound=pi/2, include_upper_bound=False):
-    angle=adjust_angle(rad, lower_bound, upper_bound, include_upper_bound)
-    
-    return ''
-
-
-
-
-# class Target:
-#     name=''
-#     direction=
 
 class MeasurementSetSummary:
     msname = ''
