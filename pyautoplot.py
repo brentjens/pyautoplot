@@ -118,14 +118,14 @@ class EquatorialDirection:
     dec = Angle(0.0, -pi/2.0, pi/2.0, True)
 
     def __init__(self,ra_rad,dec_rad):
-        self.ra_rad.set(ra_rad)
-        self.dec_rad.set(dec_rad)
+        self.ra.set_rad(ra_rad)
+        self.dec.set_rad(dec_rad)
         pass
     
     def __str__(self):
         return 'RA: %(ra)s, DEC: %(dec)s' % \
-            {'ra': self.ra_rad.as_hms(),
-             'dec': self.dec_rad.as_sdms()}
+            {'ra': self.ra.as_hms(),
+             'dec': self.dec.as_sdms()}
 
 
         

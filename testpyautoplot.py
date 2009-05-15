@@ -47,6 +47,11 @@ class AngleTest(unittest.TestCase):
 
 class EquatorialDirectionTest(unittest.TestCase):
     
+    def test__str__(self):
+        self.assertEquals(str(EquatorialDirection(6.12348768, 1.024)), 'RA: 23:23:24, DEC: +58:40:15')
+        self.assertEquals(str(EquatorialDirection(6.12348768+pi, 1.024)), 'RA: 11:23:24, DEC: +58:40:15')
+        pass
+    
     pass
 
 
