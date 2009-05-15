@@ -158,10 +158,59 @@ class Target:
 
 
 class MeasurementSetSummary:
+    ms = None
     msname = ''
     times  = []
+    mjd_start = 0.0
+    mjd_end   = 0.0
+    duration_seconds  = 0.0
+    integration_times = []
+
+    antenna_names     = []
+    antenna_positions = []
+
+    central_frequencies  = []
+    channels_per_subband = []
+    subband_widths       = []
+
     target_directions = []
     target_names      = []
+    
+    
+    def __init__(self, msname):
+        self.msname = msname
+        self.ms = tables.table(msname)
+        pass
+
+    def subtable(self, subtable_name):
+        return tables.table(self.ms.getkeyword(subtable_name))
+
+    def read_subtable(self, subtable_name, columns=None):
+        subtab = self.subtable(subtable_name)
+        colnames = subtab.colnames()
+        if columns is not None:
+            colnames = columns
+        cols = [subtab.getcol(col) for col in colnames]
+        return [colnames]+[[col[i] for col in cols]  for i in range(subtab.nrows())]
+
+    def read_metadata(self):
+        self.times = unique(self.ms.getcol('TIME'))
+        self.mjd_start = times.min()
+        self.mjd_end   = times.max()
+        self.duration_seconds  = self.mjd_end - self.mjd_start
+        self.integration_times = unique(self.ms.getcol('EXPOSURE'))
+        
+        anttab = self.subtable('ANTENNA')
+        self.antenna_names     = anttab.getcol('ANTENNA')
+        self.antenna_positions = anttab.getcol('POSITION')
+
+        spwtab = self.subtable('SPECTRAL_WINDOW')
+        self.central_frequencies = spwtab.getcol('REF_FREQUENCY')
+        self.channels
+        pass
+
+
+    
 
 # def summary(msname):
 #     return """
