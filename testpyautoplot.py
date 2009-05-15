@@ -47,11 +47,14 @@ class AngleTest(unittest.TestCase):
 
 
 
+
 class EquatorialDirectionTest(unittest.TestCase):
     
     def test__str__(self):
-        self.assertEquals(str(EquatorialDirection(6.12348768, 1.024)), 'RA: 23:23:24, DEC: +58:40:15')
-        self.assertEquals(str(EquatorialDirection(6.12348768+pi, 1.024)), 'RA: 11:23:24, DEC: +58:40:15')
+        self.assertEquals(str(EquatorialDirection(RightAscension(6.12348768),
+                                                  Declination(1.024))), 'RA: 23:23:24, DEC: +58:40:15')
+        self.assertEquals(str(EquatorialDirection(RightAscension(6.12348768+pi),
+                                                  Declination(1.024))), 'RA: 11:23:24, DEC: +58:40:15')
         pass
     
     pass
@@ -62,13 +65,18 @@ class TargetTest(unittest.TestCase):
     
     def test_init(self):
         target = Target('Cas A', 
-                        EquatorialDirection(Angle((23, 58, 12),type='hms').value,
-                                            Angle(('+', 58, 12,13.500001), type='sdms').value))
+                        EquatorialDirection(RightAscension((23, 58, 12),type='hms'),
+                                            Declination(('+', 58, 12,13.500001), type='sdms')))
         self.assertEquals(target.name, 'Cas A')
         self.assertEquals(target.direction.ra.as_hms(), '23:58:12')
         self.assertEquals(target.direction.dec.as_sdms(), '+58:12:14')
         pass
     pass
+
+
+
+
+
 
 
 #

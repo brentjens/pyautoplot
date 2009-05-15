@@ -111,15 +111,34 @@ class Angle:
     pass
 
 
+class RightAscension(Angle):
+    def __init__(self, value, type='rad'):
+        Angle.__init__(self, value, 0.0, 2*pi, type=type)
+        pass
+    pass
+
+class Declination(Angle):
+    def __init__(self, value, type='rad'):
+        Angle.__init__(self, value, -pi/2, pi/2, True, type=type)
+        pass
+    pass
+
+class HourAngle(Angle):
+    def __init__(self, value, type='rad'):
+        Angle.__init__(self, value, -pi, pi, True, type=type)
+        pass
+    pass
+    
+
 
 
 class EquatorialDirection:
-    ra = Angle(0.0,0.0,2*pi)
-    dec = Angle(0.0, -pi/2.0, pi/2.0, True)
+    ra = RightAscension(0.0)
+    dec = Declination(0.0)
 
-    def __init__(self,ra_rad,dec_rad):
-        self.ra.set_rad(ra_rad)
-        self.dec.set_rad(dec_rad)
+    def __init__(self,ra,dec):
+        self.ra.set_rad(ra.value)
+        self.dec.set_rad(dec.value)
         pass
     
     def __str__(self):
@@ -127,8 +146,6 @@ class EquatorialDirection:
             {'ra': self.ra.as_hms(),
              'dec': self.dec.as_sdms()}
 
-
-        
 
 
 class Target:
