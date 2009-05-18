@@ -1,7 +1,11 @@
 from pyrap import tables as tables
 import pylab as pl
-from pylab import pi,floor,sign,unique
+from pylab import pi,floor,sign,unique,is_numlike
 from exceptions import *
+
+
+def is_list(obj):
+    return type(obj) == type([])
 
 class NotImplementedError(Exception):
     pass
@@ -163,6 +167,51 @@ class Target:
         pass
 
 
+class TableFormatter:
+    """Derive from this class in order to implent formatters for HTML,
+    TXT, LaTeX"""
+    header = []
+    data   = []
+    
+    formats = {'html': {'table_start' : '<table>',
+                        'table_end'   : '</table>',
+                        'head_start'  : '<th><td>',
+                        'head_end'    : '</td></th>',
+                        'line_start'  : '<tr><td>',
+                        'line_end'    : '</td></tr>',
+                        'cell_sep'    : '</td><td>'},
+               
+               'txt': {'table_start' : '',
+                       'table_end'   : '--------------------------------------------------------------------------------',
+                       'head_start'  : '================================================================================',
+                       'head_end'    : '--------------------------------------------------------------------------------',
+                       'line_start'  : '',
+                       'line_end'    : '',
+                       'cell_sep'    : ' '}}
+    
+    def __init__(self, table_as_list):
+        self.header = table_as_list[0]
+        self.data   = table_as_list[1:]
+        pass
+    
+    def format(self,format='txt', col_widths=15, cell_formatters=str):
+        f = self.formats[format]
+        if not is_list(col_widths):
+            col_widths = [col_widths]*len(self.header)
+        if not is_list(cell_formatters):
+            cell_formatters = [cell_formatters]*len(self.header)
+        return '\n'.join([f['table_start'],
+                          f['head_start'],
+                          f['cell_sep'].join(map(lambda x,w:str(x).ljust(w), self.header, col_widths)),
+                          f['head_end']]+
+                         [f['line_start']+f['cell_sep'].join(map(lambda x,w,fmt: fmt(x).ljust(w), row, col_widths, cell_formatters))+f['line_end'] for row in self.data]+
+                         [f['table_end']])
+    pass
+
+
+
+
+
 class MeasurementSetSummary:
     ms = None
     msname = ''
@@ -172,16 +221,9 @@ class MeasurementSetSummary:
     duration_seconds  = 0.0
     integration_times = []
 
-    antenna_names     = []
-    antenna_positions = []
-
-    central_frequencies  = []
-    channels_per_subband = []
-    subband_widths       = []
-
-    target_directions = []
-    target_names      = []
-    
+    targets          = None
+    antennae         = None
+    spectral_windows = None
     
     def __init__(self, msname):
         self.msname = msname
@@ -201,20 +243,18 @@ class MeasurementSetSummary:
 
     def read_metadata(self):
         self.times = unique(self.ms.getcol('TIME'))
-        self.mjd_start = times.min()
-        self.mjd_end   = times.max()
+        self.mjd_start = self.times.min()
+        self.mjd_end   = self.times.max()
         self.duration_seconds  = self.mjd_end - self.mjd_start
         self.integration_times = unique(self.ms.getcol('EXPOSURE'))
         
-        anttab = self.subtable('ANTENNA')
-        self.antenna_names     = anttab.getcol('ANTENNA')
-        self.antenna_positions = anttab.getcol('POSITION')
-
-        spwtab = self.subtable('SPECTRAL_WINDOW')
-        self.central_frequencies = spwtab.getcol('REF_FREQUENCY')
-        self.channels
+        self.targets  = TableFormatter(self.read_subtable('FIELD', ['NAME','REFERENCE_DIR']))
+        self.antennae = TableFormatter(self.read_subtable('ANTENNA',['NAME', 'POSITION']))
+        self.spectral_windows = TableFormatter(self.read_subtable('SPECTRAL_WINDOW',
+                                                                  ['REF_FREQUENCY',
+                                                                   'TOTAL_BANDWIDTH',
+                                                                   'NUM_CHAN']))
         pass
-
 
     
 

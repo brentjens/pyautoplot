@@ -76,7 +76,33 @@ class TargetTest(unittest.TestCase):
 
 
 
+class TableFormatterTest(unittest.TestCase):
+    formatter = TableFormatter([['NAME','POSITION'],
+                                ['a', [1,2,3]],
+                                ['b', [4,5,6]]])
 
+    def test_init(self):
+        self.assertEquals(self.formatter.header, ['NAME','POSITION'])
+        self.assertEquals(self.formatter.data,
+                          [['a', [1,2,3]],
+                           ['b', [4,5,6]]])
+        pass
+
+
+    def test_ascii(self):
+        raise NotImplementedError
+
+    def test_html(self):
+        self.assertEquals(self.formatter.format('html',col_widths=5),
+                          """<table>
+<th><td>
+NAME </td><td>POSITION
+</td></th>
+<tr><td>a    </td><td>[1, 2, 3]</td></tr>
+<tr><td>b    </td><td>[4, 5, 6]</td></tr>
+</table>""")
+
+    pass
 
 
 
