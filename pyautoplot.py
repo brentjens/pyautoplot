@@ -1,7 +1,10 @@
 from pyrap import tables as tables
 import pylab as pl
-from pylab import pi,floor,sign
+from pylab import pi,floor,sign,unique
+from exceptions import *
 
+class NotImplementedError(Exception):
+    pass
 
 
 class Angle:
@@ -135,16 +138,19 @@ class HourAngle(Angle):
 class EquatorialDirection:
     ra = RightAscension(0.0)
     dec = Declination(0.0)
+    ref_frame = 'J2000'
 
-    def __init__(self,ra,dec):
+    def __init__(self,ra,dec, ref_frame='J2000'):
         self.ra.set_rad(ra.value)
         self.dec.set_rad(dec.value)
+        self.ref_frame = ref_frame
         pass
     
     def __str__(self):
-        return 'RA: %(ra)s, DEC: %(dec)s' % \
+        return '%(ref_frame)s RA: %(ra)s, DEC: %(dec)s' % \
             {'ra': self.ra.as_hms(),
-             'dec': self.dec.as_sdms()}
+             'dec': self.dec.as_sdms(),
+             'ref_frame': self.ref_frame}
 
 
 
