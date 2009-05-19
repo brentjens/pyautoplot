@@ -100,6 +100,7 @@ class MeasurementSetSummary:
     def __init__(self, msname):
         self.msname = msname
         self.ms = tables.table(msname)
+        self.read_metadata()
         pass
 
     def subtable(self, subtable_name):
@@ -111,7 +112,7 @@ class MeasurementSetSummary:
         if columns is not None:
             colnames = columns
         cols = [subtab.getcol(col) for col in colnames]
-        return [colnames]+[[col[i] for col in cols]  for i in range(subtab.nrows())]
+        return [['ID']+colnames]+[[i]+[col[i] for col in cols]  for i in range(subtab.nrows())]
 
     def read_metadata(self):
         self.times = unique(self.ms.getcol('TIME'))
@@ -123,15 +124,19 @@ class MeasurementSetSummary:
         self.targets  = TableFormatter(
             self.read_subtable('FIELD',
                                ['NAME','REFERENCE_DIR']),
+            col_widths=[5,20,30],
             cell_formatters=[str,
+                             str,
                              lambda x:
                                  str(EquatorialDirection(RightAscension(x[0,0]),
                                                          Declination(x[0,1])))])
-        self.antennae = TableFormatter(self.read_subtable('ANTENNA',['NAME', 'POSITION']))
+        self.antennae = TableFormatter(self.read_subtable('ANTENNA',['NAME', 'POSITION']),
+                                       col_widths=[5,15,40])
         self.spectral_windows = TableFormatter(self.read_subtable('SPECTRAL_WINDOW',
                                                                   ['REF_FREQUENCY',
                                                                    'TOTAL_BANDWIDTH',
-                                                                   'NUM_CHAN']))
+                                                                   'NUM_CHAN']),
+                                               col_widths=[5,15,18,8])
         pass
 
     
