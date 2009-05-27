@@ -18,4 +18,4 @@ echo
 echo
 echo S U M M A R Y
 echo
-cat testlog.txt |grep -e 'Ran\|OK\|FAILED\|Testing'
+cat testlog.txt |grep -e 'Ran\|OK\|FAILED\|Testing\|Error\|^    \|^  File \^\|line\|^Traceback'
