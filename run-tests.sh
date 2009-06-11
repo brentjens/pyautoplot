@@ -4,13 +4,18 @@ logfile=testlog.txt
 
 rm  $logfile
 
-modules="angle pyautoplot"
+modules=`ls *.py|grep -v "^test"`
 for module in $modules; do
     echo >> $logfile
     echo "*** Testing module ${module} ***">>$logfile 
     echo >> $logfile
-    python test${module}.py 2>>$logfile
-    echo Completed testing  ${module}
+    testfile=test${module}
+    if test -e $testfile; then
+        python $testfile 2>>$logfile
+        echo Completed testing  ${module}
+    else
+        echo "Error: Module $module has no associated test" |tee -a $logfile
+    fi
     echo ================================================================================ >> $logfile
 done
 
