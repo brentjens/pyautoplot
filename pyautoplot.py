@@ -15,20 +15,24 @@ class NotImplementedError(Exception):
 
 
 class Target:
+    """
+Contains information about a target.
+    """
     name=''
     direction=None
     def __init__(self, name, direction):
+        """ name: a string, direction: an angle.EquatorialDirection object. """
         self.name = name
         self.direction = direction
         pass
 
 
 class TableFormatter:
-    """Derive from this class in order to implent formatters for HTML,
-    TXT, LaTeX"""
-    header = []
-    data   = []
-    
+    """Implements text based formatting for tables in for HTML and
+    TXT. A table consists of a list of lists, where each sub list
+    contains one row. The first row is considered the header, and
+    should only contain string elements."""
+
     formats = {'html': {'table_start' : '<table>',
                         'table_end'   : '</table>',
                         'head_start'  : '<th><td>',
@@ -44,10 +48,6 @@ class TableFormatter:
                        'line_start'  : '',
                        'line_end'    : '',
                        'cell_sep'    : ' '}}
-
-    default_format          = 'txt'
-    default_col_widths      = 15
-    default_cell_formatters = str
     
     def __init__(self, table_as_list, format='txt', col_widths=15, cell_formatters=str):
         self.header = table_as_list[0]
@@ -81,7 +81,12 @@ class TableFormatter:
     pass
 
 
-
+class AutocorrelationStatistics:
+    def __init__(self,antenna_number):
+        self.antenna_number = antenna_number
+        
+        pass
+    pass
 
 
 class MeasurementSetSummary:
@@ -93,9 +98,7 @@ class MeasurementSetSummary:
     duration_seconds  = 0.0
     integration_times = []
 
-    targets          = None
-    antennae         = None
-    spectral_windows = None
+    tables           = {}
     
     def __init__(self, msname):
         self.msname = msname
@@ -121,7 +124,7 @@ class MeasurementSetSummary:
         self.duration_seconds  = self.mjd_end - self.mjd_start
         self.integration_times = unique(self.ms.getcol('EXPOSURE'))
         
-        self.targets  = TableFormatter(
+        self.tables['targets']  = TableFormatter(
             self.read_subtable('FIELD',
                                ['NAME','REFERENCE_DIR']),
             col_widths=[5,20,30],
@@ -130,13 +133,16 @@ class MeasurementSetSummary:
                              lambda x:
                                  str(EquatorialDirection(RightAscension(x[0,0]),
                                                          Declination(x[0,1])))])
-        self.antennae = TableFormatter(self.read_subtable('ANTENNA',['NAME', 'POSITION']),
+        self.tables['antennae'] = TableFormatter(self.read_subtable('ANTENNA',['NAME', 'POSITION']),
                                        col_widths=[5,15,40])
-        self.spectral_windows = TableFormatter(self.read_subtable('SPECTRAL_WINDOW',
+        self.tables['spectral_windows'] = TableFormatter(self.read_subtable('SPECTRAL_WINDOW',
                                                                   ['REF_FREQUENCY',
                                                                    'TOTAL_BANDWIDTH',
                                                                    'NUM_CHAN']),
                                                col_widths=[5,15,18,8])
+        pass
+
+    def statistics(self):
         pass
 
     
