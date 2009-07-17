@@ -96,92 +96,6 @@ class TableFormatter:
 
 
 
-class AutocorrelationStatistics:
-    def __init__(self,antenna_number):
-        self.antenna_number = antenna_number
-        
-        pass
-    pass
-
-
-
-
-
-class MeasurementSetSummary:
-    msname = ''
-    times  = []
-    mjd_start = 0.0
-    mjd_end   = 0.0
-    duration_seconds  = 0.0
-    integration_times = []
-
-    tables           = {}
-
-    channel_frequencies=[]
-    subband_frequencies=[]
-    
-    def __init__(self, msname):
-        self.msname = msname
-        self.read_metadata()
-        pass
-
-    def subtable(self, subtable_name):
-        return tables.table(tables.table(self.msname).getkeyword(subtable_name))
-
-    def read_subtable(self, subtable_name, columns=None):
-        subtab = self.subtable(subtable_name)
-        colnames = subtab.colnames()
-        if columns is not None:
-            colnames = columns
-        cols = [subtab.getcol(col) for col in colnames]
-        return [['ID']+colnames]+[[i]+[col[i] for col in cols]  for i in range(subtab.nrows())]
-
-    def read_metadata(self):
-        ms = tables.table(self.msname)
-        self.times = unique(ms.getcol('TIME'))
-        self.mjd_start = self.times.min()
-        self.mjd_end   = self.times.max()
-        self.duration_seconds  = self.mjd_end - self.mjd_start
-        self.integration_times = unique(ms.getcol('EXPOSURE'))
-        
-        self.tables['targets']  = TableFormatter(
-            self.read_subtable('FIELD',
-                               ['NAME','REFERENCE_DIR']),
-            col_widths=[5,20,30],
-            cell_formatters=[str,
-                             str,
-                             lambda x:
-                                 str(EquatorialDirection(RightAscension(x[0,0]),
-                                                         Declination(x[0,1])))])
-        self.tables['antennae'] = TableFormatter(self.read_subtable('ANTENNA',['NAME', 'POSITION']),
-                                       col_widths=[5,15,40])
-        self.tables['spectral_windows'] = TableFormatter(self.read_subtable('SPECTRAL_WINDOW',
-                                                                  ['REF_FREQUENCY',
-                                                                   'TOTAL_BANDWIDTH',
-                                                                   'NUM_CHAN']),
-                                               col_widths=[5,15,18,8])
-        self.channel_frequencies = self.subtable('SPECTRAL_WINDOW').getcol('CHAN_FREQ')
-        self.subband_frequencies  = self.subtable('SPECTRAL_WINDOW').getcol('REF_FREQUENCY')
-        pass
-    
-    def baseline(self, ant1, ant2, column='DATA', subband=0, **kwargs):
-        selection = tables.table(self.msname).query('ANTENNA1 == %d && ANTENNA2 == %d || ANTENNA1 == %d && ANTENNA2 == %d && DATA_DESC_ID == %d' % (ant1,ant2,ant2,ant1, subband))
-        data=selection.getcol(column, **kwargs)
-        data[:,0,:] = 0.0
-        
-        flags=selection.getcol('FLAG', **kwargs)
-        return  ma.array(data,mask=flags)
-
-    
-    def statistics(self):
-        pass
-
-
-
-
-
-
-
 
 
 def cmp_ms_freq(ms_a, ms_b):
@@ -264,11 +178,120 @@ def all_statistics(data_col):
 
 
 
-class Flagger:
+
+
+
+
+class MeasurementSetSummary:
+    msname = ''
+    times  = []
+    mjd_start = 0.0
+    mjd_end   = 0.0
+    duration_seconds  = 0.0
+    integration_times = []
+
+    tables           = {}
+
+    channel_frequencies=[]
+    subband_frequencies=[]
+    
     def __init__(self, msname):
-        self.ms=MeasurementSetSummary(msname)
+        self.msname = msname
+        self.read_metadata()
         pass
-    pass
+
+    def subtable(self, subtable_name):
+        return tables.table(tables.table(self.msname).getkeyword(subtable_name))
+
+    def read_subtable(self, subtable_name, columns=None):
+        subtab = self.subtable(subtable_name)
+        colnames = subtab.colnames()
+        if columns is not None:
+            colnames = columns
+        cols = [subtab.getcol(col) for col in colnames]
+        return [['ID']+colnames]+[[i]+[col[i] for col in cols]  for i in range(subtab.nrows())]
+
+    def read_metadata(self):
+        ms = tables.table(self.msname)
+        self.times = unique(ms.getcol('TIME'))
+        self.mjd_start = self.times.min()
+        self.mjd_end   = self.times.max()
+        self.duration_seconds  = self.mjd_end - self.mjd_start
+        self.integration_times = unique(ms.getcol('EXPOSURE'))
+        
+        self.tables['targets']  = TableFormatter(
+            self.read_subtable('FIELD',
+                               ['NAME','REFERENCE_DIR']),
+            col_widths=[5,20,30],
+            cell_formatters=[str,
+                             str,
+                             lambda x:
+                                 str(EquatorialDirection(RightAscension(x[0,0]),
+                                                         Declination(x[0,1])))])
+        self.tables['antennae'] = TableFormatter(self.read_subtable('ANTENNA',['NAME', 'POSITION']),
+                                       col_widths=[5,15,40])
+        self.tables['spectral_windows'] = TableFormatter(self.read_subtable('SPECTRAL_WINDOW',
+                                                                  ['REF_FREQUENCY',
+                                                                   'TOTAL_BANDWIDTH',
+                                                                   'NUM_CHAN']),
+                                               col_widths=[5,15,18,8])
+        self.channel_frequencies = self.subtable('SPECTRAL_WINDOW').getcol('CHAN_FREQ')
+        self.subband_frequencies  = self.subtable('SPECTRAL_WINDOW').getcol('REF_FREQUENCY')
+        pass
+
+
+    def baseline_table(self, ant1, ant2, subband=0):
+        return tables.table(self.msname).query('ANTENNA1 == %d && ANTENNA2 == %d || ANTENNA1 == %d && ANTENNA2 == %d && DATA_DESC_ID == %d' % (ant1,ant2,ant2,ant1, subband))
+
+    
+    def baseline(self, ant1, ant2, column='DATA', subband=0, **kwargs):
+        selection = self.baseline_table(ant1, ant2, subband)
+        data=selection.getcol(column, **kwargs)
+        data[:,0,:] = 0.0
+        
+        flags=selection.getcol('FLAG', **kwargs)
+        return  ma.array(data,mask=flags)
+
+
+    def map_flagged_baseline(self, ant1, ant2, function, chunksize=1000):
+        """function should take a complex array of (timeslots,channels,polarizations) dimension, and return an array of values
+        per timeslot. """
+        selection = self.baseline_table(ant1, ant2)
+        nrows = selection.nrows()
+        lastset = nrows % chunksize
+        complete_chunks = nrows / chunksize
+        results = []
+        for chunk in range(complete_chunks):
+            print '%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows)
+            results += [function(flag_data(self.baseline(ant1,ant2,startrow=chunk*chunksize, nrow=chunksize),threshold=4.0, max_iter=10))]
+            pass
+        print '%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows)
+        results += [function(flag_data(self.baseline(ant1,ant2,startrow=complete_chunks*chunksize, nrow=lastset), threshold=4.0, max_iter=10))]
+        return concatenate(results, axis=0)
+        
+
+    def map_baseline(self, ant1, ant2, function, chunksize=1000):
+        """function should take a complex array of (timeslots,channels,polarizations) dimension, and return an array of values
+        per timeslot. """
+        selection = self.baseline_table(ant1, ant2)
+        nrows = selection.nrows()
+        lastset = nrows % chunksize
+        complete_chunks = nrows / chunksize
+        results = []
+        for chunk in range(complete_chunks):
+            print '%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows)
+            results += [function(selection.getcol('DATA', startrow=chunk*chunksize, nrow=chunksize))]
+            pass
+        print '%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows)
+        results += [function(selection.getcol('DATA',startrow=complete_chunks*chunksize, nrow=lastset))]
+        return concatenate(results, axis=0)
+    
+    def statistics(self):
+        pass
+
+
+
+
 
 
 
@@ -285,14 +308,14 @@ def plot_complex_image(plot_title, image, good_data=None, amin=None, amax=None, 
     pass
     
 
-def plot_all_correlations(data_col, plot_flags=True):
+def plot_all_correlations(data_col, plot_flags=True,amax_factor=1.0):
     flags = bad_data(data_col, threshold=4.0, max_iter=20)
     flagged_data = ma.array(data_col.data, mask=flags)
     xx,xy,yx,yy,num_pol = split_data_col(ma.array(flagged_data))
     
     scale=ma.max(abs(flagged_data))
     stddev = max(ma.std(flagged_data.real), ma.std(flagged_data.imag))
-    amax=scale-stddev
+    amax=(scale-stddev)*amax_factor
 
     print 'scale: %f\nsigma: %f' % (scale, stddev)
     good=logical_not(xx.mask)
@@ -327,14 +350,25 @@ def delay_fringe_rate(tf_plane,padding=1):
 
 
 
-def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1,timeslots=None):
-    flagged_data = flag_data(apply(ms_summary.baseline, baseline), threshold=4.0, max_iter=20)
+def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1.0, **kwargs):
+    """
+    Plot time/frequency planes and fringerate/delay plots for  baseline (i,j).
+    
+    ms_summary : a MeasurementSetSummary instance
+    baseline   : a tuple (ant_i, ant_j)
+    padding    : if larger than one, increase the fringe rate / delay resolution
+    amax_factor: scale the maximum displayable amplitude with this factor
+    startrow   : first timeslot to plot
+    nrow       : number of time slots to plot
+    rowincr    : take every rowincr th timeslot
+    """
+    flagged_data = flag_data(ms_summary.baseline(*baseline, **kwargs), threshold=4.0, max_iter=20)
     xx,xy,yx,yy,num_pol = split_data_col(ma.array(flagged_data))
 
 
     scale=ma.max(abs(flagged_data))
     stddev = max(ma.std(flagged_data.real), ma.std(flagged_data.imag))
-    amax=scale-stddev
+    amax=(scale-stddev)*amax_factor
 
     print 'scale: %f\nsigma: %f' % (scale, stddev)
     good=logical_not(xx.mask)
@@ -353,20 +387,17 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1,timeslots=None
         plot_complex_image(name, data, good, amin=0.0, amax=amax)
         pass
     
-    if timeslots is None:
-        plots = map(lambda tf: delay_fringe_rate(tf,padding=padding), [xx,xy,yx,yy])
-    else:
-        plots = map(lambda tf: delay_fringe_rate(tf[timeslots,:],padding=padding), [xx,xy,yx,yy])
-
+    plots = map(lambda tf: delay_fringe_rate(tf,padding=padding), [xx,xy,yx,yy])
+    
     amax = array([abs(d).max() for d in plots]).mean()*1.2
-    width=20
-    height=40
+    width=80
+    height=160
 
     for i,d in enumerate(plots):
         subplot(245+i)
-        xlabel('Delay',fontsize=16)
-        ylabel('Fringe rate',fontsize=16)
         ny,nx = d.shape
+        xlabel('Delay [samples]',fontsize=16)
+        ylabel('Fringe rate [per %s seconds]' % (ny*ms_summary.integration_times[0],),fontsize=16)
         print d.shape
         imshow(abs(d)[ny/2-height/2:ny/2+height/2,nx/2-width/2:nx/2+width/2],interpolation='nearest',extent=(-(width/2) -0.5, -(width/2) + width-0.5, -(height/2) + height-0.5, -(height/2) -0.5),
                vmin=0.0,vmax=amax)
@@ -385,3 +416,82 @@ def fringe_rate_spectra(ms_summary, baseline):
     #weights = [logical_not(x.mask).mean(axis=0) for x in flagged_data]
     #return [ma.array(x/w,mask=(w==0.0)) for x,w in zip(spectra, weights)]
 
+
+
+def vis_movie(file_prefix, timeseries, titles, maxamps, chunksize=60):
+    full_chunks=len(timeseries[0])/chunksize
+    rest=len(timeseries[0]) % chunksize
+    figure(figsize=(6*len(titles),6),dpi=80)
+    
+    for chunk in range(full_chunks):
+        clf()
+        
+        subsets = [ts[chunk*chunksize:(chunk+1)*chunksize,:] for ts in timeseries]
+        for col,title_text,subset,maxamp in zip(range(len(titles)), titles, subsets,maxamps):
+            print col
+            subplot(100+10*len(titles)+col+1)
+            title(title_text+' t = %4d min' % chunk)
+            scatter(subset[:,0].real, subset[:,0].imag,c='blue',label='XX')
+            scatter(subset[:,3].real, subset[:,3].imag,c='red', label='YY')
+            xlabel('Real part')
+            ylabel('Imaginary  part')
+            axis([-maxamp,maxamp,-maxamp,maxamp])
+            legend()
+            grid()
+            pass
+        savefig('%s-%s.png' % (file_prefix, str(chunk).rjust(4,'0')))
+        pass
+    pass
+                
+        
+
+def bl_mean(array):
+    return ma.mean(array, axis=1)
+
+def bl_median(array):
+    return ma.median(array.real, axis=1)+1j*ma.median(array.imag, axis=1)
+
+def bl_std(array):
+    return ma.std(array.real,axis=1) +1j*ma.std(array.imag, axis=1)
+
+
+
+def compute_baseline_stat(msname, bl_stat_function=bl_mean, flag_data=False):
+    ms            = MeasurementSetSummary(msname)
+    num_stations  = ms.subtable('ANTENNA').nrows()
+    station_names = ms.subtable('ANTENNA').getcol('NAME')
+    baselines     = [(i,j) for i in  range(num_stations) for j in range(i+1, num_stations)]
+    if flag_data:
+        return [('%s -- %s' % (station_names[i], station_names[j]), 
+                 ms.map_flagged_baseline(i, j, bl_stat_function))
+                for (i,j) in baselines]
+    else:
+        return [('%s -- %s' % (station_names[i], station_names[j]), 
+                 ms.map_baseline(i, j, bl_stat_function))
+                for (i,j) in baselines]
+        
+                     
+
+def plot_baseline_stat(msname, bl_stat_function=lambda x: abs(bl_median(x)), title_text='Abs(median)', flag_data=False, plot_max=None, plot_min=None):
+    stats = compute_baseline_stat(msname, bl_stat_function, flag_data=flag_data)
+    n = len(stats)
+    clf()
+    ms = MeasurementSetSummary(msname)
+    t = gcf().text(0.5,
+                   0.95, '%s %6.3f MHz: %s' % (', '.join(ms.msname.split('/')[-2:]), ms.subtable('SPECTRAL_WINDOW').getcol('REF_FREQUENCY')[0]/1e6, title_text),
+                   horizontalalignment='center',
+                   fontsize=30)
+    times = ms.times - ms.times[0]
+    for (i,(caption, data)) in enumerate(stats):
+        subplot(n*100+10+1+i)
+        #title(caption,fontsize=10)
+        ylabel(caption,rotation='horizontal')
+        plot(times, data[:,0], label='XX')
+        plot(times, data[:,1], label='XY')
+        plot(times, data[:,2], label='YX')
+        plot(times, data[:,3], label='YY')
+        axis([None, None, plot_min, plot_max])
+        legend()
+        pass
+    xlabel('Time [s]')
+    pass
