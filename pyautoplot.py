@@ -1,8 +1,13 @@
+from exceptions import *
 from pyrap import tables as tables
 from pylab import *
-import ma # masked arrays
+
+try:
+    import ma # masked arrays
+except ImportError:
+    import core.ma as ma
+
 import scipy.ndimage as ndimage
-from exceptions import *
 from angle import *
 import uvplane
 import os
@@ -270,10 +275,13 @@ class MeasurementSetSummary:
         return concatenate(results, axis=0)
         
 
-    def map_baseline(self, ant1, ant2, function, chunksize=1000):
+    def map_baseline(self, ant1, ant2, function, chunksize=1000, rowincr=1):
         """function should take a complex array of (timeslots,channels,polarizations) dimension, and return an array of values
         per timeslot. """
+        chunksize=chunksize-(chunksize % rowincr)
         selection = self.baseline_table(ant1, ant2)
+        nrows = selection.nrows()
+        selection = selection.selectrows(arange(0,nrows, rowincr))
         nrows = selection.nrows()
         lastset = nrows % chunksize
         complete_chunks = nrows / chunksize
@@ -350,7 +358,7 @@ def delay_fringe_rate(tf_plane,padding=1):
 
 
 
-def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1.0, **kwargs):
+def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1.0, num_delay=80, num_fringe_rate=160,**kwargs):
     """
     Plot time/frequency planes and fringerate/delay plots for  baseline (i,j).
     
@@ -390,8 +398,8 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     plots = map(lambda tf: delay_fringe_rate(tf,padding=padding), [xx,xy,yx,yy])
     
     amax = array([abs(d).max() for d in plots]).mean()*1.2
-    width=80
-    height=160
+    width=num_delay
+    height=num_fringe_rate
 
     for i,d in enumerate(plots):
         subplot(245+i)
@@ -456,7 +464,7 @@ def bl_std(array):
 
 
 
-def compute_baseline_stat(msname, bl_stat_function=bl_mean, flag_data=False):
+def compute_baseline_stat(msname, bl_stat_function=bl_mean, flag_data=False, rowincr=1):
     ms            = MeasurementSetSummary(msname)
     num_stations  = ms.subtable('ANTENNA').nrows()
     station_names = ms.subtable('ANTENNA').getcol('NAME')
@@ -467,13 +475,13 @@ def compute_baseline_stat(msname, bl_stat_function=bl_mean, flag_data=False):
                 for (i,j) in baselines]
     else:
         return [('%s -- %s' % (station_names[i], station_names[j]), 
-                 ms.map_baseline(i, j, bl_stat_function))
+                 ms.map_baseline(i, j, bl_stat_function, rowincr=rowincr))
                 for (i,j) in baselines]
         
                      
 
-def plot_baseline_stat(msname, bl_stat_function=lambda x: abs(bl_median(x)), title_text='Abs(median)', flag_data=False, plot_max=None, plot_min=None):
-    stats = compute_baseline_stat(msname, bl_stat_function, flag_data=flag_data)
+def plot_baseline_stat(msname, bl_stat_function=lambda x: abs(bl_median(x)), title_text='Abs(median)', flag_data=False, plot_max=None, plot_min=None, rowincr=1):
+    stats = compute_baseline_stat(msname, bl_stat_function, flag_data=flag_data, rowincr=rowincr)
     n = len(stats)
     clf()
     ms = MeasurementSetSummary(msname)
@@ -486,10 +494,10 @@ def plot_baseline_stat(msname, bl_stat_function=lambda x: abs(bl_median(x)), tit
         subplot(n*100+10+1+i)
         #title(caption,fontsize=10)
         ylabel(caption,rotation='horizontal')
-        plot(times, data[:,0], label='XX')
-        plot(times, data[:,1], label='XY')
-        plot(times, data[:,2], label='YX')
-        plot(times, data[:,3], label='YY')
+        plot(times[::rowincr], data[:,0], label='XX')
+        plot(times[::rowincr], data[:,1], label='XY')
+        plot(times[::rowincr], data[:,2], label='YX')
+        plot(times[::rowincr], data[:,3], label='YY')
         axis([None, None, plot_min, plot_max])
         legend()
         pass
