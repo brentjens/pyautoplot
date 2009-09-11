@@ -3,9 +3,10 @@ from pyrap import tables as tables
 from pylab import *
 
 try:
-    import ma # masked arrays
+    import numpy.ma as ma# masked arrays
 except ImportError:
-    import core.ma as ma
+    import numpy.core.ma as ma
+    pass
 
 import scipy.ndimage as ndimage
 from angle import *
