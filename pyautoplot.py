@@ -1,6 +1,7 @@
 from exceptions import *
 from pyrap import tables as tables
 from pylab import *
+from numpy import *
 
 try:
     import numpy.ma as ma# masked arrays
