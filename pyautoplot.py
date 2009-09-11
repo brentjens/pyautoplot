@@ -4,10 +4,13 @@ from pylab import *
 from numpy import *
 
 try:
-    import numpy.ma as ma# masked arrays
+    import ma # masked arrays
 except ImportError:
-    import numpy.core.ma as ma
-    pass
+    try:
+        import numpy.ma as ma
+    except ImportError:
+        import numpy.core.ma as ma
+
 
 import scipy.ndimage as ndimage
 from angle import *
