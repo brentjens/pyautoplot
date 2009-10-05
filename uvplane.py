@@ -54,7 +54,7 @@ def rgb_from_complex_image(complex_image,amin=None, amax=None, angle_points=100,
         pass
 
     if amax == None:
-        max_amp = amp.max()
+        max_amp = max(amp)
     else:
         if scaling_function:
             max_amp = scaling_function(amax)

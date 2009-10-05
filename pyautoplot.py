@@ -26,6 +26,9 @@ def is_list(obj):
 def full_path_listdir(directory):
     return map(lambda d: directory+d, os.listdir(directory))
 
+def is_masked_array(obj):
+    return type(obj) == type(ma.array([]))
+
 class NotImplementedError(Exception):
     pass
 
@@ -125,17 +128,21 @@ def split_data_col(data_col):
 
 def single_correlation_flags(tf_plane, threshold=5.0, max_iter=5, previous_sums=[]):
     flags    = tf_plane.mask
+    sum_flags=flags.sum()
+    print 'sum(flags): %s' % (sum_flags,)
+    print     '%5.3f%s flagged\n' % ((sum_flags*100.0/product(tf_plane.shape)),'%')
+    if sum(flags) == product(flags.shape):
+        return flags
     if max_iter <= 0:
         return ndimage.binary_dilation(flags,iterations=2)
     med       = ma.median(tf_plane.real) +1j*ma.median(tf_plane.imag)
-    sigma     = max(ma.std(tf_plane), ma.std(tf_plane.imag))
+    sigma     = max(ma.std(tf_plane.real), ma.std(tf_plane.imag))
     bad_data  = abs(tf_plane.data-med) > threshold*sigma
     new_flags = logical_or(flags,bad_data)
     new_data  = ma.array(tf_plane.data, mask=new_flags)
     sum_flags = new_flags.sum()
-    print sum_flags
+    print 'sum_flags: %s' % (sum_flags,)
     print     '%5.3f%s flagged\nstd: %6.4f' % ((sum_flags*100.0/product(tf_plane.shape)),'%', ma.std(new_data))
-
     print     sum_flags
     print     previous_sums
     print     '------------------------------------------------------------'
@@ -312,10 +319,14 @@ def plot_complex_image(plot_title, image, good_data=None, amin=None, amax=None, 
     title(plot_title)
     xlabel('Channel', fontsize=16)
     ylabel('Timeslot', fontsize=16)
-    rgb = uvplane.rgb_from_complex_image(image,amin=amin, amax=amax,scaling_function=scaling_function)
+    if is_masked_array(image):
+        img = image.data
+    else:
+        img = image
+    rgb = uvplane.rgb_from_complex_image(img,amin=amin, amax=amax,scaling_function=scaling_function)
     if good_data is not None:
         rgb *= good_data[:,:,newaxis]
-        rgb[:,:,2] += 1.0-good_data
+        rgb[:,:,2] += logical_not(good_data)
         pass
     imshow(rgb,interpolation='nearest')
     pass
@@ -328,7 +339,11 @@ def plot_all_correlations(data_col, plot_flags=True,amax_factor=1.0):
     
     scale=ma.max(abs(flagged_data))
     stddev = max(ma.std(flagged_data.real), ma.std(flagged_data.imag))
-    amax=(scale-stddev)*amax_factor
+    if sum(flags) == product(flags.shape):
+        amax=1.0
+    else:
+        amax=(scale-stddev)*amax_factor
+    
 
     print 'scale: %f\nsigma: %f' % (scale, stddev)
     good=logical_not(xx.mask)
@@ -379,9 +394,15 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     xx,xy,yx,yy,num_pol = split_data_col(ma.array(flagged_data))
 
 
-    scale=ma.max(abs(flagged_data))
-    stddev = max(ma.std(flagged_data.real), ma.std(flagged_data.imag))
-    amax=(scale-stddev)*amax_factor
+    if sum(flagged_data.mask) == product(flagged_data.shape):
+        scale=1.0
+        stddev=0.1
+        amax=1.0
+    else:
+        scale=ma.max(abs(flagged_data))
+        stddev = max(ma.std(flagged_data.real), ma.std(flagged_data.imag))
+        amax=(scale-stddev)*amax_factor
+
 
     print 'scale: %f\nsigma: %f' % (scale, stddev)
     good=logical_not(xx.mask)

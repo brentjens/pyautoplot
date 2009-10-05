@@ -52,6 +52,9 @@ NAME </td><td>POSITION
 
 
 
+class FlaggerTest(unittest.TestCase):
+    pass
+
 #
 #  M A I N 
 #
