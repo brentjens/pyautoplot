@@ -3,6 +3,13 @@
 logfile=testlog.txt
 
 rm  $logfile
+if touch $logfile; then
+    echo "Will write results to $logfile"
+else
+    echo "Cannot write to log file $logfile. Proceeding without saving test results."
+    logfile=/dev/null
+fi
+
 
 modules=`ls *.py|grep -v "^test"`
 for module in $modules; do
@@ -19,8 +26,11 @@ for module in $modules; do
     echo ================================================================================ >> $logfile
 done
 
-echo
-echo
-echo S U M M A R Y
-echo
-cat testlog.txt |grep -e 'Ran\|OK\|FAILED\|Testing\|Error\|^    \|^  File \^\|line\|^Traceback'
+
+if test "$logfile" = "testlog.txt"; then
+    echo
+    echo
+    echo S U M M A R Y
+    echo
+    cat testlog.txt |grep -e 'Ran\|OK\|FAILED\|Testing\|Error\|^    \|^  File \^\|line\|^Traceback'
+fi
