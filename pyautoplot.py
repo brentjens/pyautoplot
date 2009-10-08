@@ -23,11 +23,13 @@ import os
 def is_list(obj):
     return type(obj) == type([])
 
+def is_masked_array(obj):
+    return type(obj) == type(ma.array([]))
+
 def full_path_listdir(directory):
     return map(lambda d: directory+d, os.listdir(directory))
 
-def is_masked_array(obj):
-    return type(obj) == type(ma.array([]))
+
 
 class NotImplementedError(Exception):
     pass
@@ -107,12 +109,6 @@ class TableFormatter:
 
 
 
-
-
-
-
-def cmp_ms_freq(ms_a, ms_b):
-    return apply(cmp, [ms.subband_frequencies.min() for ms in [ms_a, ms_b]])
 
 
 
@@ -308,6 +304,17 @@ class MeasurementSetSummary:
     
     def statistics(self):
         pass
+
+
+
+
+
+
+def cmp_ms_freq(ms_a, ms_b):
+    """Compare the minimum suband frequencies of ms_a and ms_b with
+    the function cmp()"""
+    return apply(cmp, [ms.subband_frequencies.min() for ms in [ms_a, ms_b]])
+
 
 
 

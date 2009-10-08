@@ -47,9 +47,49 @@ NAME </td><td>POSITION
 <tr><td>boea </td><td>baa1 </td></tr>
 <tr><td>boeb </td><td>baa4 </td></tr>
 </table>""")
+        pass
+
+    def test_txt(self):
+        self.assertEquals(self.formatter.format('txt',col_widths=5),
+                          """
+================================================================================
+NAME  POSITION
+--------------------------------------------------------------------------------
+a     [1, 2, 3]
+b     [4, 5, 6]
+--------------------------------------------------------------------------------""")
+        pass
+
+
+    def test_str(self):
+        self.assertEquals(str(self.formatter),
+                          self.formatter.format('txt', 15, str))
+        pass
+
+
+    def test_repr(self):
+        self.assertEquals(repr(self.formatter), str(self.formatter))
+        pass
+
+
 
     pass
 
+
+class UtilitiesTest(unittest.TestCase):
+    def test_is_list(self):
+        self.assertFalse(is_list(array([])))
+        self.assertFalse(is_list(10))
+        self.assertTrue(is_list([]))
+        self.assertTrue(is_list([10, 'boe']))
+        pass
+
+    def test_is_masked_array(self):
+        self.assertFalse(is_masked_array(array([])))
+        self.assertFalse(is_masked_array(10))
+        self.assertFalse(is_masked_array([]))
+        self.assertTrue(is_masked_array(ma.array([10, 'boe'])))
+        pass
 
 
 class FlaggerTest(unittest.TestCase):
