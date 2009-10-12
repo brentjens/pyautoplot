@@ -428,7 +428,7 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
         plot_complex_image(name, data, good, amin=0.0, amax=amax)
         pass
     
-    plots = map(lambda tf: delay_fringe_rate(tf.data*logical_not(tf.mask),padding=padding), [xx,xy,yx,yy])
+    plots = map(lambda tf: delay_fringe_rate(tf.data, padding=padding), [xx,xy,yx,yy])
     
     amax = array([abs(d).max() for d in plots]).mean()*1.2
     width=num_delay
