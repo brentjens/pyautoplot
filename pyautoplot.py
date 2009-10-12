@@ -118,8 +118,8 @@ def split_data_col(data_col):
     
     return (ma.array(data_col[:,:,0], mask=flags),
             ma.array(data_col[:,:,1], mask=flags),
-            ma.array(data_col[:,:,2], mask=flags),
-            ma.array(data_col[:,:,3], mask=flags),
+            ma.array(data_col[:,:,-2], mask=flags),
+            ma.array(data_col[:,:,-1], mask=flags),
             data_col.shape[-1])
 
 def single_correlation_flags(tf_plane, threshold=5.0, max_iter=5, previous_sums=[]):
@@ -428,7 +428,7 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
         plot_complex_image(name, data, good, amin=0.0, amax=amax)
         pass
     
-    plots = map(lambda tf: delay_fringe_rate(tf,padding=padding), [xx,xy,yx,yy])
+    plots = map(lambda tf: delay_fringe_rate(tf.data*logical_not(tf.mask),padding=padding), [xx,xy,yx,yy])
     
     amax = array([abs(d).max() for d in plots]).mean()*1.2
     width=num_delay
