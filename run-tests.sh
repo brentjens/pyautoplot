@@ -2,17 +2,18 @@
 
 logfile=testlog.txt
 
-rm  $logfile
-rm .figleaf
-
 FIGLEAF=`which figleaf`
 
 if test "$FIGLEAF" = ""; then
     echo "Cannot find figleaf. Proceeding without test coverage analysis"
+else
+    rm .figleaf
 fi
+
 
 if touch $logfile; then
     echo "Will write results to $logfile"
+    rm  $logfile
 else
     echo "Cannot write to log file $logfile. Proceeding without saving test results."
     logfile=/dev/null
