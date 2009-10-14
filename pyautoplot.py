@@ -258,12 +258,20 @@ class MeasurementSetSummary:
 
     
     def baseline(self, ant1, ant2, column='DATA', subband=0, **kwargs):
+        """Returns a tuple with the time,frequency,correlation masked
+        array cube of the visibility on baseline ant1-ant2 for
+        subband, as well as an array containing the time slot number
+        of each row/plane in the cube. The mask of the cube is the
+        contents of the 'FLAG' column. The second element of the tuple
+        is the time slot number of each row in the cube."""
         selection = self.baseline_table(ant1, ant2, subband)
         data=selection.getcol(column, **kwargs)
         data[:,0,:] = 0.0
+        time_centroids = selection.getcol('TIME_CENTROID', **kwargs)
+        time_slots     = array((time_centroids - min(self.times))/self.integration_times[0] +0.5, dtype=int64)
         
         flags=selection.getcol('FLAG', **kwargs)
-        return  ma.array(data,mask=flags)
+        return  (ma.array(data,mask=flags),time_slots)
 
 
     def map_flagged_baseline(self, ant1, ant2, function, chunksize=1000):
@@ -276,10 +284,10 @@ class MeasurementSetSummary:
         results = []
         for chunk in range(complete_chunks):
             print '%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows)
-            results += [function(flag_data(self.baseline(ant1,ant2,startrow=chunk*chunksize, nrow=chunksize),threshold=4.0, max_iter=10))]
+            results += [function(flag_data(self.baseline(ant1,ant2,startrow=chunk*chunksize, nrow=chunksize),threshold=4.0, max_iter=10)[0])]
             pass
         print '%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows)
-        results += [function(flag_data(self.baseline(ant1,ant2,startrow=complete_chunks*chunksize, nrow=lastset), threshold=4.0, max_iter=10))]
+        results += [function(flag_data(self.baseline(ant1,ant2,startrow=complete_chunks*chunksize, nrow=lastset), threshold=4.0, max_iter=10)[0])]
         return concatenate(results, axis=0)
         
 
@@ -397,7 +405,8 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     nrow       : number of time slots to plot
     rowincr    : take every rowincr th timeslot
     """
-    flagged_data = flag_data(ms_summary.baseline(*baseline, **kwargs), threshold=4.0, max_iter=20)
+    data,time_slots = ms_summary.baseline(*baseline, **kwargs)
+    flagged_data    = flag_data(data, threshold=5.0, max_iter=20)
     xx,xy,yx,yy,num_pol = split_data_col(ma.array(flagged_data))
 
 
@@ -410,7 +419,8 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
         stddev = max(ma.std(flagged_data.real), ma.std(flagged_data.imag))
         amax=(scale-stddev)*amax_factor
 
-
+    
+    print '%f%% of time slots available' % (int((max(ms_summary.times[kwargs['startrow']:kwargs['startrow']+kwargs['nrow']*kwargs['rowincr']:kwargs['rowincr']]) - min(ms_summary.times[kwargs['startrow']:kwargs['startrow']+kwargs['nrow']*kwargs['rowincr']:kwargs['rowincr']]))/ms_summary.integration_times[0]+0.5)*100.0/len(time_slots),)
     print 'scale: %f\nsigma: %f' % (scale, stddev)
     good=logical_not(xx.mask)
     if not plot_flags:
