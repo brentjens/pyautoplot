@@ -190,6 +190,12 @@ def all_statistics(data_col):
             'num_pol': num_pol}
 
 
+def regrid_time_frequency_correlation_cube(cube, time_slots):
+    new_cube=ma.array(zeros((max(time_slots)-min(time_slots)+1,cube.shape[1],cube.shape[2]),dtype=complex64))
+    new_cube.mask=ones(new_cube.shape,dtype=bool)
+    new_cube.data[time_slots-min(time_slots),:,:] = cube.data
+    new_cube.mask[time_slots-min(time_slots),:,:] = cube.mask
+    return new_cube
 
 
 
@@ -269,9 +275,9 @@ class MeasurementSetSummary:
         data[:,0,:] = 0.0
         time_centroids = selection.getcol('TIME_CENTROID', **kwargs)
         time_slots     = array((time_centroids - min(self.times))/self.integration_times[0] +0.5, dtype=int64)
-        
+
         flags=selection.getcol('FLAG', **kwargs)
-        return  (ma.array(data,mask=flags),time_slots)
+        return  regrid_time_frequency_correlation_cube(ma.array(data,mask=flags),time_slots)
 
 
     def map_flagged_baseline(self, ant1, ant2, function, chunksize=1000):
@@ -284,10 +290,10 @@ class MeasurementSetSummary:
         results = []
         for chunk in range(complete_chunks):
             print '%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows)
-            results += [function(flag_data(self.baseline(ant1,ant2,startrow=chunk*chunksize, nrow=chunksize),threshold=4.0, max_iter=10)[0])]
+            results += [function(flag_data(self.baseline(ant1,ant2,startrow=chunk*chunksize, nrow=chunksize),threshold=4.0, max_iter=10))]
             pass
         print '%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows)
-        results += [function(flag_data(self.baseline(ant1,ant2,startrow=complete_chunks*chunksize, nrow=lastset), threshold=4.0, max_iter=10)[0])]
+        results += [function(flag_data(self.baseline(ant1,ant2,startrow=complete_chunks*chunksize, nrow=lastset), threshold=4.0, max_iter=10))]
         return concatenate(results, axis=0)
         
 
@@ -405,10 +411,11 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     nrow       : number of time slots to plot
     rowincr    : take every rowincr th timeslot
     """
-    data,time_slots = ms_summary.baseline(*baseline, **kwargs)
+    data            = ms_summary.baseline(*baseline, **kwargs)
     flagged_data    = flag_data(data, threshold=5.0, max_iter=20)
     xx,xy,yx,yy,num_pol = split_data_col(ma.array(flagged_data))
-
+    antenna_names   = array(ms_summary.subtable('ANTENNA').getcol('NAME'))[list(baseline)]
+    print antenna_names
 
     if sum(flagged_data.mask) == product(flagged_data.shape):
         scale=1.0
@@ -420,7 +427,7 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
         amax=(scale-stddev)*amax_factor
 
     
-    print '%f%% of time slots available' % (int((max(ms_summary.times[kwargs['startrow']:kwargs['startrow']+kwargs['nrow']*kwargs['rowincr']:kwargs['rowincr']]) - min(ms_summary.times[kwargs['startrow']:kwargs['startrow']+kwargs['nrow']*kwargs['rowincr']:kwargs['rowincr']]))/ms_summary.integration_times[0]+0.5)*100.0/len(time_slots),)
+#    print '%f%% of time slots available' % (int((max(ms_summary.times[kwargs['startrow']:kwargs['startrow']+kwargs['nrow']*kwargs['rowincr']:kwargs['rowincr']]) - min(ms_summary.times[kwargs['startrow']:kwargs['startrow']+kwargs['nrow']*kwargs['rowincr']:kwargs['rowincr']]))/ms_summary.integration_times[0]+0.5)*100.0/len(time_slots),)
     print 'scale: %f\nsigma: %f' % (scale, stddev)
     good=logical_not(xx.mask)
     if not plot_flags:
@@ -429,7 +436,7 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
 
     clf()
     t = gcf().text(0.5,
-                   0.95, '%s: %6.3f MHz' % (', '.join(ms_summary.msname.split('/')[-2:]), ms_summary.subtable('SPECTRAL_WINDOW').getcol('REF_FREQUENCY')[0]/1e6),
+                   0.95, '%s-%s %s: %6.3f MHz' % (antenna_names[0], antenna_names[1], ', '.join(ms_summary.msname.split('/')[-2:]), ms_summary.subtable('SPECTRAL_WINDOW').getcol('REF_FREQUENCY')[0]/1e6),
                    horizontalalignment='center',
                    fontsize=24)
 
@@ -441,19 +448,28 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     plots = map(lambda tf: delay_fringe_rate(tf, padding=padding), [xx,xy,yx,yy])
     
     amax = array([abs(d).max() for d in plots]).mean()*1.2
-    width=num_delay
-    height=num_fringe_rate
+    width=min(num_delay, xx.shape[1])
+    height=min(num_fringe_rate, xx.shape[0])
 
     for i,d in enumerate(plots):
         subplot(245+i)
         ny,nx = d.shape
         xlabel('Delay [samples]',fontsize=16)
-        ylabel('Fringe rate [per %s seconds]' % (ny*ms_summary.integration_times[0],),fontsize=16)
-        print d.shape
-        imshow(abs(d)[ny/2-height/2:ny/2+height/2,nx/2-width/2:nx/2+width/2],interpolation='nearest',extent=(-(width/2) -0.5, -(width/2) + width-0.5, -(height/2) + height-0.5, -(height/2) -0.5),
-               vmin=0.0,vmax=amax)
+        if i == 0:
+            ylabel('Fringe rate [mHz]',fontsize=16)
+        else:
+            ylabel('')
+            pass
+        duration=ny*ms_summary.integration_times[0]
+        imshow(abs(d)[ny/2-height/2:ny/2+height/2,nx/2-width/2:nx/2+width/2],
+               interpolation='nearest',
+               extent=(-(width/2) -0.5, -(width/2) + width-0.5, (-(height/2) -0.5)*1000/duration, (-(height/2) + height-0.5)*1000/duration),
+               vmin=0.0,vmax=amax,
+               aspect='auto',
+               origin='lower')
         grid()
-        colorbar()
+        if i == len(plots)-1:
+            colorbar()
         pass
     pass
 
