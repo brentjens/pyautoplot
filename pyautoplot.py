@@ -214,9 +214,12 @@ class MeasurementSetSummary:
     channel_frequencies=[]
     subband_frequencies=[]
     
-    def __init__(self, msname):
+    endian_swap=False
+    
+    def __init__(self, msname, endian_swap=False):
         self.msname = msname
         self.read_metadata()
+        self.endian_swap=endian_swap
         pass
 
     def subtable(self, subtable_name):
@@ -272,6 +275,9 @@ class MeasurementSetSummary:
         is the time slot number of each row in the cube."""
         selection = self.baseline_table(ant1, ant2, subband)
         data=selection.getcol(column, **kwargs)
+        if self.endian_swap:
+            data.byteswap(True)
+            pass
         data[:,0,:] = 0.0
         time_centroids = selection.getcol('TIME_CENTROID', **kwargs)
         time_slots     = array((time_centroids - min(self.times))/self.integration_times[0] +0.5, dtype=int64)
@@ -280,10 +286,13 @@ class MeasurementSetSummary:
         return  regrid_time_frequency_correlation_cube(ma.array(data,mask=flags),time_slots)
 
 
-    def map_flagged_baseline(self, ant1, ant2, function, chunksize=1000):
+    def map_flagged_baseline(self, ant1, ant2, function, chunksize=1000, rowincr=1):
         """function should take a complex array of (timeslots,channels,polarizations) dimension, and return an array of values
         per timeslot. """
+        chunksize=chunksize-(chunksize % rowincr)
         selection = self.baseline_table(ant1, ant2)
+        nrows = selection.nrows()
+        selection = selection.selectrows(arange(0,nrows, rowincr))
         nrows = selection.nrows()
         lastset = nrows % chunksize
         complete_chunks = nrows / chunksize
@@ -392,14 +401,14 @@ def plot_all_correlations(data_col, plot_flags=True,amax_factor=1.0):
 def delay_fringe_rate(tf_plane,padding=1):
     nt,nf = tf_plane.shape
     padded_plane=zeros((nt,padding*nf),dtype=complex64)
-    padded_plane[:,(padding/2):(padding/2+nf)] = tf_plane*logical_not(tf_plane.mask)
+    padded_plane[:,(padding/2):(padding/2+nf)] = tf_plane.data*logical_not(tf_plane.mask)
     return fftshift(ifft2(padded_plane))
 
 
 
 
 
-def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1.0, num_delay=80, num_fringe_rate=160,**kwargs):
+def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1.0, num_delay=80, num_fringe_rate=160,cmap=cm.hot,**kwargs):
     """
     Plot time/frequency planes and fringerate/delay plots for  baseline (i,j).
     
@@ -422,9 +431,11 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
         stddev=0.1
         amax=1.0
     else:
-        scale=ma.max(abs(flagged_data))
-        stddev = max(ma.std(flagged_data.real), ma.std(flagged_data.imag))
-        amax=(scale-stddev)*amax_factor
+        means = array([ma.mean(x) for x in [xx,xy,yx,yy]])
+        stddevs= [max(ma.std(x.real), ma.std(x.imag)) for x in [xx,xy,yx,yy]]
+        scale=max(abs(means))
+        stddev = max(stddevs)
+        amax=(scale+2.5*stddev)*amax_factor
 
     
 #    print '%f%% of time slots available' % (int((max(ms_summary.times[kwargs['startrow']:kwargs['startrow']+kwargs['nrow']*kwargs['rowincr']:kwargs['rowincr']]) - min(ms_summary.times[kwargs['startrow']:kwargs['startrow']+kwargs['nrow']*kwargs['rowincr']:kwargs['rowincr']]))/ms_summary.integration_times[0]+0.5)*100.0/len(time_slots),)
@@ -447,7 +458,7 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     
     plots = map(lambda tf: delay_fringe_rate(tf, padding=padding), [xx,xy,yx,yy])
     
-    amax = array([abs(d).max() for d in plots]).mean()*1.2
+    amax = array([abs(d).max() for d in plots]).max()
     width=min(num_delay, xx.shape[1])
     height=min(num_fringe_rate, xx.shape[0])
 
@@ -466,7 +477,8 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
                extent=(-(width/2) -0.5, -(width/2) + width-0.5, (-(height/2) -0.5)*1000/duration, (-(height/2) + height-0.5)*1000/duration),
                vmin=0.0,vmax=amax,
                aspect='auto',
-               origin='lower')
+               origin='lower',
+               cmap=cmap)
         grid()
         if i == len(plots)-1:
             colorbar()
