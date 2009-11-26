@@ -286,7 +286,7 @@ class MeasurementSetSummary:
         return  regrid_time_frequency_correlation_cube(ma.array(data,mask=flags),time_slots)
 
 
-    def map_flagged_baseline(self, ant1, ant2, function, chunksize=1000, rowincr=1):
+    def map_flagged_baseline(self, ant1, ant2, function, chunksize=1000, rowincr=1,nrow=None):
         """function should take a complex array of (timeslots,channels,polarizations) dimension, and return an array of values
         per timeslot. """
         chunksize=chunksize-(chunksize % rowincr)
@@ -294,6 +294,8 @@ class MeasurementSetSummary:
         nrows = selection.nrows()
         selection = selection.selectrows(arange(0,nrows, rowincr))
         nrows = selection.nrows()
+        if nrow is not None:
+            nrows = min(nrow, nrow)
         lastset = nrows % chunksize
         complete_chunks = nrows / chunksize
         results = []
@@ -306,12 +308,14 @@ class MeasurementSetSummary:
         return concatenate(results, axis=0)
         
 
-    def map_baseline(self, ant1, ant2, function, chunksize=1000, rowincr=1):
+    def map_baseline(self, ant1, ant2, function, chunksize=1000, rowincr=1, nrow=None):
         """function should take a complex array of (timeslots,channels,polarizations) dimension, and return an array of values
         per timeslot. """
         chunksize=chunksize-(chunksize % rowincr)
         selection = self.baseline_table(ant1, ant2)
         nrows = selection.nrows()
+        if nrow is not None:
+            nrows = min(nrow, nrow)
         selection = selection.selectrows(arange(0,nrows, rowincr))
         nrows = selection.nrows()
         lastset = nrows % chunksize
