@@ -199,6 +199,17 @@ def regrid_time_frequency_correlation_cube(cube, time_slots):
 
 
 
+def hanning(n):
+    c = zeros(n,dtype=float32)
+    c[0]=0.5
+    c[1]=0.25
+    c[-1]=0.25
+    return fft_shift(fft(c))
+
+def apply_taper(complex_array, taper):
+    # Use fft for vis -> lag and ifft for lag -> vis
+    return ifft(fft(complex_array, axis=1)*(fftshift(taper)[newaxis,:,newaxis]),axis=1)
+
 
 
 class MeasurementSetSummary:
@@ -263,17 +274,20 @@ class MeasurementSetSummary:
 
 
     def baseline_table(self, ant1, ant2, subband=0):
-        return tables.table(self.msname).query('ANTENNA1 == %d && ANTENNA2 == %d || ANTENNA1 == %d && ANTENNA2 == %d && DATA_DESC_ID == %d' % (ant1,ant2,ant2,ant1, subband))
+        print 'MeasurementSetSummary.baseline_table subband: '+str(subband)
+        print '(ANTENNA1 == %d && ANTENNA2 == %d || ANTENNA1 == %d && ANTENNA2 == %d) && DATA_DESC_ID == %d' % (ant1,ant2,ant2,ant1, subband)
+        return tables.table(self.msname).query('(ANTENNA1 == %d && ANTENNA2 == %d || ANTENNA1 == %d && ANTENNA2 == %d) && DATA_DESC_ID == %d' % (ant1,ant2,ant2,ant1, subband))
 
     
-    def baseline(self, ant1, ant2, column='DATA', subband=0, **kwargs):
+    def baseline(self, ant1, ant2, column='DATA', subband=0, taper=None, **kwargs):
         """Returns a tuple with the time,frequency,correlation masked
         array cube of the visibility on baseline ant1-ant2 for
         subband, as well as an array containing the time slot number
         of each row/plane in the cube. The mask of the cube is the
         contents of the 'FLAG' column. The second element of the tuple
         is the time slot number of each row in the cube."""
-        selection = self.baseline_table(ant1, ant2, subband)
+        print 'MeasurementSetSummary.baseline subband: '+str(subband)
+        selection = self.baseline_table(ant1, ant2, subband=subband)
         data=selection.getcol(column, **kwargs)
         if self.endian_swap:
             data.byteswap(True)
@@ -283,7 +297,11 @@ class MeasurementSetSummary:
         time_slots     = array((time_centroids - min(self.times))/self.integration_times[0] +0.5, dtype=int64)
 
         flags=selection.getcol('FLAG', **kwargs)
-        return  regrid_time_frequency_correlation_cube(ma.array(data,mask=flags),time_slots)
+        raw = regrid_time_frequency_correlation_cube(ma.array(data,mask=flags),time_slots)
+        if taper is not None:
+            return ma.array(apply_taper(raw.data, taper(raw.shape[1])),mask=raw.mask)
+        else:
+            return raw
 
 
     def map_flagged_baseline(self, ant1, ant2, function, chunksize=1000, rowincr=1,nrow=None):
@@ -363,6 +381,7 @@ def plot_complex_image(plot_title, image, good_data=None, amin=None, amax=None, 
         rgb[:,:,2] += logical_not(good_data)
         pass
     imshow(rgb,interpolation='nearest')
+    axis('tight')
     pass
     
 
@@ -412,7 +431,7 @@ def delay_fringe_rate(tf_plane,padding=1):
 
 
 
-def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1.0, num_delay=80, num_fringe_rate=160,cmap=cm.hot,**kwargs):
+def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1.0, num_delay=80, num_fringe_rate=160,cmap=cm.hot, subband=0, taper=None, **kwargs):
     """
     Plot time/frequency planes and fringerate/delay plots for  baseline (i,j).
     
@@ -424,7 +443,8 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     nrow       : number of time slots to plot
     rowincr    : take every rowincr th timeslot
     """
-    data            = ms_summary.baseline(*baseline, **kwargs)
+    print 'plot_baseline subband: '+str(subband)
+    data            = ms_summary.baseline(*baseline, subband=subband, taper=taper, **kwargs)
     flagged_data    = flag_data(data, threshold=5.0, max_iter=20)
     xx,xy,yx,yy,num_pol = split_data_col(ma.array(flagged_data))
     antenna_names   = array(ms_summary.subtable('ANTENNA').getcol('NAME'))[list(baseline)]
@@ -433,7 +453,7 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     if sum(flagged_data.mask) == product(flagged_data.shape):
         scale=1.0
         stddev=0.1
-        amax=1.0
+        amax=1.0*amax_factor
     else:
         means = array([ma.mean(x) for x in [xx,xy,yx,yy]])
         stddevs= [max(ma.std(x.real), ma.std(x.imag)) for x in [xx,xy,yx,yy]]
@@ -451,7 +471,7 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
 
     clf()
     t = gcf().text(0.5,
-                   0.95, '%s-%s %s: %6.3f MHz' % (antenna_names[0], antenna_names[1], ', '.join(ms_summary.msname.split('/')[-2:]), ms_summary.subtable('SPECTRAL_WINDOW').getcol('REF_FREQUENCY')[0]/1e6),
+                   0.95, '%s-%s %s: %6.3f MHz' % (antenna_names[0], antenna_names[1], ', '.join(ms_summary.msname.split('/')[-2:]), ms_summary.subtable('SPECTRAL_WINDOW').getcol('REF_FREQUENCY')[subband]/1e6),
                    horizontalalignment='center',
                    fontsize=24)
 
