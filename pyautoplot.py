@@ -122,11 +122,12 @@ def split_data_col(data_col):
             ma.array(data_col[:,:,-1], mask=flags),
             data_col.shape[-1])
 
-def single_correlation_flags(tf_plane, threshold=5.0, max_iter=5, previous_sums=[]):
+def single_correlation_flags(tf_plane, threshold=5.0, max_iter=5, previous_sums=[], verbose=False):
     flags    = tf_plane.mask
     sum_flags=flags.sum()
-    print 'sum(flags): %s' % (sum_flags,)
-    print     '%5.3f%s flagged\n' % ((sum_flags*100.0/product(tf_plane.shape)),'%')
+    if verbose:
+        print 'sum(flags): %s' % (sum_flags,)
+        print     '%5.3f%s flagged\n' % ((sum_flags*100.0/product(tf_plane.shape)),'%')
     if sum(flags) == product(flags.shape):
         return flags
     if max_iter <= 0:
@@ -137,21 +138,22 @@ def single_correlation_flags(tf_plane, threshold=5.0, max_iter=5, previous_sums=
     new_flags = logical_or(flags,bad_data)
     new_data  = ma.array(tf_plane.data, mask=new_flags)
     sum_flags = new_flags.sum()
-    print 'sum_flags: %s' % (sum_flags,)
-    print     '%5.3f%s flagged\nstd: %6.4f' % ((sum_flags*100.0/product(tf_plane.shape)),'%', ma.std(new_data))
-    print     sum_flags
-    print     previous_sums
-    print     '------------------------------------------------------------'
+    if verbose:
+        print 'sum_flags: %s' % (sum_flags,)
+        print     '%5.3f%s flagged\nstd: %6.4f' % ((sum_flags*100.0/product(tf_plane.shape)),'%', ma.std(new_data))
+        print     sum_flags
+        print     previous_sums
+        print     '------------------------------------------------------------'
     if sum_flags == reduce(max, previous_sums, 0):
         return single_correlation_flags(new_data, threshold=threshold, max_iter=0, previous_sums=previous_sums+[sum_flags])
     else:
         return single_correlation_flags(new_data, threshold=threshold, max_iter=max_iter-1, previous_sums=previous_sums+[sum_flags])
     
     
-def bad_data(data_col, threshold=5.0,max_iter=5, fubar_fraction=0.5):
+def bad_data(data_col, threshold=5.0,max_iter=5, fubar_fraction=0.5, verbose=False):
     xx,xy,yx,yy,num_pol = split_data_col(data_col)
     flags = reduce(logical_or,
-                   map(lambda x: single_correlation_flags(x,threshold=threshold,max_iter=max_iter),
+                   map(lambda x: single_correlation_flags(x,threshold=threshold,max_iter=max_iter, verbose=verbose),
                        [xx, xy, yx, yy]))
     bad_channels  = ma.sum(flags,axis=0) > data_col.shape[0]*fubar_fraction
     bad_timeslots = ma.sum(flags,axis=1) > data_col.shape[1]*fubar_fraction
@@ -204,7 +206,7 @@ def hanning(n):
     c[0]=0.5
     c[1]=0.25
     c[-1]=0.25
-    return fft_shift(fft(c))
+    return fftshift(fft(c))
 
 def apply_taper(complex_array, taper):
     # Use fft for vis -> lag and ifft for lag -> vis
@@ -313,7 +315,7 @@ class MeasurementSetSummary:
         selection = selection.selectrows(arange(0,nrows, rowincr))
         nrows = selection.nrows()
         if nrow is not None:
-            nrows = min(nrow, nrow)
+            nrows = min(nrow, nrows)
         lastset = nrows % chunksize
         complete_chunks = nrows / chunksize
         results = []
@@ -333,7 +335,7 @@ class MeasurementSetSummary:
         selection = self.baseline_table(ant1, ant2)
         nrows = selection.nrows()
         if nrow is not None:
-            nrows = min(nrow, nrow)
+            nrows = min(nrow, nrows)
         selection = selection.selectrows(arange(0,nrows, rowincr))
         nrows = selection.nrows()
         lastset = nrows % chunksize
@@ -444,7 +446,7 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     rowincr    : take every rowincr th timeslot
     """
     print 'plot_baseline subband: '+str(subband)
-    data            = ms_summary.baseline(*baseline, subband=subband, taper=taper, **kwargs)
+    data            = ms_summary.baseline(baseline[0], baseline[1], subband=subband, taper=taper, **kwargs)
     flagged_data    = flag_data(data, threshold=5.0, max_iter=20)
     xx,xy,yx,yy,num_pol = split_data_col(ma.array(flagged_data))
     antenna_names   = array(ms_summary.subtable('ANTENNA').getcol('NAME'))[list(baseline)]
