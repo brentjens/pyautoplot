@@ -5,13 +5,15 @@ class Angle:
     lower_bound = 0.0
     upper_bound = 2*pi
     include_upper_bound = False
+    cyclical = True
     value = None
     
-    def __init__(self, value, lower_bound=0, upper_bound=2*pi, include_upper_bound=False,type='rad'):
+    def __init__(self, value, lower_bound=0, upper_bound=2*pi, include_upper_bound=False,type='rad', cyclical=True):
         """type may be 'rad' 'hms' or 'sdms'"""
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
         self.include_upper_bound = include_upper_bound
+        self.cyclical=cyclical
         if type == 'rad':
             self.set_rad(value)
         elif type == 'hms':
@@ -24,11 +26,14 @@ class Angle:
         v = self.value
         if x is not None:
             v = x
-        if self.include_upper_bound and v is self.upper_bound:
-            return self.value
-        range = self.upper_bound - self.lower_bound
-        steps = floor((v - self.lower_bound)/range)
-        v -= steps*range
+        if self.cyclical:
+            if self.include_upper_bound and v == self.upper_bound:
+                return self.value
+            range = self.upper_bound - self.lower_bound
+            steps = floor((v - self.lower_bound)/range)
+            v -= steps*range
+        else:
+            v=max(self.lower_bound, min(v,self.upper_bound))
         if x is None:
             self.value = v
         return v
@@ -110,13 +115,13 @@ class Angle:
 
 class RightAscension(Angle):
     def __init__(self, value, type='rad'):
-        Angle.__init__(self,value, 0.0, 2*pi, type=type)
+        Angle.__init__(self,value, 0.0, 2*pi, cyclical=True, type=type)
         pass
     pass
 
 class Declination(Angle):
     def __init__(self, value, type='rad'):
-        Angle.__init__(self, value, -pi/2, pi/2, True, type=type)
+        Angle.__init__(self, value, -pi/2, pi/2, True, cyclical=False, type=type)
         pass
     pass
 
