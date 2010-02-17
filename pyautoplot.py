@@ -2,6 +2,8 @@ from exceptions import *
 from pyrap import tables as tables
 from pylab import *
 from numpy import *
+import os
+from socket import gethostname
 
 try:
     import ma # masked arrays
@@ -15,8 +17,6 @@ except ImportError:
 import scipy.ndimage as ndimage
 from angle import *
 import uvplane
-import os
-
 
 
 
@@ -29,6 +29,18 @@ def is_masked_array(obj):
 def full_path_listdir(directory):
     return map(lambda d: directory+d, os.listdir(directory))
 
+
+def is_compute_node(name=gethostname()):
+    return len(name) == 6 and name[:3]=='lce' and name[3:].isdigit()
+
+def compute_node_number(name=gethostname()):
+    return int(name[3:])
+
+def subcluster_number(compute_node_name=gethostname()):
+    return floor((compute_node_number(compute_node_name)-1)/9)+1
+
+def storage_node_names(subcluster_number):
+    return ['lse'+str(i+(subcluster_number-1)*3).rjust(3,'0') for i in [1,2,3]]
 
 
 class NotImplementedError(Exception):
@@ -600,3 +612,6 @@ def plot_baseline_stat(msname, bl_stat_function=lambda x: abs(bl_median(x)), tit
         pass
     xlabel('Time [s]')
     pass
+
+
+

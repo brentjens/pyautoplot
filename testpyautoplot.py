@@ -91,6 +91,35 @@ class UtilitiesTest(unittest.TestCase):
         self.assertTrue(is_masked_array(ma.array([10, 'boe'])))
         pass
 
+    def test_is_compute_node(self):
+        self.assertTrue(is_compute_node('lce024'))
+        self.assertFalse(is_compute_node('lce0241'))
+        self.assertFalse(is_compute_node('lse024'))
+        self.assertFalse(is_compute_node('lce02'))
+        self.assertFalse(is_compute_node(''))
+        pass
+
+    def test_compute_node_number(self):
+        self.assertEquals(compute_node_number('lce012'), 12)
+        pass
+
+    def test_subcluster_number(self):
+        self.assertEquals(subcluster_number('lce001'),1)
+        self.assertEquals(subcluster_number('lce009'),1)
+        self.assertEquals(subcluster_number('lce010'),2)
+        self.assertEquals(subcluster_number('lce018'),2)
+        self.assertEquals(subcluster_number('lce019'),3)
+        self.assertEquals(subcluster_number('lce027'),3)
+        pass
+
+    def test_storage_node_names(self):
+        [self.assertEquals(x,y) for x,y in zip(storage_node_names(1), ['lse001', 'lse002','lse003'])]
+        [self.assertEquals(x,y) for x,y in zip(storage_node_names(2), ['lse004', 'lse005','lse006'])]
+        [self.assertEquals(x,y) for x,y in zip(storage_node_names(3), ['lse007', 'lse008','lse009'])]
+        [self.assertEquals(x,y) for x,y in zip(storage_node_names(4), ['lse010', 'lse011','lse012'])]
+        pass
+
+
 
 class FlaggerTest(unittest.TestCase):
     def test_split_data_col(self):
