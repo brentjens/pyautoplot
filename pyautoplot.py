@@ -107,6 +107,14 @@ class TableFormatter:
         self.default_cell_formatters = cell_formatters
         pass
     
+
+    def __getitem__(self, id):
+        if type(id) == type(''):
+            col = self.header.index(id)
+            return [row[col] for row in self.data]
+        elif type(id) == type(1):
+            return dict(zip(self.header, self.data[id]))
+
     def __repr__(self):
         return self.__str__()
 
