@@ -324,7 +324,7 @@ class MeasurementSetSummary:
         if self.endian_swap:
             data.byteswap(True)
             pass
-        data[:,0,:] = 0.0
+
         time_centroids = selection.getcol('TIME_CENTROID', **kwargs)
         time_slots     = array((time_centroids - min(self.times))/self.integration_times[0] +0.5, dtype=int64)
 
@@ -463,7 +463,7 @@ def delay_fringe_rate(tf_plane,padding=1):
 
 
 
-def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1.0, num_delay=80, num_fringe_rate=160,cmap=cm.hot, subband=0, taper=None, **kwargs):
+def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1.0, num_delay=80, num_fringe_rate=160,cmap=cm.hot, subband=0, taper=None, column='DATA', **kwargs):
     """
     Plot time/frequency planes and fringerate/delay plots for  baseline (i,j).
     
@@ -476,7 +476,7 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     rowincr    : take every rowincr th timeslot
     """
     print 'plot_baseline subband: '+str(subband)
-    data            = ms_summary.baseline(baseline[0], baseline[1], subband=subband, taper=taper, **kwargs)
+    data            = ms_summary.baseline(baseline[0], baseline[1], subband=subband, taper=taper, column=column, **kwargs)
     flagged_data    = flag_data(data, threshold=5.0, max_iter=20)
     xx,xy,yx,yy,num_pol = split_data_col(ma.array(flagged_data))
     antenna_names   = array(ms_summary.subtable('ANTENNA').getcol('NAME'))[list(baseline)]
