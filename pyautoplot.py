@@ -600,7 +600,7 @@ def bl_std_no_edges(array):
 
 
 
-def compute_baseline_stat(msname, bl_stat_function=bl_mean, flag_data=False, rowincr=1):
+def compute_baseline_stat(msname, bl_stat_function=bl_mean_no_edges, flag_data=False, rowincr=1):
     ms            = MeasurementSetSummary(msname)
     num_stations  = ms.subtable('ANTENNA').nrows()
     station_names = ms.subtable('ANTENNA').getcol('NAME')
@@ -614,7 +614,18 @@ def compute_baseline_stat(msname, bl_stat_function=bl_mean, flag_data=False, row
                  ms.map_baseline(i, j, bl_stat_function, rowincr=rowincr))
                 for (i,j) in baselines]
         
-                     
+
+def compute_single_baseline_stat(msname, baseline, bl_stat_function=bl_mean_no_edges, flag_data=False, rowincr=1):
+    ms            = MeasurementSetSummary(msname)
+    num_stations  = ms.subtable('ANTENNA').nrows()
+    station_names = ms.subtable('ANTENNA').getcol('NAME')
+    i,j=baseline
+    if flag_data:
+        return ('%s -- %s' % (station_names[i], station_names[j]), 
+                 ms.map_flagged_baseline(i, j, bl_stat_function))
+    else:
+        return ('%s -- %s' % (station_names[i], station_names[j]), 
+                 ms.map_baseline(i, j, bl_stat_function, rowincr=rowincr))
 
 def plot_baseline_stat(msname, bl_stat_function=lambda x: abs(bl_median(x)), title_text='Abs(median)', flag_data=False, plot_max=None, plot_min=None, rowincr=1):
     stats = compute_baseline_stat(msname, bl_stat_function, flag_data=flag_data, rowincr=rowincr)
