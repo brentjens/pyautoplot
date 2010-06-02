@@ -589,6 +589,15 @@ def bl_median(array):
 def bl_std(array):
     return ma.std(array.real,axis=1) +1j*ma.std(array.imag, axis=1)
 
+def bl_mean_no_edges(array):
+    return ma.mean(array[:,1:-1,:], axis=1)
+
+def bl_median_no_edges(array):
+    return ma.median(array.real[:,1:-1,:], axis=1)+1j*ma.median(array.imag[:,1:-1,:], axis=1)
+
+def bl_std_no_edges(array):
+    return ma.std(array.real[:,1:-1,:],axis=1) +1j*ma.std(array.imag[:,1:-1,:], axis=1)
+
 
 
 def compute_baseline_stat(msname, bl_stat_function=bl_mean, flag_data=False, rowincr=1):
