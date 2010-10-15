@@ -2,8 +2,10 @@ from exceptions import *
 from pyrap import tables as tables
 from pylab import *
 from numpy import *
-import os
+import os,gc
 from socket import gethostname
+import forkmap
+
 
 try:
     import ma # masked arrays
@@ -39,6 +41,9 @@ def compute_node_number(name=gethostname()):
 def get_subcluster_number(compute_node_name=gethostname()):
     return int(floor((compute_node_number(compute_node_name)-1)/9)+1)
 
+def get_compute_node_number_in_subcluster(compute_node_name=gethostname()):
+    return compute_node_number(compute_node_name)-9*(get_subcluster_number(compute_node_name) -1) -1
+
 def get_storage_node_names(subcluster_number):
     return ['lse'+str(i+(subcluster_number-1)*3).rjust(3,'0') for i in [1,2,3]]
 
@@ -49,8 +54,18 @@ def get_data_dirs(subcluster_number):
 def find_msses(msname):
     result=[]
     for directory in get_data_dirs(get_subcluster_number()):
-        result += [s.strip() for s in os.popen('find %s/%s -iname "*.MS"'%(directory,msname), 'r')]
+        result += [s.strip() for s in os.popen("find %s/%s -iname '*.MS'"%(directory,msname), 'r')]
     return result
+
+
+
+def find_my_msses(msname):
+    msnames=find_msses(msname)
+    n_msnames=len(msses)
+    n = int(ceil(float(n_msnames)/num_proc))
+    proc_id=get_compute_node_number_in_subcluster()
+    msses_here = msses[proc_id*n:min((proc_id+1)*n, n_msnames)]
+    return msses_here
 
 
 class NotImplementedError(Exception):
@@ -121,6 +136,9 @@ class TableFormatter:
 
     def __str__(self):
         return self.format(self.default_format, self.default_col_widths, self.default_cell_formatters)
+
+    def __len__(self):
+        return len(self.data)
 
 
     def format(self,format='txt', col_widths=15, cell_formatters=str):
@@ -626,6 +644,67 @@ def compute_single_baseline_stat(msname, baseline, bl_stat_function=bl_mean_no_e
     else:
         return ('%s -- %s' % (station_names[i], station_names[j]), 
                  ms.map_baseline(i, j, bl_stat_function, rowincr=rowincr))
+
+
+
+
+def collect_all_subbands_stats(msnames, baseline):
+    def stats_from_array(arr, bad=None):
+        if bad is None:
+            allstd=array([arr[:,1:-1,i].std() for i in range(arr.shape[-1])])
+            return stats_from_array(arr, abs(arr) > 4*allstd[newaxis,newaxis,:])
+        else:
+            good_arr=ma.array(arr, mask=bad)
+            good_std= array([good_arr[:,1:-1,i].std() for i in range(arr.shape[-1])])
+            new_bad= abs(arr) > 4*good_std[newaxis,newaxis,:]
+            if all(bad == new_bad):
+                return {'all-std': [arr[:,1:-1,i].std() for i in range(arr.shape[-1])],
+                        'good-std': [good_arr[:,1:-1,i].std() for i in range(arr.shape[-1])],
+                        'flagged%': (100.0*bad.sum())/product(bad.shape)}
+            else:
+                return stats_from_array(arr, new_bad)
+            
+    def compute_stats(msname):
+        ms=MeasurementSetSummary(msname)
+        data=ms.baseline(*baseline)
+
+        return {'name': msname, 'baseline': baseline,
+                'real':stats_from_array(data.real), 'imag':stats_from_array(data.imag)}
+    
+    return forkmap.map(compute_stats, msnames,n=10*forkmap.nprocessors())
+
+
+def subband_from_stats(sbs):
+    name = sbs['name']
+    return int(name[name.rfind('B')+1:-3])
+
+
+def plot_stats(sbstats):
+    subbands = map(subband_from_stats, sbstats)
+    flagged = [max(sb['real']['flagged%'],sb['imag']['flagged%']) for sb in sbstats]
+    astd    = [sb['real']['all-std'] for sb in sbstats]
+    gstd    = [sb['real']['good-std'] for sb in sbstats]
+
+    clf()
+    
+    subplot(311)
+    title('Flagged')
+    plot(subbands, flagged)
+    xlabel('Subband number')
+    
+    subplot(312)
+    title(r'$\sigma$ all')
+    plot(subbands, astd)
+    yscale('log')
+    xlabel('Subband number')
+    
+    subplot(313)
+    title(r'$\sigma$ good')
+    plot(subbands, gstd)
+    yscale('log')
+    xlabel('Subband number')
+    pass
+    
 
 def plot_baseline_stat(msname, bl_stat_function=lambda x: abs(bl_median(x)), title_text='Abs(median)', flag_data=False, plot_max=None, plot_min=None, rowincr=1):
     stats = compute_baseline_stat(msname, bl_stat_function, flag_data=flag_data, rowincr=rowincr)
