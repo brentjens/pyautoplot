@@ -6,6 +6,10 @@ import os,gc
 from socket import gethostname
 import forkmap
 
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_agg import FigureCanvasAgg
+
+
 
 try:
     import ma # masked arrays
@@ -732,3 +736,174 @@ def plot_baseline_stat(msname, bl_stat_function=lambda x: abs(bl_median(x)), tit
 
 
 
+def printnow (s):
+    print s
+    sys.stdout.flush()
+    pass
+
+
+def ant_ant_stat_plot(ax, title_text, single_pol_array, station_names, **kwargs):
+    img = ax.imshow(single_pol_array, interpolation='nearest', **kwargs)
+    ax.axis('equal')
+    for y,n in enumerate(station_names):
+        ax.text(y, -1,n, rotation=90, verticalalignment='bottom')
+        ax.text(len(station_names), y, n, horizontalalignment='left',verticalalignment='center')
+        pass
+    #colorbar(img, pad=0.2, ax=ax)
+    ax.set_xlabel(title_text)
+    pass
+
+def ant_ant_stat_frame(title_text, full_pol_array, station_names, output_name=None, **kwargs):
+    dpi=50
+    if output_name is None:
+        fig = figure(figsize=(32,24), dpi=dpi)
+    else:
+        fig=Figure(figsize=(32,24), dpi=dpi)
+    
+    ax1=fig.add_subplot(2,2,1)
+    ant_ant_stat_plot(ax1, title_text+' XX', full_pol_array[:,:,0], station_names, **kwargs)
+    
+    ax2=fig.add_subplot(2,2,2)
+    ant_ant_stat_plot(ax2, title_text+' XY', full_pol_array[:,:,1], station_names, **kwargs)
+    
+    ax3=fig.add_subplot(2,2,3)
+    ant_ant_stat_plot(ax3, title_text+' YX', full_pol_array[:,:,2], station_names, **kwargs)
+    
+    ax4=fig.add_subplot(2,2,4)
+    ant_ant_stat_plot(ax4, title_text+' YY', full_pol_array[:,:,3], station_names, **kwargs)
+
+    if output_name is not None:
+        canvas = FigureCanvasAgg(fig)
+        canvas.print_figure(output_name, dpi=dpi)
+        pass
+    pass
+
+
+
+
+def collect_stats_ms(msname, max_mem_bytes=4*(2**30)):
+    ms = MeasurementSetSummary(msname)
+    num_ant=len(ms.tables['antennae'])
+    def timeslot(mjd):
+        return int((mjd-ms.times[0])/ms.integration_times[0] +0.5)
+    num_timeslots = timeslot(ms.times[-1])+1
+    num_bl        = num_ant*(num_ant+1)/2
+    num_chan      = ms.tables['spectral_windows']['NUM_CHAN'][0]
+    num_pol       = 4
+    bytes_per_vis = 8
+    fudge_factor  = 8
+    max_timeslots = max_mem_bytes/(bytes_per_vis*num_pol*num_chan*num_bl*fudge_factor)
+
+    num_ts = min(max_timeslots, num_timeslots)
+    data_shape  = (num_ant, num_ant, num_pol, num_ts, num_chan)
+    data = ma.array(zeros(data_shape, dtype=complex64),
+                    mask=zeros(data_shape, dtype=bool))
+
+    ms_table = tables.table(ms.msname)
+    nrows = min(ms_table.nrows(), num_bl*num_ts)
+    rows      = ms_table[0:nrows]
+    xx,xy,yx,yy = 0,1,2,3
+    printnow('reading data')
+    for row in rows:
+        ts = timeslot(row['TIME'])
+        d = row['DATA']
+        f = row['FLAG']
+        for pol in xx,xy,yx,yy:
+            data[row['ANTENNA1'], row['ANTENNA2'], pol, ts, :] = ma.array(d[:,pol], mask= f[:,pol])
+            pass
+        pass    
+
+
+    def calc_bl_stat(fn):
+        """
+        result must return a complex float
+        """
+        result = zeros(data_shape[0:3], dtype=complex64)
+        for ant1 in range(num_ant):
+            for ant2 in range(num_ant):
+                for pol in range(num_pol):
+                    result[ant1, ant2, pol] = fn(data[ant1,ant2,pol,:,:])
+                    pass
+                pass
+            pass
+        gc.collect()
+        return result
+    
+    printnow('computing std')
+    bl_std    = calc_bl_stat(ma.std)
+    printnow('computing mean')
+    bl_mean   = calc_bl_stat(ma.mean)
+    printnow('computing zeroes')
+    bl_zeroes = calc_bl_stat(lambda x: (x==0.0+0.0j).sum()/product(x.shape))
+
+
+    printnow('flagging iteration 1/2')
+    deviant = abs(data - bl_mean[:,:,:,newaxis,newaxis]) > 4*bl_std[:,:,:,newaxis,newaxis]
+    deviant_all_pol = reduce(logical_or, [deviant[:,:,0,:,:], deviant[:,:,1,:,:], deviant[:,:,2,:,:], deviant[:,:,3,:,:]])
+    data.mask = logical_or(data.mask, deviant_all_pol[:,:,newaxis,:,:])
+    deviant=None
+    deviant_all_pol=None
+    gc.collect()
+    
+    printnow('computing flagged mean')
+    bl_flagged_mean   = calc_bl_stat(ma.mean)
+
+    printnow('computing flagged std')
+    bl_flagged_std    = calc_bl_stat(ma.std)
+
+    printnow('flagging iteration 2/2')
+    deviant = abs(data - bl_flagged_mean[:,:,:,newaxis,newaxis]) > 4*bl_flagged_std[:,:,:,newaxis,newaxis]
+    deviant_all_pol = reduce(logical_or, [deviant[:,:,0,:,:], deviant[:,:,1,:,:], deviant[:,:,2,:,:], deviant[:,:,3,:,:]])
+    data.mask = logical_or(data.mask, deviant_all_pol[:,:,newaxis,:,:])
+    deviant=None
+    deviant_all_pol=None
+    gc.collect()
+
+
+    printnow('computing flags')
+    bl_flags  = calc_bl_stat(lambda x: x.mask.sum()*1.0/product(x.shape))
+
+    printnow('counting unflagged points')
+    bl_good   = calc_bl_stat(lambda x: logical_not(x.mask).sum())
+    
+    printnow('computing flagged mean')
+    bl_flagged_mean   = calc_bl_stat(ma.mean)
+
+    printnow('computing flagged std')
+    bl_flagged_std    = calc_bl_stat(ma.std)
+
+    bl_sn = bl_flagged_std/sqrt(bl_good-1)
+
+    return {'Standard deviation': bl_std,
+            'Mean'              : bl_mean,
+            'Zeroes'            : bl_zeroes,
+            'Good points'       : bl_good,
+            'Fringe SNR 0'        : bl_sn,
+            'Flags'             : bl_flags,
+            'Flagged mean'      : bl_flagged_mean,
+            'Flagged standard deviation': bl_flagged_std}
+
+
+def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), output_prefix='/globalhome/brentjens/'):
+    results = collect_stats_ms(msname, max_mem_bytes)
+
+    ant_names=MeasurementSetSummary(msname).tables['antennae']['NAME']
+
+    output_dir = os.path.join(output_prefix, str(ms_id))
+    try:
+        os.mkdir(output_dir)
+    except Exception:
+        pass
+    
+    def write_plot(quantity_name, scaling_function=lambda x: x, **kwargs):
+        return ant_ant_stat_frame(quantity_name, scaling_function(abs(results[quantity_name])), ant_names,
+                                  os.path.join(output_dir,msname.split('/')[-1][:-3]+'-'+quantity_name.lower().replace(' ','-')+'.png'),
+                                  **kwargs)
+
+    write_plot('Flagged mean', log10, vmax=0.0, vmin=-4.0)
+    write_plot('Flagged standard deviation', log10, vmax=0.0, vmin=-4.0)
+    write_plot('Flags', log10, vmax=0.0, vmin=-3.0)
+    write_plot('Zeroes',lambda x: 100*x, vmin=0.0, vmax=100.0)
+    write_plot('Fringe SNR 0', log10, vmin=-1.0, vmax=3.0)
+    
+    return results
