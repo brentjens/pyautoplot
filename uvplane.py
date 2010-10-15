@@ -45,8 +45,9 @@ def rgb_from_complex_image(complex_image,amin=None, amax=None, angle_points=100,
     gc.collect()
     palette=phase_palette(2*pi*arange(angle_points)/angle_points)
     #normalized_phase 
-    normalized_phase=array((remainder(angle(complex_image),2*pi)*angle_points/(2*pi)), dtype=int64)
-    normalized_phase[normalized_phase == angle_points] = 0
+    normalized_phase=array(floor(remainder(angle(complex_image),2*pi)*angle_points/(2*pi)), dtype=int)
+    normalized_phase[normalized_phase >= angle_points] = 0
+    normalized_phase[normalized_phase < 0] = 0
     if scaling_function:
         amp=scaling_function(abs(complex_image))
     else:
@@ -78,6 +79,7 @@ def rgb_from_complex_image(complex_image,amin=None, amax=None, angle_points=100,
     normalized_amp[normalized_amp <= 0.0] = 0.0
     normalized_phase[normalized_amp > 1.0] = angle_points
     normalized_amp[normalized_amp > 1.0] = 1.0
+    #print normalized_phase
     return palette[normalized_phase]*normalized_amp[:,:,newaxis]
     
 
