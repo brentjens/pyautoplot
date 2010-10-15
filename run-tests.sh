@@ -1,7 +1,7 @@
 #!/bin/bash
 
 logfile=testlog.txt
-
+PYTHONPATH=".:$PYTHONPATH"
 FIGLEAF=`which figleaf`
 
 if test "$FIGLEAF" = ""; then
@@ -19,12 +19,13 @@ else
     logfile=/dev/null
 fi
 
-modules=`ls *.py|grep -v "^test"`
+modules=`ls pyautoplot/*.py|grep -v "__init__"`
 for module in $modules; do
     echo |tee -a $logfile
     echo "*** Testing module ${module} ***"|tee -a $logfile 
     echo |tee -a $logfile
-    testfile=test${module}
+    testfile=test/test`basename ${module}`
+    echo $testfile
     if test -e $testfile; then
         
         if test "$FIGLEAF" = ""; then

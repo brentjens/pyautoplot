@@ -1,5 +1,5 @@
 import unittest
-from angle import *
+from pyautoplot.angle import *
 
 
 class AngleTest(unittest.TestCase):
