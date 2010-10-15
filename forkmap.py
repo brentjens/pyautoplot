@@ -5,7 +5,7 @@ forkmap -- Forking map(), uses all processors by default.
 Connelly Barnes 2008, public domain.  Based on forkmap by Kirk Strauser, rewritten and optimized.  Version 1.0.2.
 """
 
-import os, mmap, marshal, struct, cPickle
+import os, mmap, struct, cPickle
 import ctypes, ctypes.util
 import time, traceback
 
@@ -37,12 +37,8 @@ def map(f, *a, **kw):
   n must be a keyword arg; default n is number of physical processors.
   """
   def writeobj(pipe, obj):
-    try:
-      s = marshal.dumps(obj)
-      s = struct.pack('i', len(s)) + s
-    except:
-      s = cPickle.dumps(obj)
-      s = struct.pack('i', -len(s)) + s
+    s = cPickle.dumps(obj)
+    s = struct.pack('i', -len(s)) + s
     os.write(pipe, s)
 
   def readobj(pipe):
@@ -51,10 +47,7 @@ def map(f, *a, **kw):
     an = abs(n)
     while len(s) < an:
       s += os.read(pipe, min(65536, an-len(s)))
-    if n > 0:
-      return marshal.loads(s)
-    else:
-      return cPickle.loads(s)
+    return cPickle.loads(s)
 
   n = kw.get('n', nproc)
   if n == 1:
