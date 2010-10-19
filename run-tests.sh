@@ -1,14 +1,17 @@
 #!/bin/bash
 
 logfile=testlog.txt
-PYTHONPATH=".:$PYTHONPATH"
+PYTHONPATH="`pwd`:$PYTHONPATH"
 FIGLEAF=`which figleaf`
+coverage_files=report-coverage.txt
 
 if test "$FIGLEAF" = ""; then
     echo "Cannot find figleaf. Proceeding without test coverage analysis"
 else
     rm .figleaf
 fi
+
+rm -f $coverage_files
 
 
 if touch $logfile; then
@@ -24,6 +27,7 @@ for module in $modules; do
     echo |tee -a $logfile
     echo "*** Testing module ${module} ***"|tee -a $logfile 
     echo |tee -a $logfile
+    echo $module >> $coverage_files
     testfile=test/test`basename ${module}`
     echo $testfile
     if test -e $testfile; then
@@ -31,7 +35,7 @@ for module in $modules; do
         if test "$FIGLEAF" = ""; then
             python $testfile 2>&1 |tee -a $logfile |grep -e 'Ran\|OK\|FAILED\|Testing\|Error\|^    \|^  File \^\|line\|^Traceback\| != \| !< '
         else
-            figleaf -i $testfile 2>&1 |tee -a $logfile |grep -e 'Ran\|OK\|FAILED\|Testing\|Error\|^    \|^  File \^\|line\|^Traceback\| != \| !< '
+            $FIGLEAF -i $testfile 2>&1 |tee -a $logfile |grep -e 'Ran\|OK\|FAILED\|Testing\|Error\|^    \|^  File \^\|line\|^Traceback\| != \| !< '
         fi
         echo Completed testing  ${module}
     else
@@ -41,7 +45,7 @@ for module in $modules; do
 done
 
 if test "$FIGLEAF" != ""; then
-    figleaf2html -d coverage/ .figleaf
+    figleaf2html -f $coverage_files -d coverage/ .figleaf
 fi
 
 

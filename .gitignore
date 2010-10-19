@@ -1,2 +1,5 @@
 *~
 *.pyc
+.figleaf
+report-coverage.txt
+testlog.txt
