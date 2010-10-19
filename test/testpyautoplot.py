@@ -4,19 +4,6 @@ from math import pi
 
 
 
-class TargetTest(unittest.TestCase):
-    
-    def test_init(self):
-        target = Target('Cas A', 
-                        EquatorialDirection(RightAscension((23, 58, 12),type='hms'),
-                                            Declination(('+', 58, 12,13.500001), type='sdms')))
-        self.assertEquals(target.name, 'Cas A')
-        self.assertEquals(target.direction.ra.as_hms(), '23:58:12')
-        self.assertEquals(target.direction.dec.as_sdms(), '+58:12:14')
-        pass
-    pass
-
-
 
 class TableFormatterTest(unittest.TestCase):
     formatter = TableFormatter([['NAME','POSITION'],

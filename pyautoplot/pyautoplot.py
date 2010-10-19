@@ -79,21 +79,6 @@ class NotImplementedError(Exception):
 
 
 
-class Target:
-    """
-Contains information about a target.
-    """
-    name=''
-    direction=None
-    def __init__(self, name, direction):
-        """ name: a string, direction: an angle.EquatorialDirection object. """
-        self.name = name
-        self.direction = direction
-        pass
-
-
-
-
 
 class TableFormatter:
     """Implements text based formatting for tables in for HTML and
@@ -400,6 +385,7 @@ class MeasurementSetSummary:
         print '%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows)
         results += [function(selection.getcol('DATA',startrow=complete_chunks*chunksize, nrow=lastset))]
         return concatenate(results, axis=0)
+
     
     def statistics(self):
         pass
