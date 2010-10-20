@@ -33,12 +33,14 @@ class AngleTest(unittest.TestCase):
         self.assertEquals(Angle(-4*pi/36.0,-pi,pi).as_hms(), '-01:20:00')
         self.assertEquals(Angle(-pi/12.0 -pi/12.0/3600.0 +0.9999996/3600.0/12.0*pi).as_hms(3), '23:00:00.000') 
         self.assertEquals(Angle(-pi/12.0 -pi/12.0/3600.0 +0.9999996/3600.0/12.0*pi).as_hms(7), '22:59:59.9999996') 
+        self.assertEquals(Angle(-pi/4/45.0/360000.0).as_hms(1), '00:00:00.0')
         pass
 
     def test_as_sdms(self):
         self.assertEquals(Angle(pi/40.0,-pi/2,pi/2).as_sdms(),'+04:30:00')
         self.assertEquals(Angle(pi/40.0).as_sdms(), '+004:30:00')
         self.assertEquals(Angle(-pi/4.0).as_sdms(2), '+315:00:00.00')
+        self.assertEquals(Angle(-pi/4/45.0/360000.0).as_sdms(1), '+000:00:00.0')
         self.assertEquals(Angle(-pi/4/3600000,-pi/2,pi/2).as_sdms(2), '-00:00:00.05')
         pass
 

@@ -72,6 +72,10 @@ class Angle:
         if m_int >= 60:
             m_int -= 60
             h_int += 1
+        max_h = int(floor(self.upper_bound*12/pi+0.5))
+        min_h = int(floor(self.lower_bound*12/pi+0.5))
+        if h_int >= max_h and self.cyclical:
+            h_int -= (max_h-min_h)
         sign_char=''
         if self.value < 0:
             sign_char = '-'
@@ -104,6 +108,10 @@ class Angle:
         if m_int >= 60:
             m_int -= 60
             d_int += 1
+        max_d = int(floor(self.upper_bound*180/pi+0.5))
+        min_d = int(floor(self.lower_bound*180/pi+0.5))
+        if d_int >= max_d and self.cyclical:
+            d_int -= (max_d-min_d)
         
         base_str = sign_char+str(d_int).rjust(deg_size,'0')+':'+str(m_int).rjust(2,'0')+':'+str(s_int).rjust(2,'0')
         if decimals is 0:
