@@ -1,7 +1,6 @@
 from exceptions import *
 from pyrap import tables as tables
 from pylab import *
-from numpy import *
 import os,gc
 from socket import gethostname
 import forkmap
@@ -14,7 +13,7 @@ import ma
 import scipy.ndimage as ndimage
 from angle import *
 import uvplane
-
+import cPickle
 
 def is_compute_node(name=gethostname()):
     return len(name) == 6 and name[:3]=='lce' and name[3:].isdigit()
@@ -806,5 +805,7 @@ def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), output_prefix='/globalhom
     write_plot('Flags', log10, vmax=0.0, vmin=-3.0)
     write_plot('Zeroes',lambda x: 100*x, vmin=0.0, vmax=100.0)
     write_plot('Fringe SNR 0', log10, vmin=-1.0, vmax=3.0)
-    
+
+    results_name=os.path.join(output_dir,msname.split('/')[-1][:-3]+'-data.pickle')
+    cPickle.dump(results, open(results_name, mode='w'))
     return results
