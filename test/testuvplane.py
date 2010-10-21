@@ -80,6 +80,23 @@ class UvplaneTest(unittest.TestCase):
         pass
 
     def test_phase_palette(self):
+        phases = arange(0,2*pi, 2*pi/100.0)
+        palette= phase_palette(phases)
+        self.assertEquals(len(phases), 100)
+        self.assertEquals(len(palette.shape), 2)
+        self.assertEquals(palette.shape[0], 101)
+        self.assertEquals(palette.shape[1], 3)
+
+        self.assertEquals(palette[-1,0], 1.0)
+        self.assertEquals(palette[-1,1], 1.0)
+        self.assertEquals(palette[-1,2], 1.0)
+
+        for i in range(100):
+            rgb= fixup_rgb(color_from_angle(phases[i])*(rgb_scale_palette(phases[i], 0.5)))
+            for j in range(3):
+                self.assertAlmostEquals(palette[i,j], rgb[j])
+                pass
+            pass
         pass
 
     def test_rgb_from_complex_image(self):
