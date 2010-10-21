@@ -4,7 +4,8 @@ import gc
 
 
 def quadrant(angle):
-    return int(2.0*angle/pi)
+    a = remainder(angle, 2*pi)
+    return int(2.0*a/pi)
 
 def fixup_rgb(rgb_image):
     rgb = copy(rgb_image)
