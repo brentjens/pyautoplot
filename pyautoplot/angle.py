@@ -74,7 +74,7 @@ class Angle:
             h_int += 1
         max_h = int(floor(self.upper_bound*12/pi+0.5))
         min_h = int(floor(self.lower_bound*12/pi+0.5))
-        if h_int >= max_h and self.cyclical:
+        if h_int >= max_h and self.cyclical and not self.include_upper_bound:
             h_int -= (max_h-min_h)
         sign_char=''
         if self.value < 0:
@@ -110,7 +110,7 @@ class Angle:
             d_int += 1
         max_d = int(floor(self.upper_bound*180/pi+0.5))
         min_d = int(floor(self.lower_bound*180/pi+0.5))
-        if d_int >= max_d and self.cyclical:
+        if d_int >= max_d and self.cyclical and not self.include_upper_bound:
             d_int -= (max_d-min_d)
         
         base_str = sign_char+str(d_int).rjust(deg_size,'0')+':'+str(m_int).rjust(2,'0')+':'+str(s_int).rjust(2,'0')
@@ -123,19 +123,19 @@ class Angle:
 
 class RightAscension(Angle):
     def __init__(self, value, type='rad'):
-        Angle.__init__(self,value, 0.0, 2*pi, cyclical=True, type=type)
+        Angle.__init__(self,value, 0.0, 2*pi, include_upper_bound=False, cyclical=True, type=type)
         pass
     pass
 
 class Declination(Angle):
     def __init__(self, value, type='rad'):
-        Angle.__init__(self, value, -pi/2, pi/2, True, cyclical=False, type=type)
+        Angle.__init__(self, value, -pi/2, pi/2, include_upper_bound=True, cyclical=False, type=type)
         pass
     pass
 
 class HourAngle(Angle):
     def __init__(self, value, type='rad'):
-        Angle.__init__(self, value, -pi, pi, True, type=type)
+        Angle.__init__(self, value, -pi, pi, include_upper_bound=False, cyclical=True, type=type)
         pass
     pass
     
