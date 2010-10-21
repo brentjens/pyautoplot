@@ -22,26 +22,30 @@ else
     logfile=/dev/null
 fi
 
-modules=`ls pyautoplot/*.py|grep -v "__init__"`
-for module in $modules; do
-    echo |tee -a $logfile
-    echo "*** Testing module ${module} ***"|tee -a $logfile 
-    echo |tee -a $logfile
-    echo $module >> $coverage_files
-    testfile=test/test`basename ${module}`
-    echo $testfile
-    if test -e $testfile; then
-        
-        if test "$FIGLEAF" = ""; then
-            python $testfile 2>&1 |tee -a $logfile |grep -e 'Ran\|OK\|FAILED\|Testing\|Error\|^    \|^  File \^\|line\|^Traceback\| != \| !< '
+packages=`find . -name '__init__.py' -maxdepth 2|sed -e 's/^\.\///g' -e 's/\/__init__\.py//g'`
+
+for package in $packages; do
+    modules=`ls $package/*.py| grep -v "__init__"`
+    for module in $modules; do
+        echo |tee -a $logfile
+        echo "*** Testing module ${module} ***"|tee -a $logfile 
+        echo |tee -a $logfile
+        echo $module >> $coverage_files
+        testfile=test/test`basename ${module}`
+        echo $testfile
+        if test -e $testfile; then
+            
+            if test "$FIGLEAF" = ""; then
+                python $testfile 2>&1 |tee -a $logfile |grep -e 'Ran\|OK\|FAILED\|Testing\|Error\|^    \|^  File \^\|line\|^Traceback\| != \| !< '
+            else
+                $FIGLEAF -i $testfile 2>&1 |tee -a $logfile |grep -e 'Ran\|OK\|FAILED\|Testing\|Error\|^    \|^  File \^\|line\|^Traceback\| != \| !< '
+            fi
+            echo Completed testing  ${module}
         else
-            $FIGLEAF -i $testfile 2>&1 |tee -a $logfile |grep -e 'Ran\|OK\|FAILED\|Testing\|Error\|^    \|^  File \^\|line\|^Traceback\| != \| !< '
+            echo "Error: Module $module has no associated test" |tee -a $logfile
         fi
-        echo Completed testing  ${module}
-    else
-        echo "Error: Module $module has no associated test" |tee -a $logfile
-    fi
-    echo ================================================================================ >> $logfile
+        echo ================================================================================ >> $logfile
+    done
 done
 
 if test "$FIGLEAF" != ""; then
