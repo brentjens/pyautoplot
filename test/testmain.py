@@ -1,5 +1,5 @@
 import unittest
-from pyautoplot import *
+from pyautoplot.main import *
 from math import pi
 
 
