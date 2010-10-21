@@ -3,11 +3,20 @@ import pyfits as p
 import gc
 
 
-def quadrant(angle):
-    a = remainder(angle, 2*pi)
+def quadrant(angle_rad):
+    """
+    Returns the quadrant in which *angle_rad*, an angle in radians,
+    resides. The quadrants are numbered 0 [0, pi/2>, 1 [pi/2, pi>, 2
+    [pi, 3pi/2>, and 3 [3pi/2, 2pi>.
+    """
+    a = remainder(angle_rad, 2*pi)
     return int(2.0*a/pi)
 
 def fixup_rgb(rgb_image):
+    """
+    Ensure that the values in the array *rgb_image* are all in the
+    range 0.0 to 1.0 inclusive.
+    """
     rgb = copy(rgb_image)
     rgb[rgb > 1.0] = 1.0
     rgb[rgb < 0.0] = 0.0
@@ -32,10 +41,22 @@ def color_from_angle(angle_rad):
     
 
 def rgb_scale_palette(angle,amp):
+    """
+    Compensate for a clover-leaf like distortion in brightness
+    perception in the color scheme. It returns
+    (1+amp-amp*(cos(4*angle)))**0.8, where *amp* is the amplitude of
+    the correction, and *angle* the phase in radians.
+    """
     return (1+amp-amp*(cos(4*angle)))**0.8
 
 
 def phase_palette(phase_rad):
+    """
+    Returns a 2D array of shape (len(*phase_rad*)+1, 3), containing
+    the RGB values associated with each angle in *phase_rad*. The last
+    element is the colour used in case of phase overflow (which would
+    be an error; it should never happen). In this case pure white.
+    """
     basic_palette= [color_from_angle(a) for a in phase_rad]+[array([1.0,1.0,1.0])]
     palette=fixup_rgb(array(basic_palette)*array(list(rgb_scale_palette(phase_rad,0.5))+[1.0])[:,newaxis])
     palette[len(phase_rad)]=array([1.0,1.0,1.0])
@@ -47,8 +68,8 @@ def rgb_from_complex_image(complex_image,amin=None, amax=None, angle_points=100,
     palette=phase_palette(2*pi*arange(angle_points)/angle_points)
     #normalized_phase 
     normalized_phase=array(floor(remainder(angle(complex_image),2*pi)*angle_points/(2*pi)), dtype=int)
-    normalized_phase[normalized_phase >= angle_points] = 0
-    normalized_phase[normalized_phase < 0] = 0
+    normalized_phase[normalized_phase >= angle_points] = angle_points
+    normalized_phase[normalized_phase < 0] = angle_points
     if scaling_function:
         amp=scaling_function(abs(complex_image))
     else:

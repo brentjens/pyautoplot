@@ -67,7 +67,16 @@ class UvplaneTest(unittest.TestCase):
         pass
 
     def test_rgb_scale_palette(self):
-        
+        self.assertAlmostEquals(rgb_scale_palette(0.0, 0.75), 1.0)
+        self.assertAlmostEquals(rgb_scale_palette(pi/2, 0.5), 1.0)
+        self.assertAlmostEquals(rgb_scale_palette(pi, 0.25), 1.0)
+        self.assertAlmostEquals(rgb_scale_palette(3*pi/2, 1.2), 1.0)
+
+        one_eight=pi/4.0
+        self.assertAlmostEquals(rgb_scale_palette(0.0+one_eight, 0.75), 2.5**0.8)
+        self.assertAlmostEquals(rgb_scale_palette(pi/2+one_eight, 0.5), 2.0**0.8)
+        self.assertAlmostEquals(rgb_scale_palette(pi+one_eight, 0.25), 1.5**0.8)
+        self.assertAlmostEquals(rgb_scale_palette(3*pi/2+one_eight, 1.2), 3.4**0.8)
         pass
 
     def test_phase_palette(self):
