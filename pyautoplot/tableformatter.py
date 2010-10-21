@@ -1,5 +1,7 @@
 from utilities import *
 
+
+
 class TableFormatter:
     """Implements text based formatting for tables in for HTML and
     TXT. A table consists of a list of lists, where each sub list
@@ -23,8 +25,13 @@ class TableFormatter:
                        'cell_sep'    : ' '}}
     
     def __init__(self, table_as_list, format='txt', col_widths=15, cell_formatters=str):
+        if len(table_as_list) == 0:
+            raise ValueError('*table_as_list* is empty. Provide at least a 2D list with one row containing the header as a list of strings.')
         self.header = table_as_list[0]
-        self.data   = table_as_list[1:]
+        if len(table_as_list) == 1:
+            self.data=[]
+        else:
+            self.data   = table_as_list[1:]
         
         self.default_format          = format
         self.default_col_widths      = col_widths
