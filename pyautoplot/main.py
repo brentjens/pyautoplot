@@ -9,8 +9,7 @@ import forkmap
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
-
-import maskedarrays as ma
+import ma
 
 import scipy.ndimage as ndimage
 from angle import *

@@ -1,0 +1,5 @@
+include *.sh
+include MANIFEST
+include MANIFEST.in
+recursive-include L2009_12633_SB21.MS *
+recursive-include coverage *.html
