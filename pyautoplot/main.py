@@ -774,11 +774,12 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30)):
 
     bl_sn = bl_flagged_std/sqrt(bl_good-1)
 
-    return {'Standard deviation': bl_std,
+    return {'Meta data'         : ms.tables,
+            'Standard deviation': bl_std,
             'Mean'              : bl_mean,
             'Zeroes'            : bl_zeroes,
             'Good points'       : bl_good,
-            'Fringe SNR 0'        : bl_sn,
+            'Fringe SNR 0'      : bl_sn,
             'Flags'             : bl_flags,
             'Flagged mean'      : bl_flagged_mean,
             'Flagged standard deviation': bl_flagged_std}
@@ -787,7 +788,7 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30)):
 def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), output_prefix='/globalhome/brentjens/'):
     results = collect_stats_ms(msname, max_mem_bytes)
 
-    ant_names=MeasurementSetSummary(msname).tables['antennae']['NAME']
+    ant_names=results['Meta data']['antennae']['NAME']
 
     output_dir = os.path.join(output_prefix, str(ms_id))
     try:
