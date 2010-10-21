@@ -63,13 +63,23 @@ def phase_palette(phase_rad):
     return palette
 
 
+def phase_index(complex_image, points):
+    """
+    Returns array of the same shape as *complex_image* containing the
+    phase of the complex image encoded as an integer between 0 and
+    points (exclusive).
+    """
+    normalized_phase = array(floor(remainder(angle(complex_image),2*pi)*points/(2*pi) + 0.5), dtype=int)
+    normalized_phase[normalized_phase == points] = 0
+    return normalized_phase
+
+
 def rgb_from_complex_image(complex_image,amin=None, amax=None, angle_points=100, scaling_function=None):
     gc.collect()
     palette=phase_palette(2*pi*arange(angle_points)/angle_points)
-    #normalized_phase 
-    normalized_phase=array(floor(remainder(angle(complex_image),2*pi)*angle_points/(2*pi)), dtype=int)
-    normalized_phase[normalized_phase >= angle_points] = angle_points
-    normalized_phase[normalized_phase < 0] = angle_points
+    normalized_phase = phase_index(complex_image, angle_points)
+    #normalized_phase[normalized_phase >= angle_points] = angle_points
+    #normalized_phase[normalized_phase < 0] = angle_points
     if scaling_function:
         amp=scaling_function(abs(complex_image))
     else:

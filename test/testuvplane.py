@@ -99,6 +99,11 @@ class UvplaneTest(unittest.TestCase):
             pass
         pass
 
+
+    def test_phase_index(self):
+        pass
+
+
     def test_rgb_from_complex_image(self):
         pass
 
