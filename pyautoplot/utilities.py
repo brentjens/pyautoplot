@@ -17,3 +17,10 @@ def set_nan_zero(data_array):
     """
     data_array[isnan(data_array)] = 0
     return data_array
+
+
+def printnow (s):
+    print s
+    sys.stdout.flush()
+    pass
+
