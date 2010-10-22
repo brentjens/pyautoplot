@@ -1,6 +1,5 @@
 from exceptions import *
 import os,gc,cPickle
-from socket import gethostname
 import scipy.ndimage as ndimage
 from pyrap import tables as tables
 from pylab import *
@@ -18,13 +17,6 @@ from lofaroffline import *
 
 class NotImplementedError(Exception):
     pass
-
-
-
-
-
-
-
 
 
 def split_data_col(data_col):
