@@ -69,12 +69,17 @@ def phase_index(complex_image, points):
     phase of the complex image encoded as an integer between 0 and
     points (exclusive).
     """
+    if isnan(complex_image).sum() > 0:
+        ValueError('*complex_image* contains NaN values. Please sanitize it before plotting using, e.g. complex_image[isnan(complex_image)] == 0.0, or pyautoplot.utilities.set_nan_zero(complex_image)')
+    
     normalized_phase = array(floor(remainder(angle(complex_image),2*pi)*points/(2*pi) + 0.5), dtype=int)
     normalized_phase[normalized_phase == points] = 0
     return normalized_phase
 
 
 def rgb_from_complex_image(complex_image,amin=None, amax=None, angle_points=100, scaling_function=None):
+    if isnan(complex_image).sum() > 0:
+        ValueError('*complex_image* contains NaN values. Please sanitize it before plotting using, e.g. complex_image[isnan(complex_image)] == 0.0, or pyautoplot.utilities.set_nan_zero(complex_image)')
     gc.collect()
     palette=phase_palette(2*pi*arange(angle_points)/angle_points)
     normalized_phase = phase_index(complex_image, angle_points)

@@ -1,19 +1,18 @@
 from exceptions import *
+import os,gc,cPickle
+from socket import gethostname
+import scipy.ndimage as ndimage
 from pyrap import tables as tables
 from pylab import *
-import os,gc
-from socket import gethostname
-import forkmap
 
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
-import ma
-
-import scipy.ndimage as ndimage
+import ma, forkmap, uvplane
+from tableformatter import *
 from angle import *
-import uvplane
-import cPickle
+from utilities import *
+
 
 def is_compute_node(name=gethostname()):
     return len(name) == 6 and name[:3]=='lce' and name[3:].isdigit()
@@ -244,7 +243,7 @@ class MeasurementSetSummary:
         if self.endian_swap:
             data.byteswap(True)
             pass
-
+        data=set_nan_zero(data)
         time_centroids = selection.getcol('TIME_CENTROID', **kwargs)
         time_slots     = array((time_centroids - min(self.times))/self.integration_times[0] +0.5, dtype=int64)
 
@@ -293,10 +292,10 @@ class MeasurementSetSummary:
         results = []
         for chunk in range(complete_chunks):
             print '%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows)
-            results += [function(selection.getcol('DATA', startrow=chunk*chunksize, nrow=chunksize))]
+            results += [function(set_nan_zero(selection.getcol('DATA', startrow=chunk*chunksize, nrow=chunksize)))]
             pass
         print '%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows)
-        results += [function(selection.getcol('DATA',startrow=complete_chunks*chunksize, nrow=lastset))]
+        results += [function(set_nan_zero(selection.getcol('DATA',startrow=complete_chunks*chunksize, nrow=lastset)))]
         return concatenate(results, axis=0)
 
     
@@ -375,6 +374,8 @@ def plot_all_correlations(data_col, plot_flags=True,amax_factor=1.0):
     
 
 def delay_fringe_rate(tf_plane,padding=1):
+    if isnan(tf_plane).sum() > 0:
+        ValueError('*tf_plane* contains NaN values. Please sanitize it before plotting using, e.g. tf_plane[isnan(tf_plane)] == 0.0, or pyautoplot.utilities.set_nan_zero(tf_plane)')
     nt,nf = tf_plane.shape
     padded_plane=zeros((nt,padding*nf),dtype=complex64)
     padded_plane[:,(padding/2):(padding/2+nf)] = tf_plane.data*logical_not(tf_plane.mask)

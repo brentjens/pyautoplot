@@ -101,6 +101,15 @@ class UvplaneTest(unittest.TestCase):
 
 
     def test_phase_index(self):
+        complex_image=exp(1j*array([0,pi/2,pi, 3*pi/2, 2*pi-pi/4+1e-9, 2*pi-pi/4-1e-9, 7*pi]))
+        index=phase_index(complex_image, 4)
+        self.assertEquals(index[0], 0)
+        self.assertEquals(index[1], 1)
+        self.assertEquals(index[2], 2)
+        self.assertEquals(index[3], 3)
+        self.assertEquals(index[4], 0)
+        self.assertEquals(index[5], 3)
+        self.assertEquals(index[6], 2)
         pass
 
 
