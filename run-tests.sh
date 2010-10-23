@@ -5,6 +5,7 @@ PYTHONPATH="`pwd`:$PYTHONPATH"
 FIGLEAF=`which figleaf`
 coverage_files=report-coverage.txt
 
+
 if test "$FIGLEAF" = ""; then
     echo "Cannot find figleaf. Proceeding without test coverage analysis"
 else
@@ -23,6 +24,9 @@ else
 fi
 
 packages=`find . -name '__init__.py' -maxdepth 2|sed -e 's/^\.\///g' -e 's/\/__init__\.py//g'`
+
+
+python make_cluster_dirs.py
 
 for package in $packages; do
     modules=`ls $package/*.py| grep -v "__init__"`
