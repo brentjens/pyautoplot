@@ -70,6 +70,7 @@ class LofarOfflineTest(unittest.TestCase):
         [self.assertEquals(x,y) for x,y in zip(get_storage_node_names(4), ['lse010', 'lse011','lse012'])]
         pass
 
+
     def test_get_data_dirs(self):
         [self.assertEquals(found, expected) for found,expected in zip(get_data_dirs(1),
                                                                       ['/net/sub1/lse001/data1/',
@@ -97,6 +98,20 @@ class LofarOfflineTest(unittest.TestCase):
                                                                        '/net/sub3/lse009/data2/',
                                                                        '/net/sub3/lse009/data3/',
                                                                        '/net/sub3/lse009/data4/'])]
+
+        [self.assertEquals(found, expected) for found,expected in zip(get_data_dirs(3, root='testdata'),
+                                                                      ['testdata/sub3/lse007/data1/',
+                                                                       'testdata/sub3/lse007/data2/',
+                                                                       'testdata/sub3/lse007/data3/',
+                                                                       'testdata/sub3/lse007/data4/',
+                                                                       'testdata/sub3/lse008/data1/',
+                                                                       'testdata/sub3/lse008/data2/',
+                                                                       'testdata/sub3/lse008/data3/',
+                                                                       'testdata/sub3/lse008/data4/',
+                                                                       'testdata/sub3/lse009/data1/',
+                                                                       'testdata/sub3/lse009/data2/',
+                                                                       'testdata/sub3/lse009/data3/',
+                                                                       'testdata/sub3/lse009/data4/'])]
         pass
 
 

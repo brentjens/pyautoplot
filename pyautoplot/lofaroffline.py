@@ -1,5 +1,7 @@
 from socket import gethostname
 from numpy import floor
+import os
+
 
 def is_compute_node(name=gethostname()):
     return len(name) == 6 and name[:3]=='lce' and name[3:].isdigit()
@@ -27,7 +29,7 @@ def get_subcluster_number(node_name=gethostname()):
     elif is_frontend_node(node_name):
         raise ValueError(node_name +' is a frontend node and does not belong to any particular sub cluster')
     else:
-        raise ValueError(node_name +' is not a storage node or compute nodeode and does therefore not belong to any subcluster')
+        raise ValueError(node_name +' is not a storage node or compute node and does therefore not belong to any subcluster')
 
 
 
@@ -38,7 +40,7 @@ def get_node_number_in_subcluster(node_name=gethostname()):
     elif is_compute_node(node_name):
         nodes_per_subcluster = 9
     else:
-        raise ValueError(node_name +' is not a storage node or compute nodeode and does therefore not belong to any subcluster')
+        raise ValueError(node_name +' is not a storage node or compute node and does therefore not belong to any subcluster')
     return get_node_number(node_name)-nodes_per_subcluster*(get_subcluster_number(node_name) -1) -1
 
 
@@ -48,9 +50,9 @@ def get_storage_node_names(subcluster_number):
 
 
 
-def get_data_dirs(subcluster_number):
+def get_data_dirs(subcluster_number, root='/net'):
     storage_nodes=get_storage_node_names(subcluster_number)
-    return ['/net/sub%s/%s/data%s/' %(subcluster_number, lse, data) for lse in storage_nodes for data in range(1,5)]
+    return [os.path.join(root, 'sub%s/%s/data%s/' %(subcluster_number, lse, data)) for lse in storage_nodes for data in range(1,5)]
 
 
 
