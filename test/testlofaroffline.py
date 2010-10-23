@@ -11,9 +11,29 @@ class LofarOfflineTest(unittest.TestCase):
         self.assertFalse(is_compute_node(''))
         pass
 
-    def test_compute_node_number(self):
-        self.assertEquals(compute_node_number('lce012'), 12)
+
+    def test_is_storage_node(self):
+        self.assertTrue(is_storage_node('lse024'))
+        self.assertFalse(is_storage_node('lse0241'))
+        self.assertFalse(is_storage_node('lce024'))
+        self.assertFalse(is_storage_node('lse02'))
+        self.assertFalse(is_storage_node(''))
         pass
+
+
+    def test_is_frontend_node(self):
+        self.assertTrue(is_frontend_node('lfe001'))
+        self.assertFalse(is_frontend_node('lfe0241'))
+        self.assertFalse(is_frontend_node('lse024'))
+        self.assertFalse(is_frontend_node('lfe02'))
+        self.assertFalse(is_frontend_node(''))
+        pass
+
+
+    def test_get_node_number(self):
+        self.assertEquals(get_node_number('lce012'), 12)
+        pass
+
 
     def test_get_subcluster_number(self):
         self.assertEquals(get_subcluster_number('lce001'),1)
@@ -22,7 +42,26 @@ class LofarOfflineTest(unittest.TestCase):
         self.assertEquals(get_subcluster_number('lce018'),2)
         self.assertEquals(get_subcluster_number('lce019'),3)
         self.assertEquals(get_subcluster_number('lce027'),3)
+
+        self.assertEquals(get_subcluster_number('lse001'),1)
+        self.assertEquals(get_subcluster_number('lse009'),3)
+        self.assertEquals(get_subcluster_number('lse010'),4)
+        self.assertEquals(get_subcluster_number('lse018'),6)
+        self.assertEquals(get_subcluster_number('lse019'),7)
+
+        self.assertRaises(ValueError, get_subcluster_number, 'lfe001')
+        self.assertRaises(ValueError, get_subcluster_number, 'bgfen0')
         pass
+
+
+    def test_get_node_number_in_subcluster(self):
+        self.assertEquals(get_node_number_in_subcluster('lse004'), 0)
+        self.assertEquals(get_node_number_in_subcluster('lce004'), 3)
+        self.assertEquals(get_node_number_in_subcluster('lse009'), 2)
+        self.assertEquals(get_node_number_in_subcluster('lce009'), 8)
+        self.assertRaises(ValueError, get_node_number_in_subcluster, 'lfe001')
+        pass
+
 
     def test_get_storage_node_names(self):
         [self.assertEquals(x,y) for x,y in zip(get_storage_node_names(1), ['lse001', 'lse002','lse003'])]
