@@ -17,6 +17,13 @@ class UtilitiesTest(unittest.TestCase):
         self.assertTrue(is_masked_array(ma.array([10, 'boe'])))
         pass
 
+    def test_full_path_listdir(self):
+        files_noslash=full_path_listdir('/usr/bin')
+        self.assertTrue('/usr/bin/whoami' in files_noslash)
+        files_slash=full_path_listdir('/usr/bin/')
+        self.assertTrue('/usr/bin/whoami' in files_slash)
+        pass
+
     def test_set_nan_zero(self):
         a = array([0,1,2,NaN,4, 5, NaN+NaN*1j])
         r = set_nan_zero(a)

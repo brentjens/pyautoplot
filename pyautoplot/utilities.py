@@ -9,7 +9,7 @@ def is_masked_array(obj):
     return type(obj) == type(ma.array([]))
 
 def full_path_listdir(directory):
-    return map(lambda d: directory+d, os.listdir(directory))
+    return map(lambda d: os.path.join(directory,d), os.listdir(directory))
 
 def set_nan_zero(data_array):
     """
