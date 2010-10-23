@@ -56,16 +56,16 @@ def get_data_dirs(subcluster_number, root='/net'):
 
 
 
-def find_msses(msname, root='/net'):
+def find_msses(msname, root='/net', node_name=gethostname()):
     result=[]
-    for directory in get_data_dirs(get_subcluster_number(), root=root):
+    for directory in get_data_dirs(get_subcluster_number(node_name=node_name), root=root):
         result += [s.strip() for s in os.popen("find %s/%s -iname '*.MS'"%(directory,msname), 'r')]
     return result
 
 
 
-def find_my_msses(msname, root='/net'):
-    msnames=find_msses(msname, root=root)
+def find_my_msses(msname, root='/net', node_name=gethostname()):
+    msnames=find_msses(msname, root=root, node_name=node_name)
     n_msnames=len(msses)
     n = int(ceil(float(n_msnames)/num_proc))
     proc_id=get_node_number_in_subcluster()
