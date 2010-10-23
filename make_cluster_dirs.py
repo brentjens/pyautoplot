@@ -55,7 +55,7 @@ def create_dummy_ms(ms_id, partition, num_subbands, root='testdata/net', exclude
         pass
     ms_dir=os.path.join(root, subcluster_names[-1], storage_nodes[-1], partition, msname)
     ensure_dir(ms_dir)
-    for sb in range((len(storage_nodes)-1*n), num_subbands):
+    for sb in range((len(storage_nodes)-1)*n, num_subbands):
         make_empty_file(os.path.join(ms_dir, 'L%05d_SB%03d-uv.MS'%(ms_id, sb)))
         pass
     
