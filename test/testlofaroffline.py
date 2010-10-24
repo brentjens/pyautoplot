@@ -115,6 +115,45 @@ class LofarOfflineTest(unittest.TestCase):
         pass
 
 
+    def test_find_msses(self):
+        self.assertEquals(len(find_msses('L2010_98765', root='testdata/net', node_name='lce040')), 0)
+
+        msses = (find_msses('L2010_12345', root='testdata/net', node_name='lce030'))
+        expected = ['testdata/net/sub4/lse010/data1/L2010_12345/L12345_SB117-uv.MS',
+                    'testdata/net/sub4/lse010/data1/L2010_12345/L12345_SB118-uv.MS',
+                    'testdata/net/sub4/lse010/data1/L2010_12345/L12345_SB119-uv.MS',
+                    'testdata/net/sub4/lse010/data1/L2010_12345/L12345_SB120-uv.MS',
+                    'testdata/net/sub4/lse010/data1/L2010_12345/L12345_SB121-uv.MS',
+                    'testdata/net/sub4/lse010/data1/L2010_12345/L12345_SB122-uv.MS',
+                    'testdata/net/sub4/lse010/data1/L2010_12345/L12345_SB123-uv.MS',
+                    'testdata/net/sub4/lse010/data1/L2010_12345/L12345_SB124-uv.MS',
+                    'testdata/net/sub4/lse010/data1/L2010_12345/L12345_SB125-uv.MS',
+                    'testdata/net/sub4/lse010/data1/L2010_12345/L12345_SB126-uv.MS',
+                    'testdata/net/sub4/lse010/data1/L2010_12345/L12345_SB127-uv.MS',
+                    'testdata/net/sub4/lse010/data1/L2010_12345/L12345_SB128-uv.MS',
+                    'testdata/net/sub4/lse010/data1/L2010_12345/L12345_SB129-uv.MS',
+                    'testdata/net/sub4/lse012/data1/L2010_12345/L12345_SB130-uv.MS',
+                    'testdata/net/sub4/lse012/data1/L2010_12345/L12345_SB131-uv.MS',
+                    'testdata/net/sub4/lse012/data1/L2010_12345/L12345_SB132-uv.MS',
+                    'testdata/net/sub4/lse012/data1/L2010_12345/L12345_SB133-uv.MS',
+                    'testdata/net/sub4/lse012/data1/L2010_12345/L12345_SB134-uv.MS',
+                    'testdata/net/sub4/lse012/data1/L2010_12345/L12345_SB135-uv.MS',
+                    'testdata/net/sub4/lse012/data1/L2010_12345/L12345_SB136-uv.MS',
+                    'testdata/net/sub4/lse012/data1/L2010_12345/L12345_SB137-uv.MS',
+                    'testdata/net/sub4/lse012/data1/L2010_12345/L12345_SB138-uv.MS',
+                    'testdata/net/sub4/lse012/data1/L2010_12345/L12345_SB139-uv.MS',
+                    'testdata/net/sub4/lse012/data1/L2010_12345/L12345_SB140-uv.MS',
+                    'testdata/net/sub4/lse012/data1/L2010_12345/L12345_SB141-uv.MS',
+                    'testdata/net/sub4/lse012/data1/L2010_12345/L12345_SB142-uv.MS']
+        self.assertEquals(len(msses), len(expected))
+        for m,e in zip(msses,expected):
+            self.assertEquals(m,e)
+            pass
+        pass
+
+
+    def test_find_my_msses(self):
+        pass
 
 
 
