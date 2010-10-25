@@ -119,7 +119,12 @@ def apply_taper(complex_array, taper):
     # Use fft for vis -> lag and ifft for lag -> vis
     return ifft(fft(complex_array, axis=1)*(fftshift(taper)[newaxis,:,newaxis]),axis=1)
 
-
+def ra_dec_formatter(ra_dec):
+    """
+    *ra_dec* is a 2D array containing RA, dec pairs
+    """
+    return str(EquatorialDirection(RightAscension(ra_dec[0,0]),
+                                   Declination(ra_dec[0,1])))
 
 class MeasurementSetSummary:
     msname = ''
@@ -165,11 +170,7 @@ class MeasurementSetSummary:
             self.read_subtable('FIELD',
                                ['NAME','REFERENCE_DIR']),
             col_widths=[5,20,30],
-            cell_formatters=[str,
-                             str,
-                             lambda x:
-                                 str(EquatorialDirection(RightAscension(x[0,0]),
-                                                         Declination(x[0,1])))])
+            cell_formatters=[str, str, ra_dec_formatter])
         self.tables['antennae'] = TableFormatter(self.read_subtable('ANTENNA',['NAME', 'POSITION']),
                                        col_widths=[5,15,40])
         self.tables['spectral_windows'] = TableFormatter(self.read_subtable('SPECTRAL_WINDOW',
