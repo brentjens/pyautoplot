@@ -155,7 +155,7 @@ class LofarOfflineTest(testcase.TestCase):
 
 
     def test_find_my_msses(self):
-        lce6=['lce%03d'%(i,) for i in range(56,55)]
+        lce6=['lce%03d'%(i,) for i in range(46,55)]
         lce8=['lce%03d'%(i,) for i in range(64,73)]
         ms20040_6 = [find_my_msses('L2010_20040', root='testdata/net', node_name=lce) for lce in lce6]
         ms20040_8 = [find_my_msses('L2010_20040', root='testdata/net', node_name=lce) for lce in lce8]
