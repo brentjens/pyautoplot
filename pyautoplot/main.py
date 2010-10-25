@@ -739,12 +739,12 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30)):
             'Flagged standard deviation': bls_flagged_std}
 
 
-def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), output_prefix='/globalhome/brentjens/'):
+def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root='/globalhome/brentjens/'):
     results = collect_stats_ms(msname, max_mem_bytes)
 
     ant_names=results['Antennae']['NAME']
 
-    output_dir = os.path.join(output_prefix, str(ms_id))
+    output_dir = os.path.join(root, str(ms_id))
     try:
         os.mkdir(output_dir)
     except Exception:
