@@ -11,7 +11,7 @@ testdata/net/... and add a test MS to it.
 def ensure_dir(path):
     try:
         os.mkdir(path)
-    except (OSError,) as e:
+    except (OSError,):
         pass
     
 def make_empty_file(path):
