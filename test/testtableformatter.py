@@ -48,7 +48,7 @@ class TableFormatterTest(unittest.TestCase):
 
 
     def test_html(self):
-        self.assertEquals(self.formatter.format('html',col_widths=5),
+        self.assertEquals(self.formatter.format_as_string('html',col_widths=5),
                           """<table>
 <th><td>
 NAME </td><td>POSITION
@@ -56,7 +56,7 @@ NAME </td><td>POSITION
 <tr><td>a    </td><td>[1, 2, 3]</td></tr>
 <tr><td>b    </td><td>[4, 5, 6]</td></tr>
 </table>""")
-        self.assertEquals(self.formatter.format('html',col_widths=5,cell_formatters=[lambda x: 'boe'+x, lambda x: 'baa'+str(x[0])]),
+        self.assertEquals(self.formatter.format_as_string('html',col_widths=5,cell_formatters=[lambda x: 'boe'+x, lambda x: 'baa'+str(x[0])]),
                           """<table>
 <th><td>
 NAME </td><td>POSITION
@@ -68,7 +68,7 @@ NAME </td><td>POSITION
 
 
     def test_txt(self):
-        self.assertEquals(self.formatter.format('txt',col_widths=5),
+        self.assertEquals(self.formatter.format_as_string('txt',col_widths=5),
                           """
 ================================================================================
 NAME  POSITION
@@ -81,7 +81,7 @@ b     [4, 5, 6]
 
     def test_str(self):
         self.assertEquals(str(self.formatter),
-                          self.formatter.format('txt', 15, str))
+                          self.formatter.format_as_string('txt', 15, str))
         pass
 
 

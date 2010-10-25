@@ -24,7 +24,7 @@ class TableFormatter:
                        'line_end'    : '',
                        'cell_sep'    : ' '}}
     
-    def __init__(self, table_as_list, format='txt', col_widths=15, cell_formatters=str):
+    def __init__(self, table_as_list, format_type='txt', col_widths=15, cell_formatters=str):
         if len(table_as_list) == 0:
             raise ValueError('*table_as_list* is empty. Provide at least a 2D list with one row containing the header as a list of strings.')
         self.header = table_as_list[0]
@@ -33,7 +33,7 @@ class TableFormatter:
         else:
             self.data   = table_as_list[1:]
         
-        self.default_format          = format
+        self.default_format          = format_type
         self.default_col_widths      = col_widths
         self.default_cell_formatters = cell_formatters
         pass
@@ -51,13 +51,13 @@ class TableFormatter:
 
 
     def __str__(self):
-        return self.format(self.default_format, self.default_col_widths, self.default_cell_formatters)
+        return self.format_as_string(self.default_format, self.default_col_widths, self.default_cell_formatters)
 
     def __len__(self):
         return len(self.data)
 
 
-    def format(self,format='txt', col_widths=15, cell_formatters=str):
+    def format_as_string(self,format='txt', col_widths=15, cell_formatters=str):
         f = self.formats[format]
         if not is_list(col_widths):
             col_widths = [col_widths]*len(self.header)
