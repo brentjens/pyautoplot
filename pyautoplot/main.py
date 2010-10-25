@@ -682,15 +682,15 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30)):
         return result
     
     printnow('computing std')
-    bl_std    = calc_bl_stat(ma.std)
+    bls_std    = calc_bl_stat(ma.std)
     printnow('computing mean')
-    bl_mean   = calc_bl_stat(ma.mean)
+    bls_mean   = calc_bl_stat(ma.mean)
     printnow('computing zeroes')
-    bl_zeroes = calc_bl_stat(lambda x: (x==0.0+0.0j).sum()/product(x.shape))
+    bls_zeroes = calc_bl_stat(lambda x: (x==0.0+0.0j).sum()/product(x.shape))
 
 
     printnow('flagging iteration 1/2')
-    deviant = abs(data - bl_mean[:,:,:,newaxis,newaxis]) > 4*bl_std[:,:,:,newaxis,newaxis]
+    deviant = abs(data - bls_mean[:,:,:,newaxis,newaxis]) > 4*bls_std[:,:,:,newaxis,newaxis]
     deviant_all_pol = reduce(logical_or, [deviant[:,:,0,:,:], deviant[:,:,1,:,:], deviant[:,:,2,:,:], deviant[:,:,3,:,:]])
     data.mask = logical_or(data.mask, deviant_all_pol[:,:,newaxis,:,:])
     deviant=None
@@ -698,13 +698,13 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30)):
     gc.collect()
     
     printnow('computing flagged mean')
-    bl_flagged_mean   = calc_bl_stat(ma.mean)
+    bls_flagged_mean   = calc_bl_stat(ma.mean)
 
     printnow('computing flagged std')
-    bl_flagged_std    = calc_bl_stat(ma.std)
+    bls_flagged_std    = calc_bl_stat(ma.std)
 
     printnow('flagging iteration 2/2')
-    deviant = abs(data - bl_flagged_mean[:,:,:,newaxis,newaxis]) > 4*bl_flagged_std[:,:,:,newaxis,newaxis]
+    deviant = abs(data - bls_flagged_mean[:,:,:,newaxis,newaxis]) > 4*bls_flagged_std[:,:,:,newaxis,newaxis]
     deviant_all_pol = reduce(logical_or, [deviant[:,:,0,:,:], deviant[:,:,1,:,:], deviant[:,:,2,:,:], deviant[:,:,3,:,:]])
     data.mask = logical_or(data.mask, deviant_all_pol[:,:,newaxis,:,:])
     deviant=None
@@ -713,34 +713,36 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30)):
 
 
     printnow('computing flags')
-    bl_flags  = calc_bl_stat(lambda x: x.mask.sum()*1.0/product(x.shape))
+    bls_flags  = calc_bl_stat(lambda x: x.mask.sum()*1.0/product(x.shape))
 
     printnow('counting unflagged points')
-    bl_good   = calc_bl_stat(lambda x: logical_not(x.mask).sum())
+    bls_good   = calc_bl_stat(lambda x: logical_not(x.mask).sum())
     
     printnow('computing flagged mean')
-    bl_flagged_mean   = calc_bl_stat(ma.mean)
+    bls_flagged_mean   = calc_bl_stat(ma.mean)
 
     printnow('computing flagged std')
-    bl_flagged_std    = calc_bl_stat(ma.std)
+    bls_flagged_std    = calc_bl_stat(ma.std)
 
-    bl_sn = bl_flagged_std/sqrt(bl_good-1)
+    bls_sn = bls_flagged_std/sqrt(bls_good-1)
 
-    return {'Meta data'         : ms.tables,
-            'Standard deviation': bl_std,
-            'Mean'              : bl_mean,
-            'Zeroes'            : bl_zeroes,
-            'Good points'       : bl_good,
-            'Fringe SNR 0'      : bl_sn,
-            'Flags'             : bl_flags,
-            'Flagged mean'      : bl_flagged_mean,
-            'Flagged standard deviation': bl_flagged_std}
+    return {'Antennae'          : ms.tables['antennae'],
+            'Spectral windows'  : ms.tables['spectral_windows'],
+            'Targets'           : ms.tables['targets'],
+            'Standard deviation': bls_std,
+            'Mean'              : bls_mean,
+            'Zeroes'            : bls_zeroes,
+            'Good points'       : bls_good,
+            'Fringe SNR 0'      : bls_sn,
+            'Flags'             : bls_flags,
+            'Flagged mean'      : bls_flagged_mean,
+            'Flagged standard deviation': bls_flagged_std}
 
 
 def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), output_prefix='/globalhome/brentjens/'):
     results = collect_stats_ms(msname, max_mem_bytes)
 
-    ant_names=results['Meta data']['antennae']['NAME']
+    ant_names=results['Antennae']['NAME']
 
     output_dir = os.path.join(output_prefix, str(ms_id))
     try:
