@@ -46,8 +46,8 @@ class UtilitiesTest(unittest.TestCase):
         pass
 
     def test_printnow(self):
-        old=sys.stdout
         try:
+            old=sys.stdout
             read_from, write_to = os.pipe()
             sys.stdout = os.fdopen(write_to, 'w')
             printnow('Some funny text')
@@ -57,7 +57,7 @@ class UtilitiesTest(unittest.TestCase):
             text=in_file.read()
             in_file.close()
             self.assertEquals(text, 'Some funny text\nreally...\n')
-        finally:    
+        finally:
             sys.stdout.close()
             in_file.close()
             sys.stdout = old

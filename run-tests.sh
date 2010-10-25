@@ -2,14 +2,16 @@
 
 logfile=testlog.txt
 PYTHONPATH="`pwd`:$PYTHONPATH"
-FIGLEAF=`which figleaf`
+#FIGLEAF=`which figleaf`
+COVERAGE=`which coverage`
 coverage_files=report-coverage.txt
 
 
-if test "$FIGLEAF" = ""; then
-    echo "Cannot find figleaf. Proceeding without test coverage analysis"
+if test "$COVERAGE" = ""; then
+    echo "Cannot find coverage. Proceeding without test coverage analysis"
 else
-    rm .figleaf
+    #rm .figleaf
+    rm .coverage
 fi
 
 rm -f $coverage_files
@@ -39,10 +41,10 @@ for package in $packages; do
         echo $testfile
         if test -e $testfile; then
             
-            if test "$FIGLEAF" = ""; then
+            if test "$COVERAGE" = ""; then
                 python $testfile 2>&1 |tee -a $logfile |grep -e 'Ran\|OK\|FAILED\|Testing\|Error\|^    \|^  File \^\|line\|^Traceback\| != \| !< '
             else
-                $FIGLEAF -i $testfile 2>&1 |tee -a $logfile |grep -e 'Ran\|OK\|FAILED\|Testing\|Error\|^    \|^  File \^\|line\|^Traceback\| != \| !< '
+                $COVERAGE run -a $testfile 2>&1 |tee -a $logfile |grep -e 'Ran\|OK\|FAILED\|Testing\|Error\|^    \|^  File \^\|line\|^Traceback\| != \| !< '
             fi
             echo Completed testing  ${module}
         else
@@ -52,8 +54,8 @@ for package in $packages; do
     done
 done
 
-if test "$FIGLEAF" != ""; then
-    figleaf2html -f $coverage_files -d coverage/ .figleaf
+if test "$COVERAGE" != ""; then
+    $COVERAGE html `cat $coverage_files`
 fi
 
 
