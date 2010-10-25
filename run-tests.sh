@@ -23,7 +23,7 @@ else
     logfile=/dev/null
 fi
 
-packages=`find . -name '__init__.py' -maxdepth 2|sed -e 's/^\.\///g' -e 's/\/__init__\.py//g'`
+packages=`find . -name '__init__.py' -maxdepth 2|sed -e 's/^\.\///g' -e 's/\/__init__\.py//g'|grep -v test`
 
 
 python make_cluster_dirs.py

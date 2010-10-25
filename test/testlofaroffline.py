@@ -1,7 +1,9 @@
 import unittest
+import testcase
 from pyautoplot.lofaroffline import *
+from pyautoplot.utilities import printnow
 
-class LofarOfflineTest(unittest.TestCase):
+class LofarOfflineTest(testcase.TestCase):
 
     def test_is_compute_node(self):
         self.assertTrue(is_compute_node('lce024'))
@@ -153,6 +155,60 @@ class LofarOfflineTest(unittest.TestCase):
 
 
     def test_find_my_msses(self):
+        lce6=['lce%03d'%(i,) for i in range(56,55)]
+        lce8=['lce%03d'%(i,) for i in range(64,73)]
+        ms20040_6 = [find_my_msses('L2010_20040', root='testdata/net', node_name=lce) for lce in lce6]
+        ms20040_8 = [find_my_msses('L2010_20040', root='testdata/net', node_name=lce) for lce in lce8]
+        data_6 = ['testdata/net/sub6/lse016/data4/L2010_20040/L20040_SB098-uv.MS',
+                  'testdata/net/sub6/lse016/data4/L2010_20040/L20040_SB099-uv.MS',
+                  'testdata/net/sub6/lse016/data4/L2010_20040/L20040_SB100-uv.MS',
+                  'testdata/net/sub6/lse016/data4/L2010_20040/L20040_SB101-uv.MS',
+                  'testdata/net/sub6/lse016/data4/L2010_20040/L20040_SB102-uv.MS',
+                  'testdata/net/sub6/lse016/data4/L2010_20040/L20040_SB103-uv.MS',
+                  'testdata/net/sub6/lse016/data4/L2010_20040/L20040_SB104-uv.MS',
+                  'testdata/net/sub6/lse017/data4/L2010_20040/L20040_SB105-uv.MS',
+                  'testdata/net/sub6/lse017/data4/L2010_20040/L20040_SB106-uv.MS',
+                  'testdata/net/sub6/lse017/data4/L2010_20040/L20040_SB107-uv.MS',
+                  'testdata/net/sub6/lse017/data4/L2010_20040/L20040_SB108-uv.MS',
+                  'testdata/net/sub6/lse017/data4/L2010_20040/L20040_SB109-uv.MS',
+                  'testdata/net/sub6/lse017/data4/L2010_20040/L20040_SB110-uv.MS',
+                  'testdata/net/sub6/lse017/data4/L2010_20040/L20040_SB111-uv.MS',
+                  'testdata/net/sub6/lse018/data4/L2010_20040/L20040_SB112-uv.MS',
+                  'testdata/net/sub6/lse018/data4/L2010_20040/L20040_SB113-uv.MS',
+                  'testdata/net/sub6/lse018/data4/L2010_20040/L20040_SB114-uv.MS',
+                  'testdata/net/sub6/lse018/data4/L2010_20040/L20040_SB115-uv.MS',
+                  'testdata/net/sub6/lse018/data4/L2010_20040/L20040_SB116-uv.MS',
+                  'testdata/net/sub6/lse018/data4/L2010_20040/L20040_SB117-uv.MS',
+                  'testdata/net/sub6/lse018/data4/L2010_20040/L20040_SB118-uv.MS'
+         ]
+
+        data_8 = ['testdata/net/sub8/lse022/data4/L2010_20040/L20040_SB119-uv.MS',
+                  'testdata/net/sub8/lse022/data4/L2010_20040/L20040_SB120-uv.MS',
+                  'testdata/net/sub8/lse022/data4/L2010_20040/L20040_SB121-uv.MS']
+
+        self.assertEquals(ms20040_8[0][0], data_8[0])
+        self.assertEquals(ms20040_8[1][0], data_8[1])
+        self.assertEquals(ms20040_8[2][0], data_8[2])
+        self.assertEquals(ms20040_8[3], [])
+        self.assertEquals(ms20040_8[4], [])
+        self.assertEquals(ms20040_8[5], [])
+        self.assertEquals(ms20040_8[6], [])
+        self.assertEquals(ms20040_8[7], [])
+        self.assertEquals(ms20040_8[8], [])
+
+        printnow(str(len(ms20040_6)))
+        printnow(repr(ms20040_6))
+
+        self.assertSequenceEquals(ms20040_6[0], data_6[0::9])
+        self.assertSequenceEquals(ms20040_6[1], data_6[1::9])
+        self.assertSequenceEquals(ms20040_6[2], data_6[2::9])
+        self.assertSequenceEquals(ms20040_6[3], data_6[3::9])
+        self.assertSequenceEquals(ms20040_6[4], data_6[4::9])
+        self.assertSequenceEquals(ms20040_6[5], data_6[5::9])
+        self.assertSequenceEquals(ms20040_6[6], data_6[6::9])
+        self.assertSequenceEquals(ms20040_6[7], data_6[7::9])
+        self.assertSequenceEquals(ms20040_6[8], data_6[8::9])
+        
         pass
 
 
