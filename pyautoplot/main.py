@@ -1,5 +1,5 @@
 from exceptions import *
-import os,gc,cPickle
+import os,gc,pickle
 import scipy.ndimage as ndimage
 from pyrap import tables as tables
 from pylab import *
@@ -759,5 +759,5 @@ def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), output_prefix='/globalhom
     write_plot('Fringe SNR 0', log10, vmin=-1.0, vmax=3.0)
 
     results_name=os.path.join(output_dir,msname.split('/')[-1][:-3]+'-data.pickle')
-    cPickle.dump(results, open(results_name, mode='w'))
+    pickle.dump(results, open(results_name, mode='w'), protocol=pickle.HIGHEST_PROTOCOL)
     return results
