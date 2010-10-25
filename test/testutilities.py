@@ -1,4 +1,5 @@
 import unittest
+import sys
 from numpy import array, NaN
 from pyautoplot.utilities import *
 
@@ -42,6 +43,25 @@ class UtilitiesTest(unittest.TestCase):
         self.assertEquals(r[4], 4)
         self.assertEquals(r[5], 5)
         self.assertEquals(r[6], 0)
+        pass
+
+    def test_printnow(self):
+        old=sys.stdout
+        try:
+            read_from, write_to = os.pipe()
+            sys.stdout = os.fdopen(write_to, 'w')
+            printnow('Some funny text')
+            printnow('really...')
+            sys.stdout.close()
+            in_file = os.fdopen(read_from, 'r')
+            text=in_file.read()
+            in_file.close()
+            self.assertEquals(text, 'Some funny text\nreally...\n')
+        finally:    
+            sys.stdout.close()
+            in_file.close()
+            sys.stdout = old
+            pass
         pass
     
     pass
