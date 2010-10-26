@@ -36,6 +36,13 @@ class AngleTest(unittest.TestCase):
         self.assertEquals(Angle(-pi/4/45.0/360000.0).as_hms(1), '00:00:00.0')
         pass
 
+
+    def test_adjust(self):
+        self.assertAlmostEquals(Angle(2.0, 1.0, 3.0).adjust(-0.2), 1.8)
+        self.assertAlmostEquals(Angle(0.0, -2.0, 5.0).adjust(0.3), 0.3)
+        self.assertAlmostEquals(Angle(4.8, -2.0, 5.0).adjust(5.2), -1.8)
+        pass
+
     def test_as_sdms(self):
         self.assertEquals(Angle(pi/40.0,-pi/2,pi/2).as_sdms(),'+04:30:00')
         self.assertEquals(Angle(pi/40.0).as_sdms(), '+004:30:00')
@@ -46,7 +53,39 @@ class AngleTest(unittest.TestCase):
 
 
 
+class RighAscensionTest(unittest.TestCase):
+    def test_right_ascension(self):
+        ra=RightAscension(3*pi/2.0)
+        self.assertAlmostEquals(ra.lower_bound, 0.0)
+        self.assertAlmostEquals(ra.upper_bound, 2*pi)
+        self.assertAlmostEquals(ra.include_upper_bound, False)
+        self.assertAlmostEquals(ra.cyclical, True)
+        self.assertEquals(ra.as_hms(), '18:00:00')
+        pass
 
+    pass
+
+class DeclinationTest(unittest.TestCase):
+    def test_declination(self):
+        dec=Declination(3*pi/2.0)
+        self.assertAlmostEquals(dec.lower_bound, -pi/2.0)
+        self.assertAlmostEquals(dec.upper_bound, +pi/2.0)
+        self.assertAlmostEquals(dec.include_upper_bound, True)
+        self.assertAlmostEquals(dec.cyclical, False)
+        self.assertEquals(dec.as_sdms(), '+90:00:00')
+        pass
+    pass
+
+class HourAngleTest(unittest.TestCase):
+    def test_hour_angle(self):
+        ha=HourAngle(3*pi/2.0)
+        self.assertAlmostEquals(ha.lower_bound, -pi)
+        self.assertAlmostEquals(ha.upper_bound, +pi)
+        self.assertAlmostEquals(ha.include_upper_bound, False)
+        self.assertAlmostEquals(ha.cyclical, True)
+        self.assertEquals(ha.as_hms(), '-06:00:00')
+        pass
+    pass
 
 class EquatorialDirectionTest(unittest.TestCase):
     
