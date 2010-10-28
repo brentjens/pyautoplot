@@ -1,7 +1,6 @@
 import unittest
 import testcase
 from pyautoplot.lofaroffline import *
-from pyautoplot.utilities import printnow
 
 class LofarOfflineTest(testcase.TestCase):
 
@@ -195,9 +194,6 @@ class LofarOfflineTest(testcase.TestCase):
         self.assertEquals(ms20040_8[6], [])
         self.assertEquals(ms20040_8[7], [])
         self.assertEquals(ms20040_8[8], [])
-
-        printnow(str(len(ms20040_6)))
-        printnow(repr(ms20040_6))
 
         self.assertSequenceEquals(ms20040_6[0], data_6[0::9])
         self.assertSequenceEquals(ms20040_6[1], data_6[1::9])
