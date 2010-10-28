@@ -1,6 +1,6 @@
 import unittest
 from pyautoplot.uvplane import *
-
+from numpy import NaN
 
 
 class UvplaneTest(unittest.TestCase):
@@ -12,6 +12,7 @@ class UvplaneTest(unittest.TestCase):
         self.assertEquals(quadrant(-4*pi-1e-9), 3)
         self.assertEquals(quadrant(-4*pi+1e-9), 0)
         pass
+
 
     def test_fixup_rgb(self):
         a = array([[0.99, 1.0, 1.001],[0.001, 0.0, -0.001]])
@@ -40,6 +41,7 @@ class UvplaneTest(unittest.TestCase):
         self.assertAlmostEquals(f[1,2], 0.0)
         pass
 
+
     def test_color_from_angle(self):
         rgb_pr = color_from_angle(0.0)
         rgb_pi = color_from_angle(pi/2)
@@ -66,6 +68,7 @@ class UvplaneTest(unittest.TestCase):
         self.assertAlmostEquals(rgb_ni[2], 0.75)
         pass
 
+
     def test_rgb_scale_palette(self):
         self.assertAlmostEquals(rgb_scale_palette(0.0, 0.75), 1.0)
         self.assertAlmostEquals(rgb_scale_palette(pi/2, 0.5), 1.0)
@@ -78,6 +81,7 @@ class UvplaneTest(unittest.TestCase):
         self.assertAlmostEquals(rgb_scale_palette(pi+one_eight, 0.25), 1.5**0.8)
         self.assertAlmostEquals(rgb_scale_palette(3*pi/2+one_eight, 1.2), 3.4**0.8)
         pass
+
 
     def test_phase_palette(self):
         phases = arange(0,2*pi, 2*pi/100.0)
@@ -110,6 +114,9 @@ class UvplaneTest(unittest.TestCase):
         self.assertEquals(index[4], 0)
         self.assertEquals(index[5], 3)
         self.assertEquals(index[6], 2)
+
+        bad_complex_image = exp(1j*array([0,pi/2,pi, 3*pi/2, 2*pi-pi/4+1e-9, 2*pi-pi/4-1e-9, 7*pi, NaN]))
+        self.assertRaises(ValueError, phase_index, bad_complex_image, 12)
         pass
 
 
