@@ -9,4 +9,5 @@ setup(name='pyautoplot',
       author_email='brentjens@astron.nl',
       url='',
       packages=['pyautoplot'],
+      scripts=['scripts/msinspect'],
      )
