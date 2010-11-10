@@ -594,16 +594,19 @@ def plot_baseline_stat(msname, bl_stat_function=lambda x: abs(bl_median(x)), tit
     pass
 
 
-def ant_ant_stat_plot(ax, title_text, single_pol_array, station_names, **kwargs):
+
+def ant_ant_stat_plot(fig, ax, title_text, single_pol_array, station_names, **kwargs):
     img = ax.imshow(single_pol_array, interpolation='nearest', **kwargs)
     ax.axis('equal')
     for y,n in enumerate(station_names):
         ax.text(y, -1,n, rotation=90, verticalalignment='bottom')
         ax.text(len(station_names), y, n, horizontalalignment='left',verticalalignment='center')
         pass
-    #colorbar(img, pad=0.2, ax=ax)
+    fig.colorbar(img, pad=0.2, ax=ax)
     ax.set_xlabel(title_text)
     pass
+
+
 
 def ant_ant_stat_frame(title_text, full_pol_array, station_names, output_name=None, **kwargs):
     dpi=50
@@ -613,16 +616,16 @@ def ant_ant_stat_frame(title_text, full_pol_array, station_names, output_name=No
         fig=Figure(figsize=(32,24), dpi=dpi)
     
     ax1=fig.add_subplot(2,2,1)
-    ant_ant_stat_plot(ax1, title_text+' XX', full_pol_array[:,:,0], station_names, **kwargs)
+    ant_ant_stat_plot(fig, ax1, title_text+' XX', full_pol_array[:,:,0], station_names, **kwargs)
     
     ax2=fig.add_subplot(2,2,2)
-    ant_ant_stat_plot(ax2, title_text+' XY', full_pol_array[:,:,1], station_names, **kwargs)
+    ant_ant_stat_plot(fig, ax2, title_text+' XY', full_pol_array[:,:,1], station_names, **kwargs)
     
     ax3=fig.add_subplot(2,2,3)
-    ant_ant_stat_plot(ax3, title_text+' YX', full_pol_array[:,:,2], station_names, **kwargs)
+    ant_ant_stat_plot(fig, ax3, title_text+' YX', full_pol_array[:,:,2], station_names, **kwargs)
     
     ax4=fig.add_subplot(2,2,4)
-    ant_ant_stat_plot(ax4, title_text+' YY', full_pol_array[:,:,3], station_names, **kwargs)
+    ant_ant_stat_plot(fig, ax4, title_text+' YY', full_pol_array[:,:,3], station_names, **kwargs)
 
     if output_name is not None:
         canvas = FigureCanvasAgg(fig)
@@ -783,7 +786,7 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30), first_timeslot=0, max_time
             'Flagged standard deviation': bls_flagged_std}
 
 
-def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('~/inspect/'), first_timeslot=0, max_timeslots=None):
+def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('~/inspect/'), first_timeslot=0, max_timeslots=None, cmap=cm.gray_r):
     results = collect_stats_ms(msname, max_mem_bytes)
 
     ant_names=results['Antennae']['NAME']
@@ -799,15 +802,15 @@ def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('
                                   os.path.join(output_dir,msname.split('/')[-1][:-3]+'-'+quantity_name.lower().replace(' ','-')+'.png'),
                                   **kwargs)
 
-    write_plot('Flagged mean', log10, vmax=1.0, vmin=-5.0, cmap=cm.gray_r)
-    write_plot('Flagged standard deviation', log10, vmax=0.0, vmin=-4.0, cmap=cm.gray_r)
-    write_plot('Flags', log10, vmax=0.0, vmin=-3.0, cmap=cm.gray_r)
-    write_plot('Zeroes',lambda x: 100*x, vmin=0.0, vmax=100.0, cmap=cm.gray_r)
-    write_plot('Fringe SNR 0', log10, vmin=-1.0, vmax=4.0, cmap=cm.gray_r)
+    write_plot('Flagged mean', log10, vmax=1.0, vmin=-5.0, cmap=cmap)
+    write_plot('Flagged standard deviation', log10, vmax=0.0, vmin=-4.0, cmap=cmap)
+    write_plot('Flags', log10, vmax=0.0, vmin=-3.0, cmap=cmap)
+    write_plot('Zeroes',lambda x: 100*x, vmin=0.0, vmax=100.0, cmap=cmap)
+    write_plot('Fringe SNR 0', log10, vmin=-1.0, vmax=4.0, cmap=cmap)
 
-    write_plot('Fringe SNR', log10, vmin=-1.0, vmax=4.0, cmap=cm.gray_r)
-    write_plot('Delay', lambda x:log10(abs(x)), vmin=-9.0, vmax=-3, cmap=cm.gray_r)
-    write_plot('Rate', lambda x:log10(abs(x)), vmin=-4, vmax=0.0, cmap=cm.gray_r)
+    write_plot('Fringe SNR', log10, vmin=-1.0, vmax=4.0, cmap=cmap)
+    write_plot('Delay', lambda x:log10(abs(x)), vmin=-9.0, vmax=-3, cmap=cmap)
+    write_plot('Rate', lambda x:log10(abs(x)), vmin=-4, vmax=0.0, cmap=cmap)
 
     results_name=os.path.join(output_dir,msname.split('/')[-1][:-3]+'-data.pickle')
     pickle.dump(results, open(results_name, mode='w'), protocol=pickle.HIGHEST_PROTOCOL)
