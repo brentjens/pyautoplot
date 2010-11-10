@@ -633,20 +633,28 @@ def ant_ant_stat_frame(title_text, full_pol_array, station_names, output_name=No
 
 
 
-def collect_stats_ms(msname, max_mem_bytes=4*(2**30)):
+def collect_stats_ms(msname, max_mem_bytes=4*(2**30), first_timeslot=0, max_timeslots=None):
     ms = MeasurementSetSummary(msname)
     num_ant=len(ms.tables['antennae'])
     def timeslot(mjd):
         return int((mjd-ms.times[0])/ms.integration_times[0] +0.5)
     num_timeslots = timeslot(ms.times[-1])+1
+    integration_time=ms.integration_times.mean()
     num_bl        = num_ant*(num_ant+1)/2
     num_chan      = ms.tables['spectral_windows']['NUM_CHAN'][0]
+    bandwidth     = ms.tables['spectral_windows']['TOTAL_BANDWIDTH'][0]
     num_pol       = 4
     bytes_per_vis = 8
     fudge_factor  = 8
-    max_timeslots = max_mem_bytes/(bytes_per_vis*num_pol*num_chan*num_bl*fudge_factor)
+    max_mem_timeslots = max_mem_bytes/(bytes_per_vis*num_pol*num_chan*num_bl*fudge_factor)
+    if max_timeslots is None:
+        max_ts = max_mem_timeslots
+    else:
+        max_ts = min(max_mem_timeslots, max_timeslots)
+        pass
+    
 
-    num_ts = min(max_timeslots, num_timeslots)
+    num_ts = min(max_ts, max(0,num_timeslots-first_timeslot))
     data_shape  = (num_ant, num_ant, num_pol, num_ts, num_chan)
     data = ma.array(zeros(data_shape, dtype=complex64),
                     mask=zeros(data_shape, dtype=bool))
@@ -663,8 +671,13 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30)):
         for pol in xx,xy,yx,yy:
             data[row['ANTENNA1'], row['ANTENNA2'], pol, ts, :] = ma.array(d[:,pol], mask= f[:,pol])
             pass
-        pass    
+        pass
 
+    data=set_nan_zero(data)
+
+    def where_true(a):
+        indices = where(a)
+        return tuple([x[0] for x in indices])
 
     def calc_bl_stat(fn):
         """
@@ -680,6 +693,30 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30)):
             pass
         gc.collect()
         return result
+
+
+    def calc_delay_rate_stats(data_array):
+        peak       = zeros(data_shape[0:3], dtype=float64)
+        peak_delay = zeros(data_shape[0:3], dtype=float64)
+        peak_rate  = zeros(data_shape[0:3], dtype=float64)
+
+        for ant1 in range(num_ant):
+            printnow(str(ant1+1)+'/'+str(num_ant))
+            for ant2 in range(num_ant):
+                for pol in range(num_pol):
+                    delay_rate=delay_fringe_rate(data_array[ant1,ant2,pol,:,:])
+                    abs_delay_rate= abs(delay_rate)
+                    max_abs       = abs_delay_rate.max()
+                    peak[ant1,ant2,pol] = max_abs
+                    rate_idx,delay_idx=where_true(abs_delay_rate == max_abs)
+                    peak_delay[ant1,ant2,pol] = (delay_idx-num_chan/2)/bandwidth
+                    peak_rate[ant1,ant2,pol] = (rate_idx-num_ts/2)/(integration_time*num_ts)
+                    pass
+                pass
+            gc.collect()
+            pass
+        
+        return peak, peak_delay, peak_rate
     
     printnow('computing std')
     bls_std    = calc_bl_stat(ma.std)
@@ -724,7 +761,11 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30)):
     printnow('computing flagged std')
     bls_flagged_std    = calc_bl_stat(ma.std)
 
-    bls_sn = bls_flagged_std/sqrt(bls_good-1)
+    bls_sn = abs(bls_flagged_mean)/abs(bls_flagged_std/sqrt(bls_good-1))
+    bls_sn = set_nan_zero(bls_sn)
+
+    printnow('computing delay/rate')
+    peak, peak_delay, peak_rate = calc_delay_rate_stats(data)
 
     return {'Antennae'          : ms.tables['antennae'],
             'Spectral windows'  : ms.tables['spectral_windows'],
@@ -736,10 +777,13 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30)):
             'Fringe SNR 0'      : bls_sn,
             'Flags'             : bls_flags,
             'Flagged mean'      : bls_flagged_mean,
+            'Delay'             : peak_delay,
+            'Rate'              : peak_rate,
+            'Fringe SNR'        : peak/abs(bls_flagged_std/sqrt(bls_good-1)),
             'Flagged standard deviation': bls_flagged_std}
 
 
-def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root='/globalhome/brentjens/'):
+def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root='/globalhome/brentjens/', first_timeslot=0, max_timeslots=None):
     results = collect_stats_ms(msname, max_mem_bytes)
 
     ant_names=results['Antennae']['NAME']
@@ -755,11 +799,15 @@ def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root='/globalhome/brentje
                                   os.path.join(output_dir,msname.split('/')[-1][:-3]+'-'+quantity_name.lower().replace(' ','-')+'.png'),
                                   **kwargs)
 
-    write_plot('Flagged mean', log10, vmax=0.0, vmin=-4.0)
-    write_plot('Flagged standard deviation', log10, vmax=0.0, vmin=-4.0)
-    write_plot('Flags', log10, vmax=0.0, vmin=-3.0)
-    write_plot('Zeroes',lambda x: 100*x, vmin=0.0, vmax=100.0)
-    write_plot('Fringe SNR 0', log10, vmin=-1.0, vmax=3.0)
+    write_plot('Flagged mean', log10, vmax=1.0, vmin=-5.0, cmap=cm.gray_r)
+    write_plot('Flagged standard deviation', log10, vmax=0.0, vmin=-4.0, cmap=cm.gray_r)
+    write_plot('Flags', log10, vmax=0.0, vmin=-3.0, cmap=cm.gray_r)
+    write_plot('Zeroes',lambda x: 100*x, vmin=0.0, vmax=100.0, cmap=cm.gray_r)
+    write_plot('Fringe SNR 0', log10, vmin=-1.0, vmax=4.0, cmap=cm.gray_r)
+
+    write_plot('Fringe SNR', log10, vmin=-1.0, vmax=4.0, cmap=cm.gray_r)
+    write_plot('Delay', lambda x:log10(abs(x)), vmin=-9.0, vmax=-3, cmap=cm.gray_r)
+    write_plot('Rate', lambda x:log10(abs(x)), vmin=-4, vmax=0.0, cmap=cm.gray_r)
 
     results_name=os.path.join(output_dir,msname.split('/')[-1][:-3]+'-data.pickle')
     pickle.dump(results, open(results_name, mode='w'), protocol=pickle.HIGHEST_PROTOCOL)

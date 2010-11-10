@@ -15,6 +15,8 @@ def set_nan_zero(data_array):
     """
     Set any NaN values in *data_array* to zero and return result. This function modifies *data_array*.
     """
+    if is_masked_array(data_array):
+        data_array.mask[isnan(data_array)] = True
     data_array[isnan(data_array)] = 0
     return data_array
 
@@ -23,4 +25,3 @@ def printnow (s):
     print s
     sys.stdout.flush()
     pass
-
