@@ -783,7 +783,7 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30), first_timeslot=0, max_time
             'Flagged standard deviation': bls_flagged_std}
 
 
-def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root='/globalhome/brentjens/', first_timeslot=0, max_timeslots=None):
+def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('~/inspect/'), first_timeslot=0, max_timeslots=None):
     results = collect_stats_ms(msname, max_mem_bytes)
 
     ant_names=results['Antennae']['NAME']
