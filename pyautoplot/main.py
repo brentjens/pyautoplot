@@ -614,6 +614,8 @@ def ant_ant_stat_frame(title_text, full_pol_array, station_names, output_name=No
         fig = figure(figsize=(32,24), dpi=dpi)
     else:
         fig=Figure(figsize=(32,24), dpi=dpi)
+
+    fig.suptitle(title_text+' '+output_name, fontsize=30)
     
     ax1=fig.add_subplot(2,2,1)
     ant_ant_stat_plot(fig, ax1, title_text+' XX', full_pol_array[:,:,0], station_names, **kwargs)
