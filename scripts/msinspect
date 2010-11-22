@@ -1,2 +1,81 @@
 #!/usr/bin/env python
 
+from getopt import gnu_getopt as getopt
+from getopt import GetoptError
+import os,sys,time
+
+from pyautoplot import *
+
+
+def print_help():
+    print """Usage
+_____
+
+msplots [options] <SAS ID>
+
+  -p/--prefix <directory>   Root directory under which output
+                            directories are created. Default is
+                            ~/inspect/
+  -o/--output <name>        Name of output directory. Default is
+                            L<SAS ID>, e.g. L21426
+
+  -m/--memory <GB>          Maximum amount of memory that msinspect
+                            may use in GB. Default is 4
+
+  -h/--help                 Display this help
+
+Input
+-----
+
+
+
+Output
+------
+
+
+
+"""
+    return -1
+
+
+
+def main(argv):
+    if len(argv) == 1:
+        return print_help()
+    options, arguments = getopt(argv[1:],
+                                'p:o:m:h',
+                                ['prefix=',
+                                 'output=',
+                                 'memory=',
+                                 'help'])
+    if len(arguments) == 0:
+        raise GetoptError('please supply exactly one SAS/MAC ID; you supplied none.')
+    if len(arguments) > 1:
+        raise GetoptError('please supply exactly one SAS/MAC ID; you supplied several: %r.' % (arguments,))
+    prefix=os.path.expanduser('~/inspect/')
+    memory=4
+    outputdir='L'+arguments[0]
+
+    for(option,value) in options:
+        pass
+    
+    return 0
+
+
+
+
+if __name__ == "__main__":
+    try:
+        exit(main(sys.argv))
+    except (OSError, IOError):
+        print 'error: '+str(sys.exc_info()[1])
+        exit(-1)
+    except (GetoptError):
+        print 'error: '+str(sys.exc_info()[1])
+        print 'use "'+sys.argv[0]+'" for help.'
+        exit(-1)
+    except (MemoryError, ):
+        print 'error: '+str(sys.exc_info()[1])
+        print 'Cannot allocate required memory.'
+        print 'use "'+sys.argv[0]+'" for help.'
+        exit(-1)
