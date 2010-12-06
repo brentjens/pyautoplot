@@ -1,3 +1,5 @@
+import sys
+
 try:
     from numpy.ma import *
 except (ImportError, ):    # Use this construction to be backwards

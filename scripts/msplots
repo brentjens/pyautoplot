@@ -7,11 +7,43 @@ import os,sys,time
 from pyautoplot import *
 
 
+
+def warn(s):
+    print
+    print '|------------------------------------------------------------------------------|'
+    print '| WARNING: '+s
+    print '|------------------------------------------------------------------------------|'
+    print
+    wrong_answer = True
+    answer=''
+    while wrong_answer:
+        sys.stdout.write('Do you wish to continue (yes, I do/no)>>> ')
+        answer = sys.stdin.readline().strip()
+        wrong_answer = answer not in ['yes, I do', 'no']
+        if len(answer)> 15:
+            sys.stdout.write('>>> stop babbling')
+            if answer[0:9] == 'yes, I do':
+                sys.stdout.write('! I will continue, though. <<<\n')
+                wrong_answer = False
+                answer = answer[0:9]
+            else:
+                sys.stdout.write(', and answer the question! <<<\n')
+                pass
+            time.sleep(2)
+            pass
+        pass
+    if answer == 'yes, I do':
+        return True
+    else:
+        exit(-1)
+    pass
+
+
 def print_help():
     print """Usage
 _____
 
-msplots [options] <SAS ID>
+msplots [options] <SAS ID 1> <SAS ID 2> ...
 
   -p/--prefix <directory>   Root directory under which output
                             directories are created. Default is
@@ -20,7 +52,8 @@ msplots [options] <SAS ID>
                             L<SAS ID>, e.g. L21426
 
   -m/--memory <GB>          Maximum amount of memory that msinspect
-                            may use in GB. Default is 4
+                            may use in GB. Default is 4. Less than 1
+                            is not recommended.
 
   -h/--help                 Display this help
 
@@ -49,16 +82,43 @@ def main(argv):
                                  'memory=',
                                  'help'])
     if len(arguments) == 0:
-        raise GetoptError('please supply exactly one SAS/MAC ID; you supplied none.')
-    if len(arguments) > 1:
-        raise GetoptError('please supply exactly one SAS/MAC ID; you supplied several: %r.' % (arguments,))
+        raise GetoptError('please supply one or more SAS/MAC IDs; you supplied none.')
+    sas_ids = map(int, arguments)
+    
     prefix=os.path.expanduser('~/inspect/')
-    memory=4
+    memory=4.0
     outputdir='L'+arguments[0]
 
     for(option,value) in options:
+        if option in ['-p', '--prefix']:
+            prefix=os.path.expanduser(value)
+        elif option in ['-o', '--output']:
+            outputdir=value
+        elif option in ['-m', '--memory']:
+            memory = float(value)
+            pass
         pass
-    
+
+    if memory <= 0.0:
+        raise GetoptError('%r GB of memory is not enough; consider using 1 GB or more.' % (memory,))
+
+    if memory < 1.0:
+        warn('%r GB of memory is probably not enough; consider using 1 GB or more.' % (memory,))
+        pass
+
+    if not os.path.exists(prefix):
+        raise OSError('Directory prefix %s does not exist.' % (prefix,))
+
+    for sas_id in sas_ids:
+        msses = find_msses('L2010_'+str(sas_id))
+        skip  = max(len(msses)/9,1)
+        ms_selection=msses[0::skip]
+        node  = get_node_number_in_subcluster()
+        mymsses=ms_selection[node::9]
+        print '\n'.join(mymsses)
+        map(lambda ms: inspect_ms(ms, ms_id=sas_id, max_mem_bytes=int(memory*2**30), root=prefix, cmap=cm.gray_r),
+        mymsses)
+        pass
     return 0
 
 
