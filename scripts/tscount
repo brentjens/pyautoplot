@@ -1,0 +1,136 @@
+#!/usr/bin/env python
+
+from getopt import gnu_getopt as getopt
+from getopt import GetoptError
+import os,sys,time
+from forkmap import map as pmap
+
+from pyautoplot import *
+
+
+
+def warn(s):
+    print
+    print '|------------------------------------------------------------------------------|'
+    print '| WARNING: '+s
+    print '|------------------------------------------------------------------------------|'
+    print
+    wrong_answer = True
+    answer=''
+    while wrong_answer:
+        sys.stdout.write('Do you wish to continue (yes, I do/no)>>> ')
+        answer = sys.stdin.readline().strip()
+        wrong_answer = answer not in ['yes, I do', 'no']
+        if len(answer)> 15:
+            sys.stdout.write('>>> stop babbling')
+            if answer[0:9] == 'yes, I do':
+                sys.stdout.write('! I will continue, though. <<<\n')
+                wrong_answer = False
+                answer = answer[0:9]
+            else:
+                sys.stdout.write(', and answer the question! <<<\n')
+                pass
+            time.sleep(2)
+            pass
+        pass
+    if answer == 'yes, I do':
+        return True
+    else:
+        exit(-1)
+    pass
+
+
+def print_help():
+    print """Usage
+_____
+
+tscount [options] <SAS ID 1> <SAS ID 2> ...
+
+Counts the number of timeslots per measurement set for each SAS ID.
+
+  -p/--prefix <directory>   Root directory under which output
+                            directories are created. Default is
+                            ~/inspect/
+  -o/--output <name>        Name of output directory. Default is
+                            L<SAS ID>, e.g. L21426
+
+  -h/--help                 Display this help
+
+Input
+-----
+
+
+
+Output
+------
+
+
+
+"""
+    return -1
+
+
+def count_timeslots(msname):
+    ms=MeasurementSetSummary(msname)
+    return len(ms.times)
+
+
+def main(argv):
+    if len(argv) == 1:
+        return print_help()
+    options, arguments = getopt(argv[1:],
+                                'p:o:h',
+                                ['prefix=',
+                                 'output=',
+                                 'help'])
+    if len(arguments) == 0:
+        raise GetoptError('please supply one or more SAS/MAC IDs; you supplied none.')
+    sas_ids = map(int, arguments)
+    
+    prefix=os.path.expanduser('~/inspect/')
+    outputdir='L'+arguments[0]
+
+    for(option,value) in options:
+        if option in ['-p', '--prefix']:
+            prefix=os.path.expanduser(value)
+        elif option in ['-o', '--output']:
+            outputdir=value
+            pass
+        pass
+
+    if not os.path.exists(prefix):
+        raise OSError('Directory prefix %s does not exist.' % (prefix,))
+
+    for sas_id in sas_ids:
+        msses = find_msses('L2010_'+str(sas_id))
+        node  = get_node_number_in_subcluster()
+        mymsses=sorted(msses[node::9])
+        print '\n'.join(mymsses)
+        
+        timeslot_counts=zip(mymsses, pmap(count_timeslots,msses,n=len(mymsses)))
+        out=open(os.path.join(prefix,outputdir, 'L'+str(sas_id)+'-'+get_hostname())+'.txt')
+        for n,c in timeslot_counts:
+            out.write(str(n)+'   '+str(c)+'\n')
+        out.close()
+        
+        pass
+    return 0
+
+
+
+
+if __name__ == "__main__":
+    try:
+        exit(main(sys.argv))
+    except (OSError, IOError):
+        print 'error: '+str(sys.exc_info()[1])
+        exit(-1)
+    except (GetoptError):
+        print 'error: '+str(sys.exc_info()[1])
+        print 'use "'+sys.argv[0]+'" for help.'
+        exit(-1)
+    except (MemoryError, ):
+        print 'error: '+str(sys.exc_info()[1])
+        print 'Cannot allocate required memory.'
+        print 'use "'+sys.argv[0]+'" for help.'
+        exit(-1)
