@@ -158,6 +158,7 @@ class LofarOfflineTest(testcase.TestCase):
         lce8=['lce%03d'%(i,) for i in range(64,73)]
         ms20040_6 = [find_my_msses('L2010_20040', root='testdata/net', node_name=lce) for lce in lce6]
         ms20040_8 = [find_my_msses('L2010_20040', root='testdata/net', node_name=lce) for lce in lce8]
+        ms20040_8_sas = [find_my_msses('20040', root='testdata/net', node_name=lce) for lce in lce8]
         data_6 = ['testdata/net/sub6/lse016/data4/L2010_20040/L20040_SB098-uv.MS',
                   'testdata/net/sub6/lse016/data4/L2010_20040/L20040_SB099-uv.MS',
                   'testdata/net/sub6/lse016/data4/L2010_20040/L20040_SB100-uv.MS',
@@ -194,6 +195,16 @@ class LofarOfflineTest(testcase.TestCase):
         self.assertEquals(ms20040_8[6], [])
         self.assertEquals(ms20040_8[7], [])
         self.assertEquals(ms20040_8[8], [])
+
+        self.assertEquals(ms20040_8_sas[0][0], data_8[0])
+        self.assertEquals(ms20040_8_sas[1][0], data_8[1])
+        self.assertEquals(ms20040_8_sas[2][0], data_8[2])
+        self.assertEquals(ms20040_8_sas[3], [])
+        self.assertEquals(ms20040_8_sas[4], [])
+        self.assertEquals(ms20040_8_sas[5], [])
+        self.assertEquals(ms20040_8_sas[6], [])
+        self.assertEquals(ms20040_8_sas[7], [])
+        self.assertEquals(ms20040_8_sas[8], [])
 
         self.assertSequenceEquals(ms20040_6[0], data_6[0::9])
         self.assertSequenceEquals(ms20040_6[1], data_6[1::9])

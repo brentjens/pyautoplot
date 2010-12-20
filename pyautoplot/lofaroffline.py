@@ -56,10 +56,13 @@ def get_data_dirs(subcluster_number, root='/net'):
 
 
 
-def find_msses(msname, root='/net', node_name=gethostname()):
+def find_msses(sas_id, root='/net', node_name=gethostname()):
     result=[]
     for directory in get_data_dirs(get_subcluster_number(node_name=node_name), root=root):
-        result += [os.path.normpath(s.strip()) for s in os.popen("find %s/%s -iname '*.MS' 2>&1|grep -ve 'No such file or directory'"%(directory,msname), 'r')]
+        names=filter(lambda n: n.find(str(sas_id))>=0, os.popen('ls %s' % (directory,)))
+        for name in names:
+            if name.strip() != '':
+                result += [os.path.normpath(s.strip()) for s in os.popen("find %s/%s -iname '*.MS' 2>&1|grep -ve 'No such file or directory'"%(directory,name.strip()), 'r')]
     return result
 
 
