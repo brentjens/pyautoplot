@@ -1,5 +1,5 @@
 from socket import gethostname
-from numpy import floor
+from numpy import floor,array
 import os
 
 
@@ -59,10 +59,14 @@ def get_data_dirs(subcluster_number, root='/net'):
 def find_msses(sas_id, root='/net', node_name=gethostname()):
     result=[]
     for directory in get_data_dirs(get_subcluster_number(node_name=node_name), root=root):
-        names=filter(lambda n: n.find(str(sas_id))>=0, os.popen('ls %s' % (directory,)))
-        for name in names:
-            if name.strip() != '':
-                result += [os.path.normpath(s.strip()) for s in os.popen("find %s/%s -iname '*.MS' 2>&1|grep -ve 'No such file or directory'"%(directory,name.strip()), 'r')]
+        names=sorted(filter(lambda n: n.find(str(sas_id))>=0, os.popen('ls %s' % (directory,))))
+        non_empty_names=[n for n in names if n.strip() != '']
+        if len(non_empty_names) > 0:
+            l = [len(n.strip()) for n in non_empty_names]
+            min_l = min(l)
+            name=non_empty_names[l.index(min_l)]
+            result += [os.path.normpath(s.strip()) for s in os.popen("find %s/%s -iname '*.MS' 2>&1|grep -ve 'No such file or directory'"%(directory,name.strip()), 'r')]
+            pass
     return result
 
 
