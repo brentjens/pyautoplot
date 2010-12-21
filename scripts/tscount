@@ -3,7 +3,7 @@
 from getopt import gnu_getopt as getopt
 from getopt import GetoptError
 import os,sys,time
-from forkmap import map as pmap
+from pyautoplot.forkmap import map as pmap
 
 from pyautoplot import *
 
@@ -88,7 +88,7 @@ def main(argv):
     sas_ids = map(int, arguments)
     
     prefix=os.path.expanduser('~/inspect/')
-    outputdir='L'+arguments[0]
+    outputdir=''
 
     for(option,value) in options:
         if option in ['-p', '--prefix']:
@@ -102,13 +102,24 @@ def main(argv):
         raise OSError('Directory prefix %s does not exist.' % (prefix,))
 
     for sas_id in sas_ids:
-        msses = find_msses('L2010_'+str(sas_id))
+        if outputdir == '':
+            outputdirnew=str(sas_id)
+        else:
+            outputdirnew=outputdir
+            pass
+        
+        try:
+            os.mkdir(outputdirnew)
+        except Exception:
+            pass
+
+        msses = find_msses(str(sas_id))
         node  = get_node_number_in_subcluster()
         mymsses=sorted(msses[node::9])
         print '\n'.join(mymsses)
         
         timeslot_counts=zip(mymsses, pmap(count_timeslots,msses,n=len(mymsses)))
-        out=open(os.path.join(prefix,outputdir, 'L'+str(sas_id)+'-'+get_hostname())+'.txt')
+        out=open(os.path.join(prefix,outputdirnew, 'L'+str(sas_id)+'-'+gethostname())+'.txt', mode='w')
         for n,c in timeslot_counts:
             out.write(str(n)+'   '+str(c)+'\n')
         out.close()
