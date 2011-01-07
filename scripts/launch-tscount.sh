@@ -1,5 +1,5 @@
 #!/bin/bash
-# This cript is to be called from lfe001 and will launch msplots
+# This script is to be called from lfe001 and will launch msplots
 # instances on all non-developer compute nodes. Any arguments are passed
 # directly to the msplots instances.
 # cexec1 is used because it allows us to address each lce node by the same

@@ -96,6 +96,10 @@ def main(argv):
             outputdir=value
         elif option in ['-m', '--memory']:
             memory = float(value)
+        elif option in ['-h', '--help']:
+            return print_help()
+        else:
+            return print_help()
             pass
         pass
 
@@ -110,7 +114,7 @@ def main(argv):
         raise OSError('Directory prefix %s does not exist.' % (prefix,))
 
     for sas_id in sas_ids:
-        msses = find_msses('L2010_'+str(sas_id))
+        msses = find_msses(str(sas_id))
         skip  = max(len(msses)/9,1)
         ms_selection=msses[0::skip]
         node  = get_node_number_in_subcluster()
