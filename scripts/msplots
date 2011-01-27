@@ -47,7 +47,8 @@ msplots [options] <SAS ID 1> <SAS ID 2> ...
 
   -p/--prefix <directory>   Root directory under which output
                             directories are created. Default is
-                            ~/inspect/
+                            /globaldata/inspect, or, if that does
+                            not exist, ~/inspect/
   -o/--output <name>        Name of output directory. Default is
                             L<SAS ID>, e.g. L21426
 
@@ -84,8 +85,10 @@ def main(argv):
     if len(arguments) == 0:
         raise GetoptError('please supply one or more SAS/MAC IDs; you supplied none.')
     sas_ids = map(int, arguments)
-    
-    prefix=os.path.expanduser('~/inspect/')
+
+    prefix=os.path.join('/globaldata', 'inspect')
+    if not os.path.exists(prefix):
+        prefix=os.path.expanduser('~/inspect/')
     memory=4.0
     outputdir='L'+arguments[0]
 
