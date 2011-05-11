@@ -19,6 +19,30 @@ class NotImplementedError(Exception):
     pass
 
 
+def map_casa_table(function, casa_table, column_name='DATA', flag_name='FLAG', chunksize=1000, rowincr=1, nrow=None):
+    """function should take a complex array of (timeslots,channels,polarizations) dimension, and return an array of values
+    per timeslot. """
+    chunksize=chunksize-(chunksize % rowincr)
+    selection = casa_table
+    nrows = selection.nrows()
+    if nrow is not None:
+        nrows = min(nrow, nrows)
+    selection = selection.selectrows(arange(0,nrows, rowincr))
+    nrows = selection.nrows()
+    lastset = nrows % chunksize
+    complete_chunks = nrows / chunksize
+    results = []
+    for chunk in range(complete_chunks):
+        print '%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows)
+        results += [function(set_nan_zero(ma.array(selection.getcol(column_name, startrow=chunk*chunksize, nrow=chunksize),
+                                                   mask=selection.getcol(flag_name, startrow=chunk*chunksize, nrow=chunksize))))]
+        pass
+    print '%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows)
+    results += [function(set_nan_zero(ma.array(selection.getcol(column_name,startrow=complete_chunks*chunksize, nrow=lastset),
+                                               mask=selection.getcol(flag_name,startrow=complete_chunks*chunksize, nrow=lastset))))]
+    return concatenate(results, axis=0)
+
+
 def split_data_col(data_col):
     """Returns xx, xy, yx, yy, num_pol"""
     flags=logical_or.reduce(data_col.mask, axis=2)
@@ -395,7 +419,7 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     
     plots = map(lambda tf: delay_fringe_rate(tf, padding=padding), [xx,xy,yx,yy])
     
-    amax = array([abs(d).max() for d in plots]).max()
+    amax = array([abs(d).max() for d in plots]).max()*amax_factor
     width=min(num_delay, xx.shape[1])
     height=min(num_fringe_rate, xx.shape[0])
 
@@ -471,13 +495,13 @@ def bl_std(array):
     return ma.std(array.real,axis=1) +1j*ma.std(array.imag, axis=1)
 
 def bl_mean_no_edges(array):
-    return ma.mean(array[:,1:-1,:], axis=1)
+    return ma.mean(array[:,3:-3,:], axis=1)
 
 def bl_median_no_edges(array):
-    return ma.median(array.real[:,1:-1,:], axis=1)+1j*ma.median(array.imag[:,1:-1,:], axis=1)
+    return ma.median(array.real[:,3:-3,:], axis=1)+1j*ma.median(array.imag[:,3:-3,:], axis=1)
 
 def bl_std_no_edges(array):
-    return ma.std(array.real[:,1:-1,:],axis=1) +1j*ma.std(array.imag[:,1:-1,:], axis=1)
+    return ma.std(array.real[:,3:-3,:],axis=1) +1j*ma.std(array.imag[:,3:-3,:], axis=1)
 
 
 
@@ -692,7 +716,7 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30), first_timeslot=0, max_time
         for ant1 in range(num_ant):
             for ant2 in range(num_ant):
                 for pol in range(num_pol):
-                    result[ant1, ant2, pol] = fn(data[ant1,ant2,pol,:,:])
+                    result[ant1, ant2, pol] = fn(data[ant1,ant2,pol,:,3:-3])
                     pass
                 pass
             pass
@@ -804,8 +828,8 @@ def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('
                                   os.path.join(output_dir,msname.split('/')[-1][:-3]+'-'+quantity_name.lower().replace(' ','-')+'.png'),
                                   **kwargs)
 
-    write_plot('Flagged mean', log10, vmax=1.0, vmin=-5.0, cmap=cmap)
-    write_plot('Flagged standard deviation', log10, vmax=0.0, vmin=-4.0, cmap=cmap)
+    write_plot('Flagged mean', log10, vmax=2.0, vmin=-5.0, cmap=cmap)
+    write_plot('Flagged standard deviation', log10, vmax=1.0, vmin=-4.0, cmap=cmap)
     write_plot('Flags', log10, vmax=0.0, vmin=-3.0, cmap=cmap)
     write_plot('Zeroes',lambda x: 100*x, vmin=0.0, vmax=100.0, cmap=cmap)
     write_plot('Fringe SNR 0', log10, vmin=-1.0, vmax=4.0, cmap=cmap)
@@ -817,3 +841,74 @@ def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('
     results_name=os.path.join(output_dir,msname.split('/')[-1][:-3]+'-data.pickle')
     pickle.dump(results, open(results_name, mode='w'), protocol=pickle.HIGHEST_PROTOCOL)
     return results
+
+
+
+
+def collect_timeseries_ms(ms, num_points=720):
+    mstab=tables.table(ms.msname)
+    num_ant=len(ms.tables['antennae'])
+    rowincr=max(1, floor(len(ms.times)/num_points))
+    time_slots=ms.times[0::rowincr]
+    query_text='TIME in '+repr(list(time_slots))
+
+    print 'Selecting data from '+ms.msname+' where '+query_text
+    selection = mstab.query(query_text)
+    print 'done.'
+
+    ant1=selection.getcol('ANTENNA1')
+    ant2=selection.getcol('ANTENNA2')
+    time_col=selection.getcol('TIME')
+    data_mean=map_casa_table(bl_median_no_edges, selection, chunksize=20000)
+    print data_mean.shape
+    output=zeros((num_ant, num_ant, data_mean.shape[1], len(time_slots)), dtype=complex64)
+
+    time_slot_list=list(time_slots)
+    for (i,(a1,a2,mjds, data)) in enumerate(zip(ant1, ant2, time_col, data_mean)):
+        ts=time_slot_list.index(mjds)
+        if ts == -1:
+            print 'Could not find time slot '+repr(mjds)
+        output[a1,a2,:,ts]=data
+        output[a2,a1,:,ts]=conj(data)
+        pass
+    
+    return (time_slots, output)
+    
+
+def timeseries_station_page(ms, station_name, time_slots, data):
+    station_name_list=list(ms.tables['antennae']['NAME'])
+    station_id=station_name_list.index(station_name)
+    num_ant=len(ms.tables['antennae'])
+    tsn = time_slots-time_slots[0]
+    clf()
+    for id2,name in enumerate(station_name_list):
+        subplot(num_ant,1, id+1)
+        plot(tsn, abs(data[station_id,id2,0,:]), c='blue', label='XX')
+        plot(tsn, abs(data[station_id,id2,0,:]), c='green', label='XY')
+        plot(tsn, abs(data[station_id,id2,0,:]), c='purple', label='YX')
+        plot(tsn, abs(data[station_id,id2,0,:]), c='red', label='YY')
+        ylabel(station_name_list[id2])
+        pass
+    pass
+
+# def timeseries_plots(ms, ant, rowincr=1, block_size=4, fn=abs):
+#     num_ant= len(ms.tables['antennae'])
+#     clf()
+#     nrows=ceil(num_ant/float(block_size))
+#     for ant_i in range(num_ant):
+#         row=ant_i/block_size
+#         print row
+#         label='--'+ms.tables['antennae']['NAME'][ant_i]
+#         bl_data=ms.map_baseline(ant,ant_i,bl_median, rowincr=rowincr)
+        
+#         subplot(nrows, 2, 2*row +1)
+#         if ant_i == 0:
+#             title (ms.tables['antennae']['NAME'][ant]+'--XX')
+#         plot(abs(bl_data[:,0]), label=label)
+#         legend(prop=matplotlib.font_manager.FontProperties(size='xx-small'))
+        
+#         subplot(nrows, 2, 2*row +2)
+#         if ant_i == 0:
+#             title (ms.tables['antennae']['NAME'][ant]+'--YY')
+#         plot(abs(bl_data[:,3]), label=label)
+#         legend(prop=matplotlib.font_manager.FontProperties(size='xx-small'))

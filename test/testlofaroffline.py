@@ -22,8 +22,20 @@ class LofarOfflineTest(testcase.TestCase):
         pass
 
 
+    def test_is_locus_node(self):
+        self.assertTrue(is_locus_node('locus001'))
+        self.assertTrue(is_locus_node('locus050'))
+        self.assertTrue(is_locus_node('locus100'))        
+        self.assertFalse(is_locus_node('lse0241'))
+        self.assertFalse(is_locus_node('lce024'))
+        self.assertFalse(is_locus_node('lhn001'))
+        self.assertFalse(is_locus_node('lse02'))
+        self.assertFalse(is_locus_node(''))
+
+
     def test_is_frontend_node(self):
         self.assertTrue(is_frontend_node('lfe001'))
+        self.assertTrue(is_frontend_node('lhn001'))
         self.assertFalse(is_frontend_node('lfe0241'))
         self.assertFalse(is_frontend_node('lse024'))
         self.assertFalse(is_frontend_node('lfe02'))
