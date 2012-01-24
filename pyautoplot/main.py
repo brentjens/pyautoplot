@@ -15,6 +15,25 @@ from lofaroffline import *
 
 
 
+def corr_type(corr_id):
+    CORR_TYPE=array(['Undefined',
+                     'I', 'Q', 'U', 'V',
+                     'RR', 'RL', 'LR', 'LL',
+                     'XX', 'XY', 'YX', 'YY',
+                     'RX', 'RY', 'LX', 'LY',
+                     'XR', 'XL', 'YR', 'YL',
+                     'PP', 'PQ', 'QP', 'QQ',
+                     'RCircular', 'LCircular',
+                     'Linear',
+                     'Ptotal', 'Plinear',
+                     'PFtotal', 'PFlinear', 'Pangle'])
+    if is_list (corr_id):
+        return map(corr_type, corr_id)
+    else:
+        return CORR_TYPE[corr_id]
+
+    
+
 class NotImplementedError(Exception):
     pass
 
@@ -202,6 +221,9 @@ class MeasurementSetSummary:
                                                                    'TOTAL_BANDWIDTH',
                                                                    'NUM_CHAN']),
                                                col_widths=[5,15,18,8])
+        self.tables['polarization'] = TableFormatter(self.read_subtable('POLARIZATION',
+                                                                        ['CORR_TYPE']),
+                                                     col_widths=[5,15])
         self.channel_frequencies = self.subtable('SPECTRAL_WINDOW').getcol('CHAN_FREQ')
         self.subband_frequencies  = self.subtable('SPECTRAL_WINDOW').getcol('REF_FREQUENCY')
         pass
@@ -383,7 +405,7 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     print 'plot_baseline subband: '+str(subband)
     data            = ms_summary.baseline(baseline[0], baseline[1], subband=subband, taper=taper, column=column, **kwargs)
     flagged_data    = flag_data(data, threshold=5.0, max_iter=20)
-    xx,xy,yx,yy,num_pol = split_data_col(ma.array(flagged_data))
+    pp,pq,qp,qq,num_pol = split_data_col(ma.array(flagged_data))
     antenna_names   = array(ms_summary.subtable('ANTENNA').getcol('NAME'))[list(baseline)]
     print antenna_names
 
@@ -392,8 +414,8 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
         stddev=0.1
         amax=1.0*amax_factor
     else:
-        means = array([ma.mean(x) for x in [xx,xy,yx,yy]])
-        stddevs= [max(ma.std(x.real), ma.std(x.imag)) for x in [xx,xy,yx,yy]]
+        means = array([ma.mean(x) for x in [pp,pq,qp,qq]])
+        stddevs= [max(ma.std(x.real), ma.std(x.imag)) for x in [pp,pq,qp,qq]]
         scale=max(abs(means))
         stddev = max(stddevs)
         amax=(scale+2.5*stddev)*amax_factor
@@ -401,10 +423,10 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     
 #    print '%f%% of time slots available' % (int((max(ms_summary.times[kwargs['startrow']:kwargs['startrow']+kwargs['nrow']*kwargs['rowincr']:kwargs['rowincr']]) - min(ms_summary.times[kwargs['startrow']:kwargs['startrow']+kwargs['nrow']*kwargs['rowincr']:kwargs['rowincr']]))/ms_summary.integration_times[0]+0.5)*100.0/len(time_slots),)
     print 'scale: %f\nsigma: %f' % (scale, stddev)
-    good=logical_not(xx.mask)
+    good=logical_not(pp.mask)
     if not plot_flags:
         good = None
-    names = ['XX', 'XY', 'YX', 'YY']
+    names = corr_type(ms_summary.tables['polarization']['CORR_TYPE'][0])
 
     clf()
     t = gcf().text(0.5,
@@ -412,16 +434,16 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
                    horizontalalignment='center',
                    fontsize=24)
 
-    for i,name,data in zip(range(4), names, [xx, xy, yx, yy]):
+    for i,name,data in zip(range(4), names, [pp,pq,qp,qq]):
         subplot(241+i)
         plot_complex_image(name, data, good, amin=0.0, amax=amax)
         pass
     
-    plots = map(lambda tf: delay_fringe_rate(tf, padding=padding), [xx,xy,yx,yy])
+    plots = map(lambda tf: delay_fringe_rate(tf, padding=padding), [pp,pq,qp,qq])
     
     amax = array([abs(d).max() for d in plots]).max()*amax_factor
-    width=min(num_delay, xx.shape[1])
-    height=min(num_fringe_rate, xx.shape[0])
+    width=min(num_delay, pp.shape[1])
+    height=min(num_fringe_rate, pp.shape[0])
 
     for i,d in enumerate(plots):
         subplot(245+i)
@@ -880,13 +902,14 @@ def timeseries_station_page(ms, station_name, time_slots, data):
     station_id=station_name_list.index(station_name)
     num_ant=len(ms.tables['antennae'])
     tsn = time_slots-time_slots[0]
+    pol_names=corr_type(ms.tables['polarization']['CORR_TYPE'][0])
     clf()
     for id2,name in enumerate(station_name_list):
-        subplot(num_ant,1, id+1)
-        plot(tsn, abs(data[station_id,id2,0,:]), c='blue', label='XX')
-        plot(tsn, abs(data[station_id,id2,0,:]), c='green', label='XY')
-        plot(tsn, abs(data[station_id,id2,0,:]), c='purple', label='YX')
-        plot(tsn, abs(data[station_id,id2,0,:]), c='red', label='YY')
+        subplot(num_ant,1, id2+1)
+        plot(tsn, abs(data[station_id,id2,0,:]), c='blue', label=pol_names[0])
+        plot(tsn, abs(data[station_id,id2,1,:]), c='green', label=pol_names[1])
+        plot(tsn, abs(data[station_id,id2,2,:]), c='purple', label=pol_names[2])
+        plot(tsn, abs(data[station_id,id2,3,:]), c='red', label=pol_names[3])
         ylabel(station_name_list[id2])
         pass
     pass
