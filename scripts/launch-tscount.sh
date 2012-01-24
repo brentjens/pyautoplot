@@ -10,5 +10,5 @@ HOSTNAME=`hostname -s`
 if test "$HOSTNAME" == "lhn001"; then
     cexec "bash -ilc \"tscount $@\""
 else
-    cexec1 lce:1-54,64-72 "bash -ilc \"use LofIm;use Pythonlibs; tscount $@\""
+    cexec1 lce:1-54,64-72 "bash -ilc \"use LofIm;use Pythonlibs; use Pyautoplot; tscount $@\""
 fi
