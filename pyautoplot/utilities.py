@@ -15,9 +15,10 @@ def set_nan_zero(data_array):
     """
     Set any NaN values in *data_array* to zero and return result. This function modifies *data_array*.
     """
+    where_it_is_nan = isnan(data_array)
     if is_masked_array(data_array):
-        data_array.mask[isnan(data_array)] = True
-    data_array[isnan(data_array)] = 0
+        data_array.mask[where_it_is_nan] = True
+    data_array[where_it_is_nan] = 0
     return data_array
 
 
