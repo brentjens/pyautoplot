@@ -1,2 +1,5 @@
 #!/bin/sh
-rsync -avz --delete ./ brentjens@dop95.astron.nl:pyautoplot/ && lfc lhn001 'rsync -avz --delete brentjens@dop95.astron.nl:pyautoplot/ ./pyautoplot/'
+
+USER=$1
+
+rsync -avz --delete -e "ssh -A ${USER}@portal.lofar.eu ssh" ./ ${USER}@lhn001:pyautoplot/
