@@ -203,7 +203,7 @@ class MeasurementSetSummary:
 
     def read_metadata(self):
         ms = tables.table(self.msname)
-        self.times = unique(ms.getcol('TIME'))
+        self.times = array(sorted(unique(ms.getcol('TIME'))))
         self.mjd_start = self.times.min()
         self.mjd_end   = self.times.max()
         self.duration_seconds  = self.mjd_end - self.mjd_start
@@ -867,29 +867,35 @@ def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('
 
 
 
-def collect_timeseries_ms(ms, num_points=720):
-    mstab=tables.table(ms.msname)
-    num_ant=len(ms.tables['antennae'])
-    rowincr=max(1, floor(len(ms.times)/num_points))
-    time_slots=ms.times[0::rowincr]
-    query_text='TIME in '+repr(list(time_slots))
+def collect_timeseries_ms(ms, num_points=240, subband=0):
+    mstab      = tables.table(ms.msname)
+    num_ant    = len(ms.tables['antennae'])
+    rowincr    = max(1, floor(len(ms.times)/num_points))
+    time_slots = ms.times[0::rowincr]
+    query_text = 'TIME in '+repr(list(time_slots))+' && DATA_DESC_ID == '+str(subband)
 
     print 'Selecting data from '+ms.msname+' where '+query_text
-    selection = mstab.query(query_text)
+    selection  = mstab.query(query_text+' orderby '+(','.join(['TIME','ANTENNA1', 'ANTENNA2'])))
     print 'done.'
 
-    ant1=selection.getcol('ANTENNA1')
-    ant2=selection.getcol('ANTENNA2')
-    time_col=selection.getcol('TIME')
-    data_mean=map_casa_table(bl_median_no_edges, selection, chunksize=20000)
+    ant1       = selection.getcol('ANTENNA1')
+    ant2       = selection.getcol('ANTENNA2')
+    time_col   = selection.getcol('TIME')
+    data_mean  = map_casa_table(bl_mean_no_edges, selection, chunksize=20000)
     print data_mean.shape
-    output=zeros((num_ant, num_ant, data_mean.shape[1], len(time_slots)), dtype=complex64)
+    output     = zeros((num_ant, num_ant, data_mean.shape[1], len(time_slots)), dtype=complex64)
+    
+    print 'Allocated memory'
+    time_slot_index = {}
+    for i, ts in enumerate(time_slots):
+        time_slot_index[repr(ts)] = i
 
-    time_slot_list=list(time_slots)
+    
+    print 'Beginning gridding'
     for (i,(a1,a2,mjds, data)) in enumerate(zip(ant1, ant2, time_col, data_mean)):
-        ts=time_slot_list.index(mjds)
-        if ts == -1:
-            print 'Could not find time slot '+repr(mjds)
+        if i%100000 == 0:
+            print i
+        ts = time_slot_index[repr(mjds)]
         output[a1,a2,:,ts]=data
         output[a2,a1,:,ts]=conj(data)
         pass
@@ -897,21 +903,33 @@ def collect_timeseries_ms(ms, num_points=720):
     return (time_slots, output)
     
 
-def timeseries_station_page(ms, station_name, time_slots, data):
-    station_name_list=list(ms.tables['antennae']['NAME'])
-    station_id=station_name_list.index(station_name)
-    num_ant=len(ms.tables['antennae'])
-    tsn = time_slots-time_slots[0]
-    pol_names=corr_type(ms.tables['polarization']['CORR_TYPE'][0])
+def timeseries_station_page(ms, station_name, time_slots, data, fn=abs):
+    station_name_list = list(ms.tables['antennae']['NAME'])
+    station_id        = station_name_list.index(station_name)
+    num_ant           = len(ms.tables['antennae'])
+    tsn               = time_slots-time_slots[0]
+    pol_names         = corr_type(ms.tables['polarization']['CORR_TYPE'][0])
+    ref_freq_mhz      = ms.tables['spectral_windows'][0]['REF_FREQUENCY']/1.e6
+
     clf()
+    median_amp = ma.median(ma.mean(ma.median(fn(data[station_id,:,0::3,:]), axis=-1), axis=-1), axis=-1)
+    
     for id2,name in enumerate(station_name_list):
-        subplot(num_ant,1, id2+1)
-        plot(tsn, abs(data[station_id,id2,0,:]), c='blue', label=pol_names[0])
-        plot(tsn, abs(data[station_id,id2,1,:]), c='green', label=pol_names[1])
-        plot(tsn, abs(data[station_id,id2,2,:]), c='purple', label=pol_names[2])
-        plot(tsn, abs(data[station_id,id2,3,:]), c='red', label=pol_names[3])
-        ylabel(station_name_list[id2])
+        subplot(ceil(num_ant/2.0),2, id2+1)
+        plot(tsn, fn(data[station_id,id2,0,:]), c='blue'  , label=pol_names[0])
+        plot(tsn, fn(data[station_id,id2,1,:]), c='green' , label=pol_names[1])
+        plot(tsn, fn(data[station_id,id2,2,:]), c='purple', label=pol_names[2])
+        plot(tsn, fn(data[station_id,id2,3,:]), c='red'   , label=pol_names[3])
+        ylabel(station_name_list[id2], rotation='horizontal')
+        ylim(0.0, 3*median_amp)
+        yticks([])
+        if id2 < len(station_name_list)-2:
+            xticks([])
+        else:
+            xlabel('Time [s]')    
         pass
+    gcf().subplots_adjust(hspace=0.0, top=0.95, bottom=0.04)
+    figtext(0.5, 0.96,ms.msname+': '+fn.__name__+'(vis) with '+station_name+' at %3.2f MHz' % (ref_freq_mhz,), horizontalalignment='center', verticalalignment='baseline', fontsize='large')
     pass
 
 # def timeseries_plots(ms, ant, rowincr=1, block_size=4, fn=abs):
