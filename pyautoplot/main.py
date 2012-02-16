@@ -862,6 +862,20 @@ def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('
 
     results_name=os.path.join(output_dir,msname.split('/')[-1][:-3]+'-data.pickle')
     pickle.dump(results, open(results_name, mode='w'), protocol=pickle.HIGHEST_PROTOCOL)
+
+    ms = MeasurementSetSummary(msname)
+    time_slots, vis_cube = collect_timeseries_ms(ms, num_points=240)
+
+    good_stations = ['CS002HBA', 'CS002HBA0', 'CS002LBA', 'CS004HBA0', 'CS004LBA',
+                     'RS106HBA', 'RS205HBA', 'RS205LBA', 'RS306LBA', 'RS406LBA']
+    plot_stations = list(set(good_stations).intersection(set(ant_names)))
+    if len(plot_stations) == 0:
+        plot_stations = unique([ant_names[0], ant_names[len(ant_names)/2], ant_names[-1]])
+    
+    for station in plot_stations:
+        filename = os.path.join(output_dir,msname.split('/')[-1][:-3]+'-'+station.lower()+'.png')
+        timeseries_station_page(ms, station, time_slots, vis_cube, output_name=filename)
+    
     return results
 
 
@@ -903,7 +917,13 @@ def collect_timeseries_ms(ms, num_points=240, subband=0):
     return (time_slots, output)
     
 
-def timeseries_station_page(ms, station_name, time_slots, data, fn=abs):
+def timeseries_station_page(ms, station_name, time_slots, data, fn=abs, output_name=None):
+    dpi=50
+    if output_name is None:
+        fig = figure(figsize=(32,24), dpi=dpi)
+    else:
+        fig = Figure(figsize=(32,24), dpi=dpi)
+
     station_name_list = list(ms.tables['antennae']['NAME'])
     station_id        = station_name_list.index(station_name)
     num_ant           = len(ms.tables['antennae'])
@@ -911,45 +931,32 @@ def timeseries_station_page(ms, station_name, time_slots, data, fn=abs):
     pol_names         = corr_type(ms.tables['polarization']['CORR_TYPE'][0])
     ref_freq_mhz      = ms.tables['spectral_windows'][0]['REF_FREQUENCY']/1.e6
 
-    clf()
+    fig.suptitle(ms.msname+': '+fn.__name__+'(vis) with '+station_name+' at %3.2f MHz' % (ref_freq_mhz,), fontsize='large')
+
     median_amp = ma.median(ma.mean(ma.median(fn(data[station_id,:,0::3,:]), axis=-1), axis=-1), axis=-1)
     
     for id2,name in enumerate(station_name_list):
-        subplot(ceil(num_ant/2.0),2, id2+1)
-        plot(tsn, fn(data[station_id,id2,0,:]), c='blue'  , label=pol_names[0])
-        plot(tsn, fn(data[station_id,id2,1,:]), c='green' , label=pol_names[1])
-        plot(tsn, fn(data[station_id,id2,2,:]), c='purple', label=pol_names[2])
-        plot(tsn, fn(data[station_id,id2,3,:]), c='red'   , label=pol_names[3])
-        ylabel(station_name_list[id2], rotation='horizontal')
-        ylim(0.0, 3*median_amp)
-        yticks([])
-        if id2 < len(station_name_list)-2:
-            xticks([])
+        ax = fig.add_subplot(ceil(num_ant/4.0),4, id2+1)
+        ax.plot(tsn, fn(data[station_id,id2,0,:]), c='blue'  , label=pol_names[0])
+        ax.plot(tsn, fn(data[station_id,id2,1,:]), c='green' , label=pol_names[1])
+        ax.plot(tsn, fn(data[station_id,id2,2,:]), c='purple', label=pol_names[2])
+        ax.plot(tsn, fn(data[station_id,id2,3,:]), c='red'   , label=pol_names[3])
+        ax.grid()
+        ax.set_ylabel(station_name_list[id2], rotation='horizontal')
+        ax.set_ylim(0.0, 3*median_amp)
+        ax.set_yticklabels([])
+        if id2 < len(station_name_list)-4:
+            ax.set_xticklabels([])
         else:
-            xlabel('Time [s]')    
+            ax.set_xlabel('Time [s]')    
         pass
-    gcf().subplots_adjust(hspace=0.0, top=0.95, bottom=0.04)
-    figtext(0.5, 0.96,ms.msname+': '+fn.__name__+'(vis) with '+station_name+' at %3.2f MHz' % (ref_freq_mhz,), horizontalalignment='center', verticalalignment='baseline', fontsize='large')
+    fig.subplots_adjust(hspace=0.0, top=0.95, bottom=0.04)
+    if output_name is not None:
+        canvas = FigureCanvasAgg(fig)
+        canvas.print_figure(output_name, dpi=dpi)
+        pass
     pass
 
-# def timeseries_plots(ms, ant, rowincr=1, block_size=4, fn=abs):
-#     num_ant= len(ms.tables['antennae'])
-#     clf()
-#     nrows=ceil(num_ant/float(block_size))
-#     for ant_i in range(num_ant):
-#         row=ant_i/block_size
-#         print row
-#         label='--'+ms.tables['antennae']['NAME'][ant_i]
-#         bl_data=ms.map_baseline(ant,ant_i,bl_median, rowincr=rowincr)
-        
-#         subplot(nrows, 2, 2*row +1)
-#         if ant_i == 0:
-#             title (ms.tables['antennae']['NAME'][ant]+'--XX')
-#         plot(abs(bl_data[:,0]), label=label)
-#         legend(prop=matplotlib.font_manager.FontProperties(size='xx-small'))
-        
-#         subplot(nrows, 2, 2*row +2)
-#         if ant_i == 0:
-#             title (ms.tables['antennae']['NAME'][ant]+'--YY')
-#         plot(abs(bl_data[:,3]), label=label)
-#         legend(prop=matplotlib.font_manager.FontProperties(size='xx-small'))
+
+
+
