@@ -8,7 +8,13 @@
 
 HOSTNAME=`hostname -s`
 if test "$HOSTNAME" == "lhn001"; then
-    cexec "bash -ilc \"msplots $@\""
+    cexec locus: "bash -ilc \"msplots $@\""
+
+    result=`create_html.csh $@ >& /dev/null; echo $?`
+    if [ $result ]; then 
+        echo "Problem creating HTML overview"
+    fi
+    echo "Done"
 else
     cexec1 lce:1-54,64-72 "bash -ilc \"use LofIm;use Pythonlibs; use Pyautoplot; msplots $@\""
 fi

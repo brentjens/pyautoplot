@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import matplotlib
+matplotlib.use('agg')
 from getopt import gnu_getopt as getopt
 from getopt import GetoptError
 import os,sys,time
