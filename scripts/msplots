@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 
 import matplotlib
 matplotlib.use('agg')
@@ -11,11 +11,11 @@ from pyautoplot import *
 
 
 def warn(s):
-    print
-    print '|------------------------------------------------------------------------------|'
-    print '| WARNING: '+s
-    print '|------------------------------------------------------------------------------|'
-    print
+    print('')
+    print('|------------------------------------------------------------------------------|')
+    print('| WARNING: '+s)
+    print('|------------------------------------------------------------------------------|')
+    print('')
     wrong_answer = True
     answer=''
     while wrong_answer:
@@ -42,7 +42,7 @@ def warn(s):
 
 
 def print_help():
-    print """Usage
+    print("""Usage
 _____
 
 msplots [options] <SAS ID 1> <SAS ID 2> ...
@@ -70,12 +70,15 @@ Output
 
 
 
-"""
+""")
     return -1
 
 
 
 def main(argv):
+    print('')
+    print_version()
+    print('-----------------------')
     if len(argv) == 1:
         return print_help()
     options, arguments = getopt(argv[1:],
@@ -124,7 +127,7 @@ def main(argv):
         ms_selection=msses[0::skip]
         node  = get_node_number_in_subcluster()
         mymsses=ms_selection[node::9]
-        print '\n'.join(mymsses)
+        print('\n'.join(mymsses))
         map(lambda ms: inspect_ms(ms, ms_id=sas_id, max_mem_bytes=int(memory*2**30), root=prefix, cmap=cm.gray_r),
         mymsses)
         pass
@@ -137,14 +140,14 @@ if __name__ == "__main__":
     try:
         exit(main(sys.argv))
     except (OSError, IOError):
-        print 'error: '+str(sys.exc_info()[1])
+        print('error: '+str(sys.exc_info()[1]))
         exit(-1)
     except (GetoptError):
-        print 'error: '+str(sys.exc_info()[1])
-        print 'use "'+sys.argv[0]+'" for help.'
+        print('error: '+str(sys.exc_info()[1]))
+        print('use "'+sys.argv[0]+'" for help.')
         exit(-1)
     except (MemoryError, ):
-        print 'error: '+str(sys.exc_info()[1])
-        print 'Cannot allocate required memory.'
-        print 'use "'+sys.argv[0]+'" for help.'
+        print('error: '+str(sys.exc_info()[1]))
+        print('Cannot allocate required memory.')
+        print('use "'+sys.argv[0]+'" for help.')
         exit(-1)

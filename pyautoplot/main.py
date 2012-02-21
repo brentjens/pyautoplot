@@ -14,6 +14,13 @@ from utilities import *
 from lofaroffline import *
 
 
+PYAUTOPLOT_VERSION='0.5'
+
+def print_version():
+    global PYAUTOPLOT_VERSION
+    print('Pyautoplot version '+PYAUTOPLOT_VERSION+'.')
+
+
 
 def corr_type(corr_id):
     CORR_TYPE=array(['Undefined',
@@ -52,11 +59,11 @@ def map_casa_table(function, casa_table, column_name='DATA', flag_name='FLAG', c
     complete_chunks = nrows / chunksize
     results = []
     for chunk in range(complete_chunks):
-        print '%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows)
+        print('%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows))
         results += [function(set_nan_zero(ma.array(selection.getcol(column_name, startrow=chunk*chunksize, nrow=chunksize),
                                                    mask=selection.getcol(flag_name, startrow=chunk*chunksize, nrow=chunksize))))]
         pass
-    print '%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows)
+    print('%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows))
     results += [function(set_nan_zero(ma.array(selection.getcol(column_name,startrow=complete_chunks*chunksize, nrow=lastset),
                                                mask=selection.getcol(flag_name,startrow=complete_chunks*chunksize, nrow=lastset))))]
     return concatenate(results, axis=0)
@@ -76,8 +83,8 @@ def single_correlation_flags(tf_plane, threshold=5.0, max_iter=5, previous_sums=
     flags    = tf_plane.mask
     sum_flags=flags.sum()
     if verbose:
-        print 'sum(flags): %s' % (sum_flags,)
-        print     '%5.3f%s flagged\n' % ((sum_flags*100.0/product(tf_plane.shape)),'%')
+        print('sum(flags): %s' % (sum_flags,))
+        print('%5.3f%s flagged\n' % ((sum_flags*100.0/product(tf_plane.shape)),'%'))
     if sum(flags) == product(flags.shape):
         return flags
     if max_iter <= 0:
@@ -89,11 +96,11 @@ def single_correlation_flags(tf_plane, threshold=5.0, max_iter=5, previous_sums=
     new_data  = ma.array(tf_plane.data, mask=new_flags)
     sum_flags = new_flags.sum()
     if verbose:
-        print 'sum_flags: %s' % (sum_flags,)
-        print     '%5.3f%s flagged\nstd: %6.4f' % ((sum_flags*100.0/product(tf_plane.shape)),'%', ma.std(new_data))
-        print     sum_flags
-        print     previous_sums
-        print     '------------------------------------------------------------'
+        print('sum_flags: %s' % (sum_flags,))
+        print('%5.3f%s flagged\nstd: %6.4f' % ((sum_flags*100.0/product(tf_plane.shape)),'%', ma.std(new_data)))
+        print(sum_flags)
+        print(previous_sums)
+        print('------------------------------------------------------------')
     if sum_flags == reduce(max, previous_sums, 0):
         return single_correlation_flags(new_data, threshold=threshold, max_iter=0, previous_sums=previous_sums+[sum_flags])
     else:
@@ -230,8 +237,8 @@ class MeasurementSetSummary:
 
 
     def baseline_table(self, ant1, ant2, subband=0):
-        print 'MeasurementSetSummary.baseline_table subband: '+str(subband)
-        print '(ANTENNA1 == %d && ANTENNA2 == %d || ANTENNA1 == %d && ANTENNA2 == %d) && DATA_DESC_ID == %d' % (ant1,ant2,ant2,ant1, subband)
+        print('MeasurementSetSummary.baseline_table subband: '+str(subband))
+        print('(ANTENNA1 == %d && ANTENNA2 == %d || ANTENNA1 == %d && ANTENNA2 == %d) && DATA_DESC_ID == %d' % (ant1,ant2,ant2,ant1, subband))
         return tables.table(self.msname).query('(ANTENNA1 == %d && ANTENNA2 == %d || ANTENNA1 == %d && ANTENNA2 == %d) && DATA_DESC_ID == %d' % (ant1,ant2,ant2,ant1, subband))
 
     
@@ -242,7 +249,7 @@ class MeasurementSetSummary:
         of each row/plane in the cube. The mask of the cube is the
         contents of the 'FLAG' column. The second element of the tuple
         is the time slot number of each row in the cube."""
-        print 'MeasurementSetSummary.baseline subband: '+str(subband)
+        print('MeasurementSetSummary.baseline subband: '+str(subband))
         selection = self.baseline_table(ant1, ant2, subband=subband)
         data=selection.getcol(column, **kwargs)
         if self.endian_swap:
@@ -274,10 +281,10 @@ class MeasurementSetSummary:
         complete_chunks = nrows / chunksize
         results = []
         for chunk in range(complete_chunks):
-            print '%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows)
+            print('%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows))
             results += [function(flag_data(self.baseline(ant1,ant2,startrow=chunk*chunksize, nrow=chunksize),threshold=4.0, max_iter=10))]
             pass
-        print '%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows)
+        print('%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows))
         results += [function(flag_data(self.baseline(ant1,ant2,startrow=complete_chunks*chunksize, nrow=lastset), threshold=4.0, max_iter=10))]
         return concatenate(results, axis=0)
         
@@ -296,10 +303,10 @@ class MeasurementSetSummary:
         complete_chunks = nrows / chunksize
         results = []
         for chunk in range(complete_chunks):
-            print '%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows)
+            print('%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows))
             results += [function(set_nan_zero(selection.getcol('DATA', startrow=chunk*chunksize, nrow=chunksize)))]
             pass
-        print '%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows)
+        print('%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows))
         results += [function(set_nan_zero(selection.getcol('DATA',startrow=complete_chunks*chunksize, nrow=lastset)))]
         return concatenate(results, axis=0)
 
@@ -355,7 +362,7 @@ def plot_all_correlations(data_col, plot_flags=True,amax_factor=1.0):
         amax=(scale-stddev)*amax_factor
     
 
-    print 'scale: %f\nsigma: %f' % (scale, stddev)
+    print('scale: %f\nsigma: %f' % (scale, stddev))
     good=logical_not(xx.mask)
     if not plot_flags:
         good = None
@@ -402,12 +409,12 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     nrow       : number of time slots to plot
     rowincr    : take every rowincr th timeslot
     """
-    print 'plot_baseline subband: '+str(subband)
+    print('plot_baseline subband: '+str(subband))
     data            = ms_summary.baseline(baseline[0], baseline[1], subband=subband, taper=taper, column=column, **kwargs)
     flagged_data    = flag_data(data, threshold=5.0, max_iter=20)
     pp,pq,qp,qq,num_pol = split_data_col(ma.array(flagged_data))
     antenna_names   = array(ms_summary.subtable('ANTENNA').getcol('NAME'))[list(baseline)]
-    print antenna_names
+    print(antenna_names)
 
     if sum(flagged_data.mask) == product(flagged_data.shape):
         scale=1.0
@@ -421,8 +428,8 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
         amax=(scale+2.5*stddev)*amax_factor
 
     
-#    print '%f%% of time slots available' % (int((max(ms_summary.times[kwargs['startrow']:kwargs['startrow']+kwargs['nrow']*kwargs['rowincr']:kwargs['rowincr']]) - min(ms_summary.times[kwargs['startrow']:kwargs['startrow']+kwargs['nrow']*kwargs['rowincr']:kwargs['rowincr']]))/ms_summary.integration_times[0]+0.5)*100.0/len(time_slots),)
-    print 'scale: %f\nsigma: %f' % (scale, stddev)
+#    print('%f%% of time slots available' % (int((max(ms_summary.times[kwargs['startrow']:kwargs['startrow']+kwargs['nrow']*kwargs['rowincr']:kwargs['rowincr']]) - min(ms_summary.times[kwargs['startrow']:kwargs['startrow']+kwargs['nrow']*kwargs['rowincr']:kwargs['rowincr']]))/ms_summary.integration_times[0]+0.5)*100.0/len(time_slots),))
+    print('scale: %f\nsigma: %f' % (scale, stddev))
     good=logical_not(pp.mask)
     if not plot_flags:
         good = None
@@ -490,7 +497,7 @@ def vis_movie(file_prefix, timeseries, titles, maxamps, chunksize=60):
         
         subsets = [ts[chunk*chunksize:(chunk+1)*chunksize,:] for ts in timeseries]
         for col,title_text,subset,maxamp in zip(range(len(titles)), titles, subsets,maxamps):
-            print col
+            print(col)
             subplot(100+10*len(titles)+col+1)
             title(title_text+' t = %4d min' % chunk)
             scatter(subset[:,0].real, subset[:,0].imag,c='blue',label='XX')
@@ -888,27 +895,27 @@ def collect_timeseries_ms(ms, num_points=240, subband=0):
     time_slots = ms.times[0::rowincr]
     query_text = 'TIME in '+repr(list(time_slots))+' && DATA_DESC_ID == '+str(subband)
 
-    print 'Selecting data from '+ms.msname+' where '+query_text
+    print('Selecting data from '+ms.msname+' where '+query_text)
     selection  = mstab.query(query_text+' orderby '+(','.join(['TIME','ANTENNA1', 'ANTENNA2'])))
-    print 'done.'
+    print('done.')
 
     ant1       = selection.getcol('ANTENNA1')
     ant2       = selection.getcol('ANTENNA2')
     time_col   = selection.getcol('TIME')
     data_mean  = map_casa_table(bl_mean_no_edges, selection, chunksize=20000)
-    print data_mean.shape
+    print(data_mean.shape)
     output     = zeros((num_ant, num_ant, data_mean.shape[1], len(time_slots)), dtype=complex64)
     
-    print 'Allocated memory'
+    print('Allocated memory')
     time_slot_index = {}
     for i, ts in enumerate(time_slots):
         time_slot_index[repr(ts)] = i
 
     
-    print 'Beginning gridding'
+    print('Beginning gridding')
     for (i,(a1,a2,mjds, data)) in enumerate(zip(ant1, ant2, time_col, data_mean)):
         if i%100000 == 0:
-            print i
+            print(i)
         ts = time_slot_index[repr(mjds)]
         output[a1,a2,:,ts]=data
         output[a2,a1,:,ts]=conj(data)
