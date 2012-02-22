@@ -23,7 +23,10 @@ def is_locus_node(name=gethostname()):
 
 
 def get_node_number(name=gethostname()):
-    return int(name[3:])
+    if is_locus_node(name):
+        return int(name[5:])
+    else:
+        return int(name[3:])
 
 
 
@@ -99,6 +102,8 @@ def find_my_msses(msname, root='/net', node_name=gethostname(), nodes_per_subclu
         else:
             nodes_per_subcluster = 9
     msnames=find_msses(msname, root=root, node_name=node_name)
+    if msnames == []:
+        return []
     proc_id=get_node_number_in_subcluster(node_name=node_name)%len(msnames)
     return msnames[proc_id::nodes_per_subcluster]
 
