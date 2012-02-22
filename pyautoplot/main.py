@@ -880,7 +880,7 @@ def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('
         plot_stations = unique([ant_names[0], ant_names[len(ant_names)/2], ant_names[-1]])
     
     for station in plot_stations:
-        filename = os.path.join(output_dir,msname.split('/')[-1][:-3]+'-'+station.lower()+'.png')
+        filename = os.path.join(output_dir,msname.split('/')[-1][:-3]+'-timeseries-'+station.lower()+'.png')
         timeseries_station_page(ms, station, time_slots, vis_cube, output_name=filename)
     
     return results
@@ -963,7 +963,5 @@ def timeseries_station_page(ms, station_name, time_slots, data, fn=abs, output_n
         canvas.print_figure(output_name, dpi=dpi)
         pass
     pass
-
-
 
 
