@@ -965,3 +965,60 @@ def timeseries_station_page(ms, station_name, time_slots, data, fn=abs, output_n
     pass
 
 
+
+
+def station_gain_bar_chart(ms, station_name, time_slots, data, output_name= None):
+    dpi=50
+    if output_name is None:
+        fig = figure(figsize=(32,24), dpi=dpi)
+    else:
+        fig = Figure(figsize=(32,24), dpi=dpi)
+
+    station_name_list = list(ms.tables['antennae']['NAME'])
+    num_stations      = len(station_name_list)
+    station_id        = station_name_list.index(station_name)
+    ref_freq_mhz      = ms.tables['spectral_windows'][0]['REF_FREQUENCY']/1.e6
+
+    
+    is_autocorrelation = array([station_name == name for name in ms.tables['antennae']['NAME']])
+
+    noise = ma.array(data[station_id,:, 1:3,:].imag.std(axis=-1).mean(axis=-1),
+                     mask = is_autocorrelation)
+    sig    = median(abs(data[station_id, :, :, :]),axis=-1)
+    signal = ma.array(sig, mask = is_autocorrelation[:, newaxis]*ones((num_stations, 4)))
+    snr    = ma.array(signal/noise[:,newaxis], mask = signal.mask)
+
+    ax = fig.add_subplot(1,1,1)
+    xx_bars = ax.bar(arange(len(station_name_list))-0.4, snr[:,0], width=0.4, color='blue', label='xx')
+    yy_bars = ax.bar(arange(len(station_name_list))-0.0, snr[:,-1], width=0.4, color='red', label='yy')
+    for x_pos, name  in enumerate(station_name_list):
+        if name != station_name:
+            ax.text(x_pos, snr[x_pos,:].max()*1.02, name, rotation='vertical',
+                    horizontalalignment='center', verticalalignment='bottom',
+                    fontsize=25)
+        else:
+            ax.text(x_pos, 0.0, ' Reference station: '+name, rotation='vertical',
+                    horizontalalignment='center', verticalalignment='bottom',
+                    fontsize=25)
+
+    ax.set_xlabel('Station', fontsize=40)
+    ax.set_ylabel('Signal-to-noise ratio', fontsize=40)
+    ax.set_ylim(0, ma.max(snr)*1.2)
+    ax.set_xlim(-1.0, num_stations)
+    ax.set_xticklabels([])
+    ax.set_title('%s:\nSNR with station %s at %5.2f MHz' %
+                 (ms.msname, station_name, ref_freq_mhz),
+                 fontsize=40)
+    old_legend_fontsize = rcParams['legend.fontsize']
+    rcParams.update({'legend.fontsize': 25})
+    legend_instance = ax.legend()
+    
+    
+    for label in ax.get_yticklabels():
+        label.set_fontsize(40)
+    
+    if output_name is not None:
+        canvas = FigureCanvasAgg(fig)
+        canvas.print_figure(output_name, dpi=dpi)
+
+    rcParams.update({'legend.fontsize': old_legend_fontsize})
