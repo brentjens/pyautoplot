@@ -11,5 +11,6 @@ setup(name='pyautoplot',
       packages=['pyautoplot'],
       scripts=['scripts/msplots', 'scripts/tscount',
                'scripts/launch-msplots.sh',
-               'scripts/launch-tscount.sh'],
+               'scripts/launch-tscount.sh',
+               'scripts/create_html.csh'],
      )

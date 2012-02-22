@@ -10,10 +10,16 @@ HOSTNAME=`hostname -s`
 if test "$HOSTNAME" == "lhn001"; then
     cexec locus: "bash -ilc \"msplots $@\""
 
-    result=`create_html.csh $@ >& /dev/null; echo $?`
-    if [ $result ]; then 
-        echo "Problem creating HTML overview"
-    fi
+    CREATE_HTML=`which creat_html.csh`
+    if test "$CREATE_HTML" == ""; then
+        echo "Cannot find create_html.csh: no HTML generated"
+    else
+        echo "Creating HTML using $CREATE_HTML"
+        result=`$CREATE_HTML $@ >& /dev/null; echo $?`
+        if [ $result ]; then 
+            echo "Problem creating HTML overview"
+        fi
+    done
     echo "Done"
 else
     cexec1 lce:1-54,64-72 "bash -ilc \"use LofIm;use Pythonlibs; use Pyautoplot; msplots $@\""
