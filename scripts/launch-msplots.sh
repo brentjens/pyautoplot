@@ -10,7 +10,7 @@ HOSTNAME=`hostname -s`
 if test "$HOSTNAME" == "lhn001"; then
     cexec locus: "bash -ilc \"msplots $@\""
 
-    CREATE_HTML=`which creat_html.csh`
+    CREATE_HTML=`which create_html.csh`
     if test "$CREATE_HTML" == ""; then
         echo "Cannot find create_html.csh: no HTML generated"
     else
