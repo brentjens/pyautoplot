@@ -91,13 +91,13 @@ def main(argv):
     if not os.path.exists(prefix):
         prefix=os.path.expanduser('~/inspect/')
     memory=4.0
-    outputdir=None
+    output_dir=None
 
     for(option,value) in options:
         if option in ['-p', '--prefix']:
             prefix=os.path.expanduser(value)
         elif option in ['-o', '--output']:
-            outputdir=value
+            output_dir=value
         elif option in ['-m', '--memory']:
             memory = float(value)
         elif option in ['-h', '--help']:
@@ -130,7 +130,7 @@ def main(argv):
         node  = get_node_number_in_subcluster()
         mymsses=ms_selection[node::9]
         print('\n'.join(mymsses))
-        map(lambda ms: inspect_ms(ms, ms_id=sas_id, max_mem_bytes=int(memory*2**30), root=prefix, cmap=cm.gray_r),
+        map(lambda ms: inspect_ms(ms, ms_id=sas_id, max_mem_bytes=int(memory*2**30), root=prefix, cmap=cm.gray_r, output_dir = output_dir),
         mymsses)
         pass
     return 0

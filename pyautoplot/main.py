@@ -841,12 +841,16 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30), first_timeslot=0, max_time
             'Flagged standard deviation': bls_flagged_std}
 
 
-def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('~/inspect/'), first_timeslot=0, max_timeslots=None, cmap=cm.gray_r):
+def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('~/inspect/'), first_timeslot=0, max_timeslots=None, cmap=cm.gray_r, output_dir=None):
     results = collect_stats_ms(msname, max_mem_bytes)
 
     ant_names=results['Antennae']['NAME']
 
-    output_dir = os.path.join(root, str(ms_id))
+    if output_dir is None:
+        output_dir = os.path.join(root, str(ms_id))
+    else:
+        output_dir = os.path.join(root, output_dir)
+        
     try:
         os.mkdir(output_dir)
     except Exception:
