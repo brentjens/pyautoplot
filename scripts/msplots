@@ -122,11 +122,9 @@ def main(argv):
         raise OSError('Directory prefix %s does not exist.' % (prefix,))
 
     for sas_id in sas_ids:
-        msses = find_msses(str(sas_id))
-        skip  = max(len(msses)/9,1)
-        ms_selection=msses[0::skip]
-        node  = get_node_number_in_subcluster()
-        mymsses=ms_selection[node::9]
+        msses   = find_msses(str(sas_id))
+        node    = get_node_number_in_subcluster()
+        mymsses = msses[node % len(msses)]
         print('\n'.join(mymsses))
 
         if output_dir is None:

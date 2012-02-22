@@ -48,7 +48,7 @@ def get_node_number_in_subcluster(node_name=gethostname()):
     elif is_compute_node(node_name):
         nodes_per_subcluster = 9
     elif is_locus_node(node_name):
-        return 0
+        return get_node_number(node_name)
     else:
         raise ValueError(node_name +' is not a storage node or compute node and does therefore not belong to any subcluster')
     return get_node_number(node_name)-nodes_per_subcluster*(get_subcluster_number(node_name) -1) -1
@@ -99,7 +99,7 @@ def find_my_msses(msname, root='/net', node_name=gethostname(), nodes_per_subclu
         else:
             nodes_per_subcluster = 9
     msnames=find_msses(msname, root=root, node_name=node_name)
-    proc_id=get_node_number_in_subcluster(node_name=node_name)
+    proc_id=get_node_number_in_subcluster(node_name=node_name)%len(msnames)
     return msnames[proc_id::nodes_per_subcluster]
 
 
