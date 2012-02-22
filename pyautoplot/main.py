@@ -882,6 +882,8 @@ def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('
     for station in plot_stations:
         filename = os.path.join(output_dir,msname.split('/')[-1][:-3]+'-timeseries-'+station.lower()+'.png')
         timeseries_station_page(ms, station, time_slots, vis_cube, output_name=filename)
+        filename = os.path.join(output_dir,msname.split('/')[-1][:-3]+'-station-gain-'+station.lower()+'.png')
+        station_gain_bar_chart(ms, station, time_slots, vis_cube, output_name=filename)
     
     return results
 
