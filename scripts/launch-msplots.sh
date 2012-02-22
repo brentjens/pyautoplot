@@ -19,7 +19,7 @@ if test "$HOSTNAME" == "lhn001"; then
         if [ $result ]; then 
             echo "Problem creating HTML overview"
         fi
-    done
+    fi
     echo "Done"
 else
     cexec1 lce:1-54,64-72 "bash -ilc \"use LofIm;use Pythonlibs; use Pyautoplot; msplots $@\""
