@@ -87,15 +87,11 @@ def main(argv):
                                  'output=',
                                  'memory=',
                                  'help'])
-    if len(arguments) == 0:
-        raise GetoptError('please supply one or more SAS/MAC IDs; you supplied none.')
-    sas_ids = map(int, arguments)
-
     prefix=os.path.join('/globaldata', 'inspect')
     if not os.path.exists(prefix):
         prefix=os.path.expanduser('~/inspect/')
     memory=4.0
-    outputdir='L'+arguments[0]
+    outputdir=None
 
     for(option,value) in options:
         if option in ['-p', '--prefix']:
@@ -107,10 +103,16 @@ def main(argv):
         elif option in ['-h', '--help']:
             return print_help()
         else:
+            print('Unhandled option %r. Please contact developer.' % option)
             return print_help()
-            pass
-        pass
 
+    if len(arguments) == 0:
+        raise GetoptError('please supply one or more SAS/MAC IDs; you supplied none.')
+    sas_ids = map(int, arguments)
+
+    if output_dir is None:
+        output_dir ='L'+arguments[0]
+    
     if memory <= 0.0:
         raise GetoptError('%r GB of memory is not enough; consider using 1 GB or more.' % (memory,))
 
