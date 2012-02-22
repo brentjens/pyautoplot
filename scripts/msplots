@@ -52,7 +52,7 @@ msplots [options] <SAS ID 1> <SAS ID 2> ...
                             /globaldata/inspect, or, if that does
                             not exist, ~/inspect/
   -o/--output <name>        Name of output directory. Default is
-                            L<SAS ID>, e.g. L21426
+                            <SAS ID>, e.g. 21426
 
   -m/--memory <GB>          Maximum amount of memory that msinspect
                             may use in GB. Default is 4. Less than 1
@@ -110,8 +110,6 @@ def main(argv):
         raise GetoptError('please supply one or more SAS/MAC IDs; you supplied none.')
     sas_ids = map(int, arguments)
 
-    if output_dir is None:
-        output_dir ='L'+arguments[0]
     
     if memory <= 0.0:
         raise GetoptError('%r GB of memory is not enough; consider using 1 GB or more.' % (memory,))
@@ -130,7 +128,13 @@ def main(argv):
         node  = get_node_number_in_subcluster()
         mymsses=ms_selection[node::9]
         print('\n'.join(mymsses))
-        map(lambda ms: inspect_ms(ms, ms_id=sas_id, max_mem_bytes=int(memory*2**30), root=prefix, cmap=cm.gray_r, output_dir = output_dir),
+
+        if output_dir is None:
+            output_directory = str(sas_id)
+        else:
+            output_directory = output_dir
+
+        map(lambda ms: inspect_ms(ms, ms_id=sas_id, max_mem_bytes=int(memory*2**30), root=prefix, cmap=cm.gray_r, output_dir = output_directory),
         mymsses)
         pass
     return 0
