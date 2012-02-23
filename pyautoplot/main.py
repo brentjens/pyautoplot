@@ -16,9 +16,9 @@ from lofaroffline import *
 
 PYAUTOPLOT_VERSION='0.7'
 
-def print_version():
+def version_string():
     global PYAUTOPLOT_VERSION
-    print('Pyautoplot version '+PYAUTOPLOT_VERSION+'.')
+    return 'Pyautoplot version '+PYAUTOPLOT_VERSION
 
 
 

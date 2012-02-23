@@ -43,7 +43,7 @@ def warn(s):
 
 def print_help():
     print("""Usage
-_____
+-----
 
 msplots [options] <SAS ID 1> <SAS ID 2> ...
 
@@ -77,8 +77,9 @@ Output
 
 def main(argv):
     print('')
-    print_version()
-    print('-----------------------')
+    version = version_string()
+    print(version)
+    print('-'*len(version))
     if len(argv) == 1:
         return print_help()
     options, arguments = getopt(argv[1:],
