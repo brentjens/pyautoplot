@@ -994,6 +994,7 @@ def station_gain_bar_chart(ms, station_name, time_slots, data, output_name= None
     signal = ma.array(sig, mask = is_autocorrelation[:, newaxis]*ones((num_stations, 4)))
     snr    = ma.array(signal/noise[:,newaxis], mask = signal.mask)
 
+    snr[snr == nan] = 0.0
     ax = fig.add_subplot(1,1,1)
     xx_bars = ax.bar(arange(len(station_name_list))-0.4, snr[:,0], width=0.4, color='blue', label='xx')
     yy_bars = ax.bar(arange(len(station_name_list))-0.0, snr[:,-1], width=0.4, color='red', label='yy')
