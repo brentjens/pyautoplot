@@ -992,15 +992,14 @@ def station_gain_bar_chart(ms, station_name, time_slots, data, output_name= None
                      mask = is_autocorrelation)
     sig    = median(abs(data[station_id, :, :, :]),axis=-1)
     signal = ma.array(sig, mask = is_autocorrelation[:, newaxis]*ones((num_stations, 4)))
-    snr    = ma.array(signal/noise[:,newaxis], mask = signal.mask)
-
-    snr[snr == nan] = 0.0
     ax = fig.add_subplot(1,1,1)
-    xx_bars = ax.bar(arange(len(station_name_list))-0.4, snr[:,0], width=0.4, color='blue', label='xx')
-    yy_bars = ax.bar(arange(len(station_name_list))-0.0, snr[:,-1], width=0.4, color='red', label='yy')
+    xx_bars = ax.bar(arange(len(station_name_list))-0.4, signal[:, 0], width=0.2, color='blue', label='xx')
+    xy_bars = ax.bar(arange(len(station_name_list))-0.2, signal[:, 1], width=0.2, color='lightblue', label='xy')
+    yx_bars = ax.bar(arange(len(station_name_list))    , signal[:, 2], width=0.2, color='lightred', label='yx')
+    yy_bars = ax.bar(arange(len(station_name_list))+0.2, signal[:, 3], width=0.2, color='red', label='yy')
     for x_pos, name  in enumerate(station_name_list):
         if name != station_name:
-            ax.text(x_pos, snr[x_pos,:].max()*1.02, name, rotation='vertical',
+            ax.text(x_pos, signal[x_pos,:].max()*1.02, name, rotation='vertical',
                     horizontalalignment='center', verticalalignment='bottom',
                     fontsize=25)
         else:
@@ -1009,11 +1008,11 @@ def station_gain_bar_chart(ms, station_name, time_slots, data, output_name= None
                     fontsize=25)
 
     ax.set_xlabel('Station', fontsize=40)
-    ax.set_ylabel('Signal-to-noise ratio', fontsize=40)
-    ax.set_ylim(0, ma.max(snr)*1.2)
+    ax.set_ylabel('Visibility amplitude', fontsize=40)
+    ax.set_ylim(0, ma.max(signal)*1.2)
     ax.set_xlim(-1.0, num_stations)
     ax.set_xticklabels([])
-    ax.set_title('%s:\nSNR with station %s at %5.2f MHz' %
+    ax.set_title('%s:\nVis. amp. with station %s at %5.2f MHz' %
                  (ms.msname, station_name, ref_freq_mhz),
                  fontsize=40)
     old_legend_fontsize = rcParams['legend.fontsize']
