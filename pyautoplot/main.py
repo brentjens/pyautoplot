@@ -995,7 +995,7 @@ def station_gain_bar_chart(ms, station_name, time_slots, data, output_name= None
     ax = fig.add_subplot(1,1,1)
     xx_bars = ax.bar(arange(len(station_name_list))-0.4, signal[:, 0], width=0.2, color='blue', label='xx')
     xy_bars = ax.bar(arange(len(station_name_list))-0.2, signal[:, 1], width=0.2, color='lightblue', label='xy')
-    yx_bars = ax.bar(arange(len(station_name_list))    , signal[:, 2], width=0.2, color='lightred', label='yx')
+    yx_bars = ax.bar(arange(len(station_name_list))    , signal[:, 2], width=0.2, color='tomato', label='yx')
     yy_bars = ax.bar(arange(len(station_name_list))+0.2, signal[:, 3], width=0.2, color='red', label='yy')
     for x_pos, name  in enumerate(station_name_list):
         if name != station_name:
