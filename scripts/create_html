@@ -1,0 +1,68 @@
+#!/usr/bin/env python2
+# -*- python -*-
+
+import os, sys
+from optparse import OptionParser
+
+def version_string():
+    return '0.1'
+
+
+    
+
+def create_html_main(argv):
+    r'''
+    '''
+    options, sas_ids = parse_command_line(argv)
+    
+    for sas_id in sas_ids:
+        create_observation_html(sas_id)
+    
+    create_index_html()
+    return 0
+
+
+
+def parse_command_line(argv):
+    r'''
+    '''
+    parser = OptionParser(usage   = '%prog <sas ID>',
+                          version = '%prog' + version_string())
+
+    parser.add_option(
+        '--plot-root', type = 'string',
+        dest    = 'plot-root',
+        help    = 'Plots are found under DIR/<sasid> (default: %default)',
+        metavar = 'DIR',
+        default = os.path.join('/', 'globaldata', 'inspect'))
+
+    parser.add_option(
+        '--html-root', type = 'string',
+        dest    = 'html-root',
+        help    = 'Use DIR for HTML output (default: %default)',
+        metavar = 'DIR',
+        default = os.path.join('/', 'globaldata', 'inspect', 'HTML'))
+
+    (options, args) = parser.parse_args(argv[1:])
+    
+    if len(args) == 0:
+        raise ValueError('Specify at least on SAS ID')
+    sas_ids = [int(arg) for arg in args]
+    return options, sas_ids
+
+
+
+def create_observation_html(sas_id):
+    r'''
+    '''
+
+
+
+def create_index_html():
+    r'''
+    '''
+
+
+
+if __name__ == '__main__':
+    sys.exit(create_html_main(sys.argv))
