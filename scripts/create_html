@@ -23,7 +23,7 @@ def create_html_main(argv):
     
     # print('Processing sas_ids: '+', '.join([str(sas) for sas in sas_ids]))
     
-    for sas_id in sorted(sas_ids)[::-1]:
+    for num, sas_id in enumerate(sorted(sas_ids)[::-1]):
         # print(str(sas_id))
         try:
             observation_html(sas_id,
@@ -31,6 +31,11 @@ def create_html_main(argv):
                              html_root = options.html_root)
         except IOError:
             print_error(sys.exc_info()[1])
+
+        if num % 10 == 0:
+            main_index_html(plot_root = options.plot_root,
+                            html_root = options.html_root)
+
             
     main_index_html(plot_root = options.plot_root,
                     html_root = options.html_root)
