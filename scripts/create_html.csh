@@ -36,7 +36,7 @@ end
 
 echo "<html> <head> <title> Projects </title></head><body> " > index.html
 echo "<h1> Projects </h1> " >> index.html
-set projects=`ls -1 | egrep '1|2|3|4|5' | sort -r`
+set projects=`ls -1 | egrep '1|2|3|4|5|6|7' | sort -r`
 foreach project ($projects)
 	echo " <a href="$project"/index.html>"$project"</a> " >> index.html
 	echo " </br> " >> index.html

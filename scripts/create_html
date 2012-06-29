@@ -1,24 +1,39 @@
 #!/usr/bin/env python2
 # -*- python -*-
 
-import os, sys
+import os, sys, glob
 from optparse import OptionParser
 
 def version_string():
     return '0.1'
 
 
-    
+
+def print_error(string):
+    r'''
+    '''
+    print('ERROR: %s' % string)
+
+
 
 def create_html_main(argv):
     r'''
     '''
     options, sas_ids = parse_command_line(argv)
     
-    for sas_id in sas_ids:
-        create_observation_html(sas_id)
+    # print('Processing sas_ids: '+', '.join([str(sas) for sas in sas_ids]))
     
-    create_index_html()
+    for sas_id in sorted(sas_ids)[::-1]:
+        # print(str(sas_id))
+        try:
+            observation_html(sas_id,
+                             plot_root = options.plot_root,
+                             html_root = options.html_root)
+        except IOError:
+            print_error(sys.exc_info()[1])
+            
+    main_index_html(plot_root = options.plot_root,
+                    html_root = options.html_root)
     return 0
 
 
@@ -27,18 +42,18 @@ def parse_command_line(argv):
     r'''
     '''
     parser = OptionParser(usage   = '%prog <sas ID>',
-                          version = '%prog' + version_string())
+                          version = '%prog ' + version_string())
 
     parser.add_option(
         '--plot-root', type = 'string',
-        dest    = 'plot-root',
+        dest    = 'plot_root',
         help    = 'Plots are found under DIR/<sasid> (default: %default)',
         metavar = 'DIR',
         default = os.path.join('/', 'globaldata', 'inspect'))
 
     parser.add_option(
         '--html-root', type = 'string',
-        dest    = 'html-root',
+        dest    = 'html_root',
         help    = 'Use DIR for HTML output (default: %default)',
         metavar = 'DIR',
         default = os.path.join('/', 'globaldata', 'inspect', 'HTML'))
@@ -46,23 +61,175 @@ def parse_command_line(argv):
     (options, args) = parser.parse_args(argv[1:])
     
     if len(args) == 0:
-        raise ValueError('Specify at least on SAS ID')
+        raise ValueError('Specify at least one SAS ID')
     sas_ids = [int(arg) for arg in args]
     return options, sas_ids
 
 
 
-def create_observation_html(sas_id):
+def subband(plot_file_name):
     r'''
     '''
+    return [item for item in plot_file_name.split('_')
+            if item[0:2] == 'SB' and len(item) == 5][0]
 
 
-
-def create_index_html():
+def force_mkdir(path_name):
     r'''
     '''
+    if not os.path.exists(path_name):
+        os.mkdir(path_name)
+
+ 
+def contains(sub_string, strings):
+    r'''
+    '''
+    return sorted([string for string in strings if sub_string in string])
 
 
+
+
+def plot_html(plot_path, image_width = 700):
+    r'''
+    '''
+    return '''<a href="%(plot_path)s">
+    <img src="%(plot_path)s" width="%(image_width)dpx"></img>
+</a>''' % {'plot_path'  : plot_path,
+           'image_width': image_width}
+
+
+def subband_html(sas_id, sb_name, rel_plot_files):
+    r'''
+    '''
+    timeseries    = contains('timeseries'  , rel_plot_files)
+    sensitivities = contains('station-gain', rel_plot_files)
+    
+    timeseries_html    = [plot_html(image) for image in timeseries]
+    sensitivities_html = [plot_html(image) for image in sensitivities]
+    
+    overview_rows = ['<tr><td>'+line_graph+'</td><td>'+bar_graph+'</td></tr>'
+                     for (line_graph, bar_graph)
+                     in zip(timeseries_html, sensitivities_html)]
+    flagged_std   = plot_html(contains('flagged-standard-deviation',
+                                       rel_plot_files)[0])
+    flagged_mean  = plot_html(contains('flagged-mean', rel_plot_files)[0])
+    flags         = plot_html(contains('flags'       , rel_plot_files)[0])
+    zeros         = plot_html(contains('zeroes'      , rel_plot_files)[0])
+
+    html_template = '''
+<html>
+    <head> <title}%(title)s</title> </head>
+    <body>
+    <center>
+        <h1>%(title)s</h1>
+
+
+        <p>
+          <ul>
+            <li><a href="../index.html">Subbands</a> <a href="../../index.html">Projects</a></li>
+          </ul>
+        </p>
+
+        <table>
+        %(overview_rows)s
+        <tr>
+            <td>%(flagged_std)s</td>
+            <td>%(flagged_mean)s</td>
+        </tr>
+        <tr>
+            <td>%(flags)s</td>
+            <td>%(zeros)s</td>
+        </tr>
+        </table>
+    </center>
+    </body>
+</html>'''
+
+    return html_template % {
+        'title'        : 'L'+str(sas_id)+' '+sb_name,
+        'overview_rows': '\n'.join(overview_rows),
+        'flagged_std'  : flagged_std,
+        'flagged_mean' : flagged_mean,
+        'flags'        : flags,
+        'zeros'        : zeros}
+
+
+def observation_html(sas_id, plot_root, html_root):
+    r'''
+    '''
+    obs_html_root = os.path.join(html_root, str(sas_id))
+    sb_html_root  = os.path.join(obs_html_root, 'SBpages')
+    obs_plot_root = os.path.join(plot_root, str(sas_id))
+
+    if not os.path.exists(obs_plot_root):
+        raise IOError('Directory "%s" does not exist' % obs_plot_root)
+
+    force_mkdir(obs_html_root)
+    force_mkdir(sb_html_root)
+
+    pattern    = os.path.join(obs_plot_root, '*.png')
+    plot_files = [os.path.relpath(full_path, sb_html_root)
+                  for full_path in glob.glob(pattern)]
+            
+    sb_plots = {}
+    for plot_file in plot_files:
+        key = subband(plot_file)
+        if not sb_plots.has_key(key):
+            sb_plots[key] = []
+        sb_plots[key].append(plot_file)
+
+    sb_list = sorted(sb_plots.keys())
+    for sb_name in sb_list:
+        file_name = os.path.join(sb_html_root, sb_name+'.html')
+        open(file_name, 'w').write(
+            subband_html(sas_id, sb_name, sb_plots[sb_name]))
+        
+    
+    observation_index_name = os.path.join(obs_html_root, 'index.html')
+    
+    sb_page_list = ['<a href="SBpages/%s.html">%s</a>' % (name, name)
+                    for name in sb_list]
+    open(observation_index_name, 'w').write('''
+<html>
+    <head><title>L%(sas_id)s</title></head>
+    <body>
+    <h1>L%(sas_id)s</h1>
+    <p><ul>
+        <li><a href="../index.html">Projects</a></li>
+    </ul></p>
+
+    %(sub_band_pages)s
+    </body>
+</html>
+''' % {'sas_id'        : str(sas_id),
+       'sub_band_pages': ' '.join(sb_page_list)})
+                            
+
+
+
+def main_index_html(plot_root, html_root):
+    r'''
+    '''
+    index_name = os.path.join(html_root, 'index.html')
+    plot_sas_id_pattern = os.path.join(plot_root, '[0123456789]'*5)
+    sas_id_with_plot = [int(os.path.split(sas_id)[-1]) for sas_id in glob.glob(plot_sas_id_pattern)]
+    html_sas_id_pattern = os.path.join(html_root, '[0123456789]'*5)
+    sas_id_with_html = [int(os.path.split(sas_id)[-1]) for sas_id in glob.glob(html_sas_id_pattern)]
+    sas_ids = sorted(set(sas_id_with_html).intersection(set(sas_id_with_plot)))[::-1]
+    open(index_name, 'w').write('''
+<html>
+    <head><title>LOFAR Inspection plots</title></head>
+    <body>
+        <h1>LOFAR inspection plots</h1>
+        <ul>
+        %(sas_ids)s
+        </ul>
+    </body>
+</html>
+''' % {'sas_ids' : '\n'.join(['<li><a href="%d/index.html">L%d</a></li>'
+                              % (sas_id, sas_id)
+                              for sas_id in sas_ids])})
+    
 
 if __name__ == '__main__':
     sys.exit(create_html_main(sys.argv))

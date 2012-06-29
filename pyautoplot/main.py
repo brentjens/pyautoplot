@@ -976,9 +976,9 @@ def timeseries_station_page(ms, station_name, time_slots, data, fn=abs, output_n
 def station_gain_bar_chart(ms, station_name, time_slots, data, output_name= None):
     dpi=50
     if output_name is None:
-        fig = figure(figsize=(32,24), dpi=dpi)
+        fig = figure(figsize=(38,24), dpi=dpi)
     else:
-        fig = Figure(figsize=(32,24), dpi=dpi)
+        fig = Figure(figsize=(38,24), dpi=dpi)
 
     station_name_list = list(ms.tables['antennae']['NAME'])
     num_stations      = len(station_name_list)
@@ -1001,6 +1001,9 @@ def station_gain_bar_chart(ms, station_name, time_slots, data, output_name= None
         if name != station_name:
             ax.text(x_pos, signal[x_pos,:].max()*1.02, name, rotation='vertical',
                     horizontalalignment='center', verticalalignment='bottom',
+                    fontsize=25)
+            ax.text(x_pos, signal[x_pos,:].max()*-0.01, name, rotation='vertical',
+                    horizontalalignment='center', verticalalignment='top',
                     fontsize=25)
         else:
             ax.text(x_pos, 0.0, ' Reference station: '+name, rotation='vertical',
