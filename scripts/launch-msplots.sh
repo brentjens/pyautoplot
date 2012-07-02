@@ -24,4 +24,3 @@ if test "$HOSTNAME" == "lhn001"; then
 else
     cexec1 lce:1-54,64-72 "bash -ilc \"use LofIm;use Pythonlibs; use Pyautoplot; msplots $@\""
 fi
-
