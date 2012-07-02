@@ -14,7 +14,7 @@ from utilities import *
 from lofaroffline import *
 
 
-PYAUTOPLOT_VERSION='0.7'
+PYAUTOPLOT_VERSION='0.8'
 
 def version_string():
     global PYAUTOPLOT_VERSION
