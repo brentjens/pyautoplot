@@ -25,10 +25,10 @@ else
     logfile=/dev/null
 fi
 
-packages=`find . -name '__init__.py' -maxdepth 2|sed -e 's/^\.\///g' -e 's/\/__init__\.py//g'|grep -v test`
+packages=`find . -maxdepth 2 -name '__init__.py' |sed -e 's/^\.\///g' -e 's/\/__init__\.py//g'|grep -v test`
 
 
-python make_cluster_dirs.py
+python2 make_cluster_dirs.py
 
 for package in $packages; do
     modules=`ls $package/*.py| grep -v "__init__"`
@@ -42,7 +42,7 @@ for package in $packages; do
         if test -e $testfile; then
             
             if test "$COVERAGE" = ""; then
-                python $testfile 2>&1 |tee -a $logfile |grep -e 'Ran\|OK\|FAILED\|Testing\|Error\|^    \|^  File \^\|line\|^Traceback\| != \| !< '
+                python2 $testfile 2>&1 |tee -a $logfile |grep -e 'Ran\|OK\|FAILED\|Testing\|Error\|^    \|^  File \^\|line\|^Traceback\| != \| !< '
             else
                 $COVERAGE run -a $testfile 2>&1 |tee -a $logfile |grep -e 'Ran\|OK\|FAILED\|Testing\|Error\|^    \|^  File \^\|line\|^Traceback\| != \| !< '
             fi
