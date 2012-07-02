@@ -16,10 +16,13 @@ if test "$HOSTNAME" == "lhn001"; then
     else
         echo "Creating HTML using $CREATE_HTML"
         result=`$CREATE_HTML $@ >& /dev/null; echo $?`
-        if [ $result ]; then 
+        if test "$result" == "0"; then
+            echo "HTML Created successfully"
+        else 
             echo "Problem creating HTML overview for $@."
             echo $result
         fi
+    fi
     echo "Done"
 else
     cexec1 lce:1-54,64-72 "bash -ilc \"use LofIm;use Pythonlibs; use Pyautoplot; msplots $@\""
