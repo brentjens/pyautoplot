@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='pyautoplot',
-      version='0.6.2',
+      version='0.7',
       description='Library to build interferometric data inspection tools',
       author='Michiel Brentjens',
       author_email='brentjens@astron.nl',
@@ -12,5 +12,5 @@ setup(name='pyautoplot',
       scripts=['scripts/msplots', 'scripts/tscount',
                'scripts/launch-msplots.sh',
                'scripts/launch-tscount.sh',
-               'scripts/create_html.csh'],
+               'scripts/create_html'],
      )
