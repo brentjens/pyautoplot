@@ -1,25 +1,29 @@
-from exceptions import *
+from pyautoplot import __version__
+
+#from exceptions import *
 import os,gc,pickle
 import scipy.ndimage as ndimage
-from pyrap import tables as tables
-from pylab import *
+import pyrap.tables as tables
+from numpy import complex64, float32, float64, int64
+from numpy import arange, concatenate, logical_not, logical_or, newaxis, product
+from numpy import log10, conj, ceil, ones, sqrt, unique, zeros, where, median
+from numpy.fft import fft, fftshift, ifft, ifft2
+
+from pylab import clf, gcf, imshow, axis, grid, title, xlabel, ylabel, plot
+from pylab import colorbar, figure, Figure, scatter, legend, savefig, yscale
+from pylab import rcParams, subplot
+import matplotlib.cm as cm
 
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 
-import ma, forkmap, uvplane
-from tableformatter import *
-from angle import *
-from utilities import *
-from lofaroffline import *
-
-
-PYAUTOPLOT_VERSION='0.8'
-
-def version_string():
-    global PYAUTOPLOT_VERSION
-    return 'Pyautoplot version '+PYAUTOPLOT_VERSION
-
+import pyautoplot.ma      as ma
+import pyautoplot.forkmap as forkmap
+import pyautoplot.uvplane as uvplane
+from pyautoplot.tableformatter import *
+from pyautoplot.angle import *
+from pyautoplot.utilities import *
+from pyautoplot.lofaroffline import *
 
 
 def corr_type(corr_id):
@@ -35,15 +39,11 @@ def corr_type(corr_id):
                      'Ptotal', 'Plinear',
                      'PFtotal', 'PFlinear', 'Pangle'])
     if is_list (corr_id):
-        return map(corr_type, corr_id)
+        return [corr_type(corr) for corr in corr_id]
     else:
         return CORR_TYPE[corr_id]
 
     
-
-class NotImplementedError(Exception):
-    pass
-
 
 def map_casa_table(function, casa_table, column_name='DATA', flag_name='FLAG', chunksize=1000, rowincr=1, nrow=None):
     """function should take a complex array of (timeslots,channels,polarizations) dimension, and return an array of values
@@ -53,7 +53,7 @@ def map_casa_table(function, casa_table, column_name='DATA', flag_name='FLAG', c
     nrows = selection.nrows()
     if nrow is not None:
         nrows = min(nrow, nrows)
-    selection = selection.selectrows(arange(0,nrows, rowincr))
+    selection = selection.selectrows(arange(0, nrows, rowincr))
     nrows = selection.nrows()
     lastset = nrows % chunksize
     complete_chunks = nrows / chunksize
@@ -62,7 +62,6 @@ def map_casa_table(function, casa_table, column_name='DATA', flag_name='FLAG', c
         print('%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows))
         results += [function(set_nan_zero(ma.array(selection.getcol(column_name, startrow=chunk*chunksize, nrow=chunksize),
                                                    mask=selection.getcol(flag_name, startrow=chunk*chunksize, nrow=chunksize))))]
-        pass
     print('%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows))
     results += [function(set_nan_zero(ma.array(selection.getcol(column_name,startrow=complete_chunks*chunksize, nrow=lastset),
                                                mask=selection.getcol(flag_name,startrow=complete_chunks*chunksize, nrow=lastset))))]
@@ -71,7 +70,7 @@ def map_casa_table(function, casa_table, column_name='DATA', flag_name='FLAG', c
 
 def split_data_col(data_col):
     """Returns xx, xy, yx, yy, num_pol"""
-    flags=logical_or.reduce(data_col.mask, axis=2)
+    flags = logical_or.reduce(data_col.mask, axis = 2)
     
     return (ma.array(data_col[:,:,0], mask=flags),
             ma.array(data_col[:,:,1], mask=flags),
@@ -91,8 +90,8 @@ def single_correlation_flags(tf_plane, threshold=5.0, max_iter=5, previous_sums=
         return ndimage.binary_dilation(flags,iterations=2)
     med       = ma.median(tf_plane.real) +1j*ma.median(tf_plane.imag)
     sigma     = max(ma.std(tf_plane.real), ma.std(tf_plane.imag))
-    bad_data  = abs(tf_plane.data-med) > threshold*sigma
-    new_flags = logical_or(flags,bad_data)
+    bad_vis   = abs(tf_plane.data-med) > threshold*sigma
+    new_flags = logical_or(flags, bad_vis)
     new_data  = ma.array(tf_plane.data, mask=new_flags)
     sum_flags = new_flags.sum()
     if verbose:
@@ -102,23 +101,26 @@ def single_correlation_flags(tf_plane, threshold=5.0, max_iter=5, previous_sums=
         print(previous_sums)
         print('------------------------------------------------------------')
     if sum_flags == reduce(max, previous_sums, 0):
-        return single_correlation_flags(new_data, threshold=threshold, max_iter=0, previous_sums=previous_sums+[sum_flags])
+        return single_correlation_flags(new_data,
+                                        threshold = threshold,
+                                        max_iter  = 0,
+                                        previous_sums = previous_sums+[sum_flags])
     else:
         return single_correlation_flags(new_data, threshold=threshold, max_iter=max_iter-1, previous_sums=previous_sums+[sum_flags])
     
     
 def bad_data(data_col, threshold=5.0,max_iter=5, fubar_fraction=0.5, verbose=False):
-    xx,xy,yx,yy,num_pol = split_data_col(data_col)
+    xx, xy, yx, yy, num_pol = split_data_col(data_col)
     flags = reduce(logical_or,
                    map(lambda x: single_correlation_flags(x,threshold=threshold,max_iter=max_iter, verbose=verbose),
                        [xx, xy, yx, yy]))
     bad_channels  = ma.sum(flags,axis=0) > data_col.shape[0]*fubar_fraction
     bad_timeslots = ma.sum(flags,axis=1) > data_col.shape[1]*fubar_fraction
 
-    flags |= logical_or(bad_channels[newaxis,:], bad_timeslots[:,newaxis])
+    flags |= logical_or(bad_channels[newaxis, :], bad_timeslots[:, newaxis])
     
 
-    full_flags=zeros(data_col.shape, dtype=bool)
+    full_flags = zeros(data_col.shape, dtype = bool)
     for i in range(4):
         full_flags[:,:,i] = flags
         pass
@@ -145,13 +147,13 @@ def all_statistics(data_col):
             'xy': statistics(xy),
             'yx': statistics(yx),
             'yy': statistics(yy),
-            'flagged': xx.mask.sum()*1.0/product(xx.shape),
+            'flagged': xx.mask.sum()*1.0/product(xx.data.shape),
             'num_pol': num_pol}
 
 
 def regrid_time_frequency_correlation_cube(cube, time_slots):
     new_cube=ma.array(zeros((max(time_slots)-min(time_slots)+1,cube.shape[1],cube.shape[2]),dtype=complex64))
-    new_cube.mask=ones(new_cube.shape,dtype=bool)
+    new_cube.mask=ones(new_cube.data.shape,dtype=bool)
     new_cube.data[time_slots-min(time_slots),:,:] = cube.data
     new_cube.mask[time_slots-min(time_slots),:,:] = cube.mask
     return new_cube
@@ -262,7 +264,7 @@ class MeasurementSetSummary:
         flags=selection.getcol('FLAG', **kwargs)
         raw = regrid_time_frequency_correlation_cube(ma.array(data,mask=flags),time_slots)
         if taper is not None:
-            return ma.array(apply_taper(raw.data, taper(raw.shape[1])),mask=raw.mask)
+            return ma.array(apply_taper(raw.data, taper(raw.data.shape[1])),mask=raw.mask)
         else:
             return raw
 
@@ -416,7 +418,7 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     antenna_names   = array(ms_summary.subtable('ANTENNA').getcol('NAME'))[list(baseline)]
     print(antenna_names)
 
-    if sum(flagged_data.mask) == product(flagged_data.shape):
+    if sum(flagged_data.mask) == product(flagged_data.data.shape):
         scale=1.0
         stddev=0.1
         amax=1.0*amax_factor
@@ -449,8 +451,8 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     plots = map(lambda tf: delay_fringe_rate(tf, padding=padding), [pp,pq,qp,qq])
     
     amax = array([abs(d).max() for d in plots]).max()*amax_factor
-    width=min(num_delay, pp.shape[1])
-    height=min(num_fringe_rate, pp.shape[0])
+    width=min(num_delay, pp.data.shape[1])
+    height=min(num_fringe_rate, pp.data.shape[0])
 
     for i,d in enumerate(plots):
         subplot(245+i)
@@ -697,7 +699,7 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30), first_timeslot=0, max_time
     def timeslot(mjd):
         return int((mjd-ms.times[0])/ms.integration_times[0] +0.5)
     num_timeslots = timeslot(ms.times[-1])+1
-    integration_time=ms.integration_times.mean()
+    integration_time = array(ms.integration_times).mean()
     num_bl        = num_ant*(num_ant+1)/2
     num_chan      = ms.tables['spectral_windows']['NUM_CHAN'][0]
     bandwidth     = ms.tables['spectral_windows']['TOTAL_BANDWIDTH'][0]

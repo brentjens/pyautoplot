@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- python -*-
 
 from getopt import gnu_getopt as getopt
 from getopt import GetoptError
@@ -71,7 +72,7 @@ Output
 
 
 def count_timeslots(msname):
-    ms=MeasurementSetSummary(msname)
+    ms = MeasurementSetSummary(msname)
     return len(ms.times)
 
 

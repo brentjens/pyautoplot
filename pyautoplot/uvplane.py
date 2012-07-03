@@ -1,4 +1,7 @@
-from pylab import *
+from numpy import array, arange, copy, isnan, newaxis, pi, remainder
+from numpy import angle, cos, floor, median
+from numpy.fft import fftshift, fftn
+from pylab import clf, colorbar, figtext, is_string_like, subplot, title, imshow
 import pyfits as p
 import gc
 
@@ -128,7 +131,7 @@ def plot_complex_image(image, plot_title='',textsize=18, scale=False):
     limit = 6*median(abs(image))
 
     clf()
-    if is_string(plot_title):
+    if is_string_like(plot_title):
         figtext(0.5,0.95,plot_title,size=1.5*textsize,horizontalalignment='center')
         pass
     subplot(221)
@@ -163,13 +166,13 @@ def plot_complex_image(image, plot_title='',textsize=18, scale=False):
 
 
 def read_fits_image(filename):
-    hdulist=p.open(fits_filename)
-    data= hdulist[0].data.squeeze()
-    p.close()
+    hdulist = p.open(filename)
+    data = hdulist[0].data.squeeze()
+    hdulist.close()
     return data
 
 def plot_uvplane(image, width_pixels=None, **kwargs):
-    uvplane= fftshift(fftn(fftshift(image,[0,1])),[0,1])
+    uvplane = fftshift(fftn(fftshift(image,[0,1])),[0,1])
     gc.collect()
     uvplane_shape = uvplane.shape
     print 'image shape    : '+str(uvplane_shape)

@@ -1,6 +1,6 @@
 import unittest
 from pyautoplot.uvplane import *
-from numpy import NaN
+from numpy import exp, NaN
 
 
 class UvplaneTest(unittest.TestCase):
