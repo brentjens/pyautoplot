@@ -20,7 +20,7 @@ if test "$HOSTNAME" == "lhn001"; then
 
     else
         echo "Creating HTML using $CREATE_HTML" | tee -a /globaldata/inspect/create_html.log
-        result=`$CREATE_HTML $@ 2>&1; echo $?`
+        result=`bash -ilc \"use LofIm; use Pythonlibs; use Pyautoplot; $CREATE_HTML $@ 2>&1; echo $?\"`
         if test "$result" == "0"; then
             echo "HTML Created successfully" | tee -a /globaldata/inspect/create_html.log
         else 
