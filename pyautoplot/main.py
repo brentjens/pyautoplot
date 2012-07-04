@@ -123,7 +123,6 @@ def bad_data(data_col, threshold=5.0,max_iter=5, fubar_fraction=0.5, verbose=Fal
     full_flags = zeros(data_col.shape, dtype = bool)
     for i in range(4):
         full_flags[:,:,i] = flags
-        pass
     return full_flags
     
 
@@ -131,13 +130,13 @@ def flag_data(data_col, **kwargs):
     return ma.array(data_col, mask=bad_data(data_col,**kwargs))
 
 
-def statistics(array):
-    return {'mean'   : ma.mean(array),
-            'median' : ma.median(array.real)+1j*ma.median(array.imag),
+def statistics(numpy_array):
+    return {'mean'   : ma.mean(numpy_array),
+            'median' : ma.median(numpy_array.real)+1j*ma.median(numpy_array.imag),
             'max'    : ma.max(abs(array)),
             'min'    : ma.min(abs(array)),
             'std'    : ma.std(array),
-            'stdmean': ma.std(array)/sqrt(sum(logical_not(array.mask))-1)}
+            'stdmean': ma.std(numpy_array)/sqrt(sum(logical_not(numpy_array.mask))-1)}
 
 
 def all_statistics(data_col):
@@ -197,7 +196,6 @@ class MeasurementSetSummary:
         self.msname = msname
         self.read_metadata()
         self.endian_swap=endian_swap
-        pass
 
     def subtable(self, subtable_name):
         return tables.table(tables.table(self.msname).getkeyword(subtable_name))
@@ -315,7 +313,6 @@ class MeasurementSetSummary:
     
     def statistics(self):
         pass
-
 
 
 

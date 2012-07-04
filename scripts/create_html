@@ -12,15 +12,42 @@ from optparse import OptionParser
 
 
 
-def print_error(string):
+def print_error(message):
     r'''
+    Print an error message to STDERR.
+
+    **Parameters**
+
+    message : string
+        The message to print.
+
+    **Examples**
+
+    >>> print_error('whoops, I messed up!')
+    ERROR: whoops, I messed up!
+    
     '''
-    print('ERROR: %s' % string, sys.stderr)
+    print('ERROR: %s' % message, sys.stderr)
 
 
 
 def create_html_main(argv):
     r'''
+    The program's main function.
+
+    **Parameters**
+    
+    argv : list of strings
+        The contents of ``sys.argv``
+
+    **Returns**
+    
+    An integer, where success is indicated by the value 0.
+
+    **Examples**
+
+    >>> create_html_main(['create_html', '60807', '60806'])
+    0
     '''
     options, sas_ids = parse_command_line(argv)
     
@@ -214,6 +241,70 @@ def observation_html(sas_id, plot_root, html_root):
                             
 
 
+def parset_summary(parset_name):
+    r'''
+    '''
+    def value(line):
+        return line.split('=')[-1].strip('\' \n')
+
+    parset = {'campaign_name': '',
+              'target'       : '',
+              'start_time'   : '',
+              'stop_time'    : '',
+              'antenna_set'  : '',
+              'band_filter'  : ''}
+    
+    if os.path.exists(parset_name):
+        parset_lines = open(parset_name).readlines()
+        for line in parset_lines:
+            if 'Campaign.name' in line:
+                parset['campaign_name'] = value(line)
+            elif 'Beam[0].target' in line:
+                parset['target'] = value(line)
+            elif 'Observation.startTime' in line:
+                parset['start_time'] = value(line)
+            elif 'Observation.stopTime' in line:
+                parset['stop_time'] = value(line)
+            elif 'Observation.antennaSet' in line:
+                parset['antenna_set'] = value(line)
+            elif  'Observation.bandFilter' in line:
+                parset['band_filter'] = value(line)
+            else:
+                pass
+    return parset
+
+
+
+
+'''        
+Observation.antennaSet = LBA_INNER
+Observation.bandFilter = LBA_10_90
+Observation.startTime = '2012-07-03 14:44:44'
+Observation.stopTime = '2012-07-03 14:46:44'
+Observation.Beam[0].target = '3C 196'
+Observation.Beamformer.stationList = []
+Observation.Campaign.CO_I = 'Pizzo, Dr. Roberto Francesco'
+Observation.Campaign.PI = 'Polatidis, Dr Antonios'
+Observation.Campaign.contact = 'Polatidis, Dr Antonios'
+Observation.Campaign.name = 2012LOFAROBS
+Observation.Campaign.title = 2012LOFAROBS
+'''
+
+
+def observation_table_row(sas_id, parset):
+    r'''
+    '''
+    format_dict           = parset.copy()
+    format_dict['sas_id'] = str(sas_id)
+    html = '''
+    <tr><th><a href="%(sas_id)s/index.html">L%(sas_id)s</a>&nbsp;&nbsp;&nbsp;</th>
+        <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
+        <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
+        <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
+    </tr>
+''' % format_dict
+    return html
+
 
 def main_index_html(plot_root, html_root):
     r'''
@@ -224,19 +315,22 @@ def main_index_html(plot_root, html_root):
     html_sas_id_pattern = os.path.join(html_root, '[0123456789]'*5)
     sas_id_with_html = [int(os.path.split(sas_id)[-1]) for sas_id in glob.glob(html_sas_id_pattern)]
     sas_ids = sorted(set(sas_id_with_html).intersection(set(sas_id_with_plot)))[::-1]
+    parsets = [parset_summary(os.path.join('/globalhome', 'lofarsystem', 'log',
+                                           'L'+str(sas_id)+'.parset'))
+               for sas_id in sas_ids]
+    
     open(index_name, 'w').write('''
 <html>
     <head><title>LOFAR Inspection plots</title></head>
     <body>
         <h1>LOFAR inspection plots</h1>
-        <ul>
-        %(sas_ids)s
-        </ul>
+        <table>
+        %s
+        </table>
     </body>
 </html>
-''' % {'sas_ids' : '\n'.join(['<li><a href="%d/index.html">L%d</a></li>'
-                              % (sas_id, sas_id)
-                              for sas_id in sas_ids])})
+''' % '\n'.join([observation_table_row(sas_id, parset)
+                 for sas_id, parset in zip(sas_ids, parsets)] ))
     
 
 if __name__ == '__main__':
