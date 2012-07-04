@@ -20,7 +20,7 @@ if test "$HOSTNAME" == "lhn001"; then
 
     else
         echo "Creating HTML using $CREATE_HTML"
-        result=`$CREATE_HTML $@ > /dev/null; echo $?`
+        result=`$CREATE_HTML $@ 2>&1; echo $?`
         if test "$result" == "0"; then
             echo "HTML Created successfully"
         else 
