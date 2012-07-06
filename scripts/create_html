@@ -71,6 +71,7 @@ except ImportError:
     __version__ = 'unknown'
 
 logging.debug('Using pyautoplot version %s', __version__)
+logging.debug('Environment:\n%s', '\n'.join(['%15s: %s' % (key.ljust(15), os.environ[key]) for key in os.environ.keys()]))
 
 
 
