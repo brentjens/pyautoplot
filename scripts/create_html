@@ -1,10 +1,14 @@
 #!/usr/bin/env python2
 # -*- python -*-
 
-import matplotlib
-matplotlib.use('agg') # Prevent initialisation of GUI system
+try:
+    import matplotlib
+    matplotlib.use('agg') # Prevent initialisation of GUI system
+    from pyautoplot import __version__
+except ImportError:
+    __version__ = 'unknown'
 
-from pyautoplot import __version__
+
 
 import os, sys, glob
 from optparse import OptionParser
