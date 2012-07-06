@@ -55,11 +55,11 @@ def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
     for handler in logger.handlers:
         handler.setFormatter(formatter)
         handler.setLevel(level)
-
+    logging.debug('Initialized logging')
     return log_file_name
 
 
-initialize_logging('INFO')
+initialize_logging('DEBUG')
 
 try:
     import matplotlib
@@ -70,7 +70,7 @@ except ImportError:
     logging.warning('Command line: %s', ' '.join(sys.argv))
     __version__ = 'unknown'
 
-
+logging.debug('Using pyautoplot version %s', __version__)
 
 
 
@@ -95,6 +95,7 @@ def create_html_main(argv):
     >>> create_html_main(['create_html', '60807', '60806'])
     0
     '''
+    logging.debug('create_html_main(argv = %r)', argv)
     options, sas_ids = parse_command_line(argv)
     for num, sas_id in enumerate(sorted(sas_ids)[::-1]):
         logging.debug('Processing SAS ID: %d', sas_id)
@@ -119,6 +120,7 @@ def create_html_main(argv):
 def parse_command_line(argv):
     r'''
     '''
+    logging.debug('parse_command_line(argv = %r)', argv)
     parser = OptionParser(usage   = '%prog <sas ID>',
                           version = '%prog (pyautoplot ' + __version__ + ')')
 
@@ -147,6 +149,22 @@ def parse_command_line(argv):
 
 def subband(plot_file_name):
     r'''
+    Extract sub band name from ``plot_file_name``.
+    
+    **Parameters**
+
+    plot_file_name : string
+        File name of an inspection plot.
+
+    **Returns**
+    
+    A string containing the sub band identifier with format 'SBnnn',
+    where ``nnn`` are three digits.
+
+    **Examples**
+
+    >>> subband('/globaldata/inspect/60873/L60873_SAP000_SB049_uv-flags.png')
+    'SB049'
     '''
     return [item for item in plot_file_name.split('_')
             if item[0:2] == 'SB' and len(item) == 5][0]
@@ -155,6 +173,7 @@ def subband(plot_file_name):
 def force_mkdir(path_name):
     r'''
     '''
+    logging.debug('force_mkdir(path_name = %r)', path_name)
     if not os.path.exists(path_name):
         os.mkdir(path_name)
 
@@ -235,6 +254,8 @@ def subband_html(sas_id, sb_name, rel_plot_files):
 def observation_html(sas_id, plot_root, html_root):
     r'''
     '''
+    logging.debug('observation_html(sas_id = %r, plot_root = %r, html_root = %r)',
+                  sas_id, plot_root, html_root)
     obs_html_root = os.path.join(html_root, str(sas_id))
     sb_html_root  = os.path.join(obs_html_root, 'SBpages')
     obs_plot_root = os.path.join(plot_root, str(sas_id))
@@ -286,6 +307,17 @@ def observation_html(sas_id, plot_root, html_root):
 
 def parset_summary(parset_name):
     r'''
+    Observation.antennaSet = LBA_INNER
+    Observation.bandFilter = LBA_10_90
+    Observation.startTime = '2012-07-03 14:44:44'
+    Observation.stopTime = '2012-07-03 14:46:44'
+    Observation.Beam[0].target = '3C 196'
+    Observation.Beamformer.stationList = []
+    Observation.Campaign.CO_I = 'Pizzo, Dr. Roberto Francesco'
+    Observation.Campaign.PI = 'Polatidis, Dr Antonios'
+    Observation.Campaign.contact = 'Polatidis, Dr Antonios'
+    Observation.Campaign.name = 2012LOFAROBS
+    Observation.Campaign.title = 2012LOFAROBS
     '''
     def value(line):
         return line.split('=')[-1].strip('\' \n')
@@ -317,23 +349,6 @@ def parset_summary(parset_name):
     return parset
 
 
-
-
-'''        
-Observation.antennaSet = LBA_INNER
-Observation.bandFilter = LBA_10_90
-Observation.startTime = '2012-07-03 14:44:44'
-Observation.stopTime = '2012-07-03 14:46:44'
-Observation.Beam[0].target = '3C 196'
-Observation.Beamformer.stationList = []
-Observation.Campaign.CO_I = 'Pizzo, Dr. Roberto Francesco'
-Observation.Campaign.PI = 'Polatidis, Dr Antonios'
-Observation.Campaign.contact = 'Polatidis, Dr Antonios'
-Observation.Campaign.name = 2012LOFAROBS
-Observation.Campaign.title = 2012LOFAROBS
-'''
-
-
 def observation_table_row(sas_id, parset):
     r'''
     '''
@@ -352,6 +367,8 @@ def observation_table_row(sas_id, parset):
 def main_index_html(plot_root, html_root):
     r'''
     '''
+    logging.debug('main_index_html(plot_root = %r, html_root = %r)', plot_root, html_root)
+
     index_name = os.path.join(html_root, 'index.html')
     plot_sas_id_pattern = os.path.join(plot_root, '[0123456789]'*5)
     sas_id_with_plot = [int(os.path.split(sas_id)[-1]) for sas_id in glob.glob(plot_sas_id_pattern)]
