@@ -13,20 +13,20 @@ if test "$HOSTNAME" == "lhn001"; then
     cexec locus: "bash -ilc \"use LofIm; use Pythonlibs; use Pyautoplot; msplots $@\""
 
     CREATE_HTML=`which create_html`
-    date >> /globaldata/inspect/create_html.log
-    echo "$@" >> /globaldata/inspect/create_html.log
+    date >> /globaldata/inspect/launch-msplots.log
+    echo "$@" >> /globaldata/inspect/launch-msplots.log
     if test "$CREATE_HTML" == ""; then
-        echo "Cannot find create_html: no HTML generated" | tee -a /globaldata/inspect/create_html.log
+        echo "Cannot find create_html: no HTML generated" | tee -a /globaldata/inspect/launch-msplots.log
 
     else
-        echo "Creating HTML using $CREATE_HTML" | tee -a /globaldata/inspect/create_html.log
-        result=`bash -ilc \"use LofIm; use Pythonlibs; use Pyautoplot; $CREATE_HTML $@ 2>&1\"`
+        echo "Creating HTML using $CREATE_HTML" | tee -a /globaldata/inspect/launch-msplots.log
+        result=`bash -ilc \"$CREATE_HTML $@ 2>&1\"`
         exit_status="$?"
         if test "$exit_status" == "0"; then
-            echo "HTML Created successfully" | tee -a /globaldata/inspect/create_html.log
+            echo "HTML Created successfully" | tee -a /globaldata/inspect/launch-msplots.log
         else 
-            echo "Problem creating HTML overview for $@." | tee -a /globaldata/inspect/create_html.log
-            echo "$result" | tee -a /globaldata/inspect/create_html.log
+            echo "Problem creating HTML overview for $@." | tee -a /globaldata/inspect/launch-msplots.log
+            echo "$result" | tee -a /globaldata/inspect/launch-msplots.log
         fi
     fi
     echo "Done"

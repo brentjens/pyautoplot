@@ -1,38 +1,80 @@
 #!/usr/bin/env python2
 # -*- python -*-
 
+import logging
+import os, sys, glob, socket
+from optparse import OptionParser
+
+
+
+def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
+    r'''
+    Initialize the Python logging system. The log file will be written
+    to ``/globaldata/inspect/create_html.log``.
+
+    **Parameters**
+
+    log_level : string
+        Minimum log level of lines to write into the
+        log file. Possible values are 'DEBUG', 'INFO', 'WARNING', and
+        'ERROR'.
+
+    log_dir : string
+        Directory where the log file must be written.
+
+
+    **Returns**
+
+    A string containing the log file name.
+
+    **Examples**
+
+    >>> initialize_logging(log_level = 'INFO')
+    '/globaldata/inspect/create_html.log'
+    '''
+    log_levels   = {'DEBUG'  : logging.DEBUG,
+                    'INFO'   : logging.INFO,
+                    'WARNING': logging.WARNING,
+                    'ERROR'  : logging.ERROR}
+    level = log_levels[log_level]
+    
+    log_format     = ('create_html@' + socket.gethostname() +
+                      ' %(asctime)s %(levelname)8s - %(message)s')
+    log_file_name  = os.path.join(log_dir, 'create_html.log')
+
+    logger       = logging.root
+    for handler in logger.handlers:
+        logger.removeHandler(handler)
+
+    logger.setLevel(level)
+    formatter    = logging.Formatter(log_format)
+
+    file_handler = logging.FileHandler(log_file_name)
+    logger.addHandler(file_handler)
+        
+    for handler in logger.handlers:
+        handler.setFormatter(formatter)
+        handler.setLevel(level)
+
+    return log_file_name
+
+
+initialize_logging('INFO')
+
 try:
     import matplotlib
     matplotlib.use('agg') # Prevent initialisation of GUI system
     from pyautoplot import __version__
 except ImportError:
+    logging.warning(str(sys.exc_info()[0]))
+    logging.warning('Command line: %s', ' '.join(sys.argv))
     __version__ = 'unknown'
 
 
 
-import os, sys, glob
-from optparse import OptionParser
 
 
-
-
-def print_error(message):
-    r'''
-    Print an error message to STDERR.
-
-    **Parameters**
-
-    message : string
-        The message to print.
-
-    **Examples**
-
-    >>> print_error('whoops, I messed up!')
-    ERROR: whoops, I messed up!
     
-    '''
-    print('ERROR: %s' % message, sys.stderr)
-
 
 
 def create_html_main(argv):
@@ -54,17 +96,14 @@ def create_html_main(argv):
     0
     '''
     options, sas_ids = parse_command_line(argv)
-    
-    # print('Processing sas_ids: '+', '.join([str(sas) for sas in sas_ids]))
-    
     for num, sas_id in enumerate(sorted(sas_ids)[::-1]):
-        # print(str(sas_id))
+        logging.debug('Processing SAS ID: %d', sas_id)
         try:
             observation_html(sas_id,
                              plot_root = options.plot_root,
                              html_root = options.html_root)
         except IOError:
-            print_error(sys.exc_info()[1])
+            logging.error(str(sys.exc_info()[1]))
 
         if num % 10 == 0:
             main_index_html(plot_root = options.plot_root,
@@ -338,4 +377,10 @@ def main_index_html(plot_root, html_root):
     
 
 if __name__ == '__main__':
-    sys.exit(create_html_main(sys.argv))
+    try:
+        sys.exit(create_html_main(sys.argv))
+    except SystemExit:
+        raise
+    except:
+        logging.error(str(sys.exc_info()[0]))
+        sys.exit(2)
