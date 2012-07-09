@@ -21,7 +21,7 @@ if test "$HOSTNAME" == "lhn001"; then
 
     else
         echo "Creating HTML using $CREATE_HTML" | tee -a $LOG
-        command="$CREATE_HTML $@ 2>&1"
+        command="$CREATE_HTML $@"
         echo "$command"| tee -a $LOG
         result=`$command`
         exit_status="$?"
