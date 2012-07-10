@@ -270,21 +270,20 @@ def observation_html(sas_id, plot_root, html_root):
     pattern    = os.path.join(obs_plot_root, '*.png')
     plot_files = [os.path.relpath(full_path, sb_html_root)
                   for full_path in glob.glob(pattern)]
-            
+    
     sb_plots = {}
     for plot_file in plot_files:
-        key = subband(plot_file)
-        if not sb_plots.has_key(key):
-            sb_plots[key] = []
-        sb_plots[key].append(plot_file)
+        keyword = subband(plot_file)
+        if not sb_plots.has_key(keyword):
+            sb_plots[keyword] = []
+        sb_plots[keyword].append(plot_file)
 
     sb_list = sorted(sb_plots.keys())
     for sb_name in sb_list:
         file_name = os.path.join(sb_html_root, sb_name+'.html')
         open(file_name, 'w').write(
             subband_html(sas_id, sb_name, sb_plots[sb_name]))
-        
-    
+
     observation_index_name = os.path.join(obs_html_root, 'index.html')
     
     sb_page_list = ['<a href="SBpages/%s.html">%s</a>' % (name, name)
@@ -306,7 +305,7 @@ def observation_html(sas_id, plot_root, html_root):
                             
 
 
-def parset_summary(parset_name):
+def parset_summary(sas_id, parset_name):
     r'''
     Observation.antennaSet = LBA_INNER
     Observation.bandFilter = LBA_10_90
@@ -323,7 +322,8 @@ def parset_summary(parset_name):
     def value(line):
         return line.split('=')[-1].strip('\' \n')
 
-    parset = {'campaign_name': '',
+    parset = {'sas_id'       : str(sas_id),
+              'campaign_name': '',
               'target'       : '',
               'start_time'   : '',
               'stop_time'    : '',
@@ -350,18 +350,16 @@ def parset_summary(parset_name):
     return parset
 
 
-def observation_table_row(sas_id, parset):
+def observation_table_row(parset):
     r'''
     '''
-    format_dict           = parset.copy()
-    format_dict['sas_id'] = str(sas_id)
     html = '''
     <tr><th><a href="%(sas_id)s/index.html">L%(sas_id)s</a>&nbsp;&nbsp;&nbsp;</th>
         <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
     </tr>
-''' % format_dict
+''' % parset
     return html
 
 
@@ -372,14 +370,18 @@ def main_index_html(plot_root, html_root):
 
     index_name = os.path.join(html_root, 'index.html')
     plot_sas_id_pattern = os.path.join(plot_root, '[0123456789]'*5)
-    sas_id_with_plot = [int(os.path.split(sas_id)[-1]) for sas_id in glob.glob(plot_sas_id_pattern)]
+    sas_id_with_plot = [int(os.path.split(sas_id)[-1])
+                        for sas_id in glob.glob(plot_sas_id_pattern)]
     html_sas_id_pattern = os.path.join(html_root, '[0123456789]'*5)
-    sas_id_with_html = [int(os.path.split(sas_id)[-1]) for sas_id in glob.glob(html_sas_id_pattern)]
+    sas_id_with_html = [int(os.path.split(sas_id)[-1]) 
+                        for sas_id in glob.glob(html_sas_id_pattern)]
     sas_ids = sorted(set(sas_id_with_html).intersection(set(sas_id_with_plot)))[::-1]
-    parsets = [parset_summary(os.path.join('/globalhome', 'lofarsystem', 'log',
+    parsets = [parset_summary(sas_id, os.path.join('/globalhome', 'lofarsystem', 'log',
                                            'L'+str(sas_id)+'.parset'))
                for sas_id in sas_ids]
-    
+    parsets = sorted(parsets,
+                     key     = lambda parset: parset['start_time'],
+                     reverse = True)
     open(index_name, 'w').write('''
 <html>
     <head><title>LOFAR Inspection plots</title></head>
@@ -390,8 +392,8 @@ def main_index_html(plot_root, html_root):
         </table>
     </body>
 </html>
-''' % '\n'.join([observation_table_row(sas_id, parset)
-                 for sas_id, parset in zip(sas_ids, parsets)] ))
+''' % '\n'.join([observation_table_row(parset)
+                 for parset in parsets] ))
     
 
 if __name__ == '__main__':
