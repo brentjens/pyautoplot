@@ -164,7 +164,7 @@ def parse_command_line(argv):
 
 
 
-def subband(plot_file_name):
+def subband_from_file_name(plot_file_name):
     r'''
     Extract sub band name from ``plot_file_name``.
     
@@ -180,7 +180,7 @@ def subband(plot_file_name):
 
     **Examples**
 
-    >>> subband('/globaldata/inspect/60873/L60873_SAP000_SB049_uv-flags.png')
+    >>> subband_from_file_name('/globaldata/inspect/60873/L60873_SAP000_SB049_uv-flags.png')
     'SB049'
     '''
     return [item for item in plot_file_name.split('_')
@@ -283,7 +283,7 @@ def plot_paths_per_subband(plot_file_names):
     '''
     sb_plots = {}
     for plot_file in plot_file_names:
-        keyword = subband(plot_file)
+        keyword = subband_from_file_name(plot_file)
         if not sb_plots.has_key(keyword):
             sb_plots[keyword] = []
         sb_plots[keyword].append(plot_file)
@@ -315,8 +315,8 @@ def observation_html(parset, obs_plot_root, html_root):
 
     observation_index_name = os.path.join(obs_html_root, 'index.html')
     
-    sb_page_list = ['<a href="SBpages/%s.html">%s</a>' % (name, name)
-                    for name in sb_list]
+    sb_page_list = ['<tr><td><a href="SBpages/%s.html">%s</a></td> <td>%d</td></tr>' % (name, name, subband)
+                    for name, subband in zip(sb_list, parset['subband_list'])]
     open(observation_index_name, 'w').write('''
 <html>
     <head><title>L%(sas_id)s</title></head>
@@ -326,14 +326,32 @@ def observation_html(parset, obs_plot_root, html_root):
         <li><a href="../index.html">Projects</a></li>
     </ul></p>
 
+    <table>
     %(sub_band_pages)s
+    </table>
     </body>
 </html>
 ''' % {'sas_id'        : parset['sas_id'],
        'sub_band_pages': ' '.join(sb_page_list)})
 
 
-                            
+def parse_subband_list(parset_subband_list):
+    r'''
+    [154..163,185..194,215..224,245..254,275..284,305..314,335..344,374..383]
+    '''
+    sub_lists = [word.strip().split('..') for word in parset_subband_list.strip('[] \n\t').split(',')]
+    subbands = []
+    for sub_list in sub_lists:
+        if len(sub_list) == 1:
+            subbands.append(int(sub_list[0]))
+        elif len(sub_list) == 2:
+            subbands += range(int(sub_list[0]), int(sub_list[1])+1)
+        else:
+            logging.error('%r is not a valid sub_range in a subband list', sub_list)
+            return []
+    return subbands
+
+
 
 def parset_path(sas_id):
     r'''
@@ -358,6 +376,7 @@ def parset_summary(sas_id, parset_name):
     Observation.clockMode = <<Clock200
     Observation.channelsPerSubband = 64
     Observation.subbandList = [77..320]
+    Observation.subbandWidth = 195.3125
     OLAP.nrBitsPerSample = 16
     '''
     def value(line):
@@ -388,6 +407,8 @@ def parset_summary(sas_id, parset_name):
                 parset['antenna_set'] = value(line)
             elif  'Observation.bandFilter' in line:
                 parset['band_filter'] = value(line)
+            elif 'Observation.subbandList' in line:
+                parset['subband_list'] = parse_subband_list(value(line))
             else:
                 pass
     return parset
@@ -397,6 +418,8 @@ def observation_table_row(parset, html_root):
     r'''
     '''
     format_dict = parset.copy()
+    format_dict['nr_subbands'] = len(parset['subband_list'])
+
     if parset['file_name']:
         format_dict['parset_relpath'] = os.path.relpath(
             parset['file_name'], html_root)
