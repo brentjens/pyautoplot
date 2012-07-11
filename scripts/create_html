@@ -2,7 +2,7 @@
 # -*- python -*-
 
 import logging
-import os, sys, glob, socket
+import os, sys, glob, socket, shutil
 from optparse import OptionParser
 
 
@@ -71,7 +71,10 @@ except ImportError:
     __version__ = 'unknown'
 
 logging.debug('Using pyautoplot version %s', __version__)
-logging.debug('Environment:\n%s', '\n'.join(['%15s: %s' % (key.ljust(15), os.environ[key]) for key in os.environ.keys()]))
+logging.debug('Environment:\n%s', '\n'.join(['%15s: %s' % 
+                                             (key.ljust(15), os.environ[key])
+                                             for key in os.environ.keys()]))
+
 
 
 
@@ -98,12 +101,25 @@ def create_html_main(argv):
     '''
     logging.debug('create_html_main(argv = %r)', argv)
     options, sas_ids = parse_command_line(argv)
-    for num, sas_id in enumerate(sorted(sas_ids)[::-1]):
-        logging.debug('Processing SAS ID: %d', sas_id)
+    parset_names = [parset_path(sas_id) for sas_id in sas_ids]
+    parsets = [parset_summary(sas_id, parset_name)
+               for sas_id, parset_name in zip(sas_ids, parset_names)]
+
+    for num, parset in enumerate(sorted(parsets)[::-1]):
+        logging.debug('Processing SAS ID: %s', parset['sas_id'])
         try:
-            observation_html(sas_id,
-                             plot_root = options.plot_root,
-                             html_root = options.html_root)
+            obs_plot_root = os.path.join(options.plot_root, parset['sas_id'])
+
+            if parset['file_name'] and os.path.exists(parset['file_name']):
+                shutil.copy2(parset['file_name'], obs_plot_root)
+                new_parset_name = os.path.join(
+                    obs_plot_root,
+                    os.path.basename(parset['file_name']))
+                parset['file_name'] = new_parset_name
+    
+            observation_html(parset,
+                             obs_plot_root = obs_plot_root,
+                             html_root     = options.html_root)
         except IOError:
             logging.error(str(sys.exc_info()[1]))
 
@@ -196,14 +212,13 @@ def plot_html(plot_path, image_width = 700):
            'image_width': image_width}
 
 
-def subband_html(sas_id, sb_name, rel_plot_files):
+def subband_html(parset, sb_name, rel_plot_files):
     r'''
     '''
-    timeseries    = contains('timeseries'  , rel_plot_files)
-    sensitivities = contains('station-gain', rel_plot_files)
-    
-    timeseries_html    = [plot_html(image) for image in timeseries]
-    sensitivities_html = [plot_html(image) for image in sensitivities]
+    timeseries_html    = [plot_html(image)
+                          for image in contains('timeseries', rel_plot_files)]
+    sensitivities_html = [plot_html(image)
+                          for image in contains('station-gain', rel_plot_files)]
     
     overview_rows = ['<tr><td>'+line_graph+'</td><td>'+bar_graph+'</td></tr>'
                      for (line_graph, bar_graph)
@@ -244,7 +259,7 @@ def subband_html(sas_id, sb_name, rel_plot_files):
 </html>'''
 
     return html_template % {
-        'title'        : 'L'+str(sas_id)+' '+sb_name,
+        'title'        : 'L'+parset['sas_id']+' '+sb_name,
         'overview_rows': '\n'.join(overview_rows),
         'flagged_std'  : flagged_std,
         'flagged_mean' : flagged_mean,
@@ -252,37 +267,51 @@ def subband_html(sas_id, sb_name, rel_plot_files):
         'zeros'        : zeros}
 
 
-def observation_html(sas_id, plot_root, html_root):
+
+def relative_plot_paths(obs_plot_root, current_directory):
     r'''
     '''
-    logging.debug('observation_html(sas_id = %r, plot_root = %r, html_root = %r)',
-                  sas_id, plot_root, html_root)
-    obs_html_root = os.path.join(html_root, str(sas_id))
-    sb_html_root  = os.path.join(obs_html_root, 'SBpages')
-    obs_plot_root = os.path.join(plot_root, str(sas_id))
+    pattern        = os.path.join(obs_plot_root, '*.png')
+    rel_plot_files = [os.path.relpath(full_path, current_directory)
+                      for full_path in glob.glob(pattern)]
+    return rel_plot_files
 
-    if not os.path.exists(obs_plot_root):
-        raise IOError('Directory "%s" does not exist' % obs_plot_root)
 
-    force_mkdir(obs_html_root)
-    force_mkdir(sb_html_root)
 
-    pattern    = os.path.join(obs_plot_root, '*.png')
-    plot_files = [os.path.relpath(full_path, sb_html_root)
-                  for full_path in glob.glob(pattern)]
-    
+def plot_paths_per_subband(plot_file_names):
+    r'''
+    '''
     sb_plots = {}
-    for plot_file in plot_files:
+    for plot_file in plot_file_names:
         keyword = subband(plot_file)
         if not sb_plots.has_key(keyword):
             sb_plots[keyword] = []
         sb_plots[keyword].append(plot_file)
+    return sb_plots
 
-    sb_list = sorted(sb_plots.keys())
+
+def observation_html(parset, obs_plot_root, html_root):
+    r'''
+    '''
+    logging.debug(
+        'observation_html(parset = %r, obs_plot_root = %r, html_root = %r)',
+        parset, obs_plot_root, html_root)
+    obs_html_root = os.path.join(html_root    , parset['sas_id'])
+    sb_html_root  = os.path.join(obs_html_root, 'SBpages')
+
+    if not os.path.exists(obs_plot_root):
+        raise IOError('Directory "%s" does not exist' % obs_plot_root)
+    
+    force_mkdir(obs_html_root)
+    force_mkdir(sb_html_root)
+
+    plot_files = relative_plot_paths(obs_plot_root, sb_html_root)
+    sb_plots   = plot_paths_per_subband(plot_files)
+    sb_list    = sorted(sb_plots.keys())
     for sb_name in sb_list:
         file_name = os.path.join(sb_html_root, sb_name+'.html')
         open(file_name, 'w').write(
-            subband_html(sas_id, sb_name, sb_plots[sb_name]))
+            subband_html(parset, sb_name, sb_plots[sb_name]))
 
     observation_index_name = os.path.join(obs_html_root, 'index.html')
     
@@ -300,9 +329,17 @@ def observation_html(sas_id, plot_root, html_root):
     %(sub_band_pages)s
     </body>
 </html>
-''' % {'sas_id'        : str(sas_id),
+''' % {'sas_id'        : parset['sas_id'],
        'sub_band_pages': ' '.join(sb_page_list)})
+
+
                             
+
+def parset_path(sas_id):
+    r'''
+    '''
+    return os.path.join('/globalhome', 'lofarsystem', 'log',
+                        'L'+str(sas_id)+'.parset')
 
 
 def parset_summary(sas_id, parset_name):
@@ -318,6 +355,10 @@ def parset_summary(sas_id, parset_name):
     Observation.Campaign.contact = 'Polatidis, Dr Antonios'
     Observation.Campaign.name = 2012LOFAROBS
     Observation.Campaign.title = 2012LOFAROBS
+    Observation.clockMode = <<Clock200
+    Observation.channelsPerSubband = 64
+    Observation.subbandList = [77..320]
+    OLAP.nrBitsPerSample = 16
     '''
     def value(line):
         return line.split('=')[-1].strip('\' \n')
@@ -328,9 +369,11 @@ def parset_summary(sas_id, parset_name):
               'start_time'   : '',
               'stop_time'    : '',
               'antenna_set'  : '',
-              'band_filter'  : ''}
+              'band_filter'  : '',
+              'file_name'    : None}
     
     if os.path.exists(parset_name):
+        parset['file_name'] = parset_name
         parset_lines = open(parset_name).readlines()
         for line in parset_lines:
             if 'Campaign.name' in line:
@@ -350,23 +393,41 @@ def parset_summary(sas_id, parset_name):
     return parset
 
 
-def observation_table_row(parset):
+def observation_table_row(parset, html_root):
     r'''
     '''
-    html = '''
+    format_dict = parset.copy()
+    if parset['file_name']:
+        format_dict['parset_relpath'] = os.path.relpath(
+            parset['file_name'], html_root)
+        html = '''
     <tr><th><a href="%(sas_id)s/index.html">L%(sas_id)s</a>&nbsp;&nbsp;&nbsp;</th>
         <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
+        <td><a href="%(parset_relpath)s">parset</a>&nbsp;&nbsp;&nbsp;</td>
     </tr>
-''' % parset
+''' % format_dict
+
+    else:
+        html = '''
+    <tr><th><a href="%(sas_id)s/index.html">L%(sas_id)s</a>&nbsp;&nbsp;&nbsp;</th>
+        <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
+        <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
+        <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
+        <td>no parset&nbsp;&nbsp;&nbsp;</td>
+    </tr>
+''' % format_dict
+
     return html
+
 
 
 def main_index_html(plot_root, html_root):
     r'''
     '''
-    logging.debug('main_index_html(plot_root = %r, html_root = %r)', plot_root, html_root)
+    logging.debug('main_index_html(plot_root = %r, html_root = %r)',
+                  plot_root, html_root)
 
     index_name = os.path.join(html_root, 'index.html')
     plot_sas_id_pattern = os.path.join(plot_root, '[0123456789]'*5)
@@ -375,13 +436,28 @@ def main_index_html(plot_root, html_root):
     html_sas_id_pattern = os.path.join(html_root, '[0123456789]'*5)
     sas_id_with_html = [int(os.path.split(sas_id)[-1]) 
                         for sas_id in glob.glob(html_sas_id_pattern)]
-    sas_ids = sorted(set(sas_id_with_html).intersection(set(sas_id_with_plot)))[::-1]
-    parsets = [parset_summary(sas_id, os.path.join('/globalhome', 'lofarsystem', 'log',
-                                           'L'+str(sas_id)+'.parset'))
-               for sas_id in sas_ids]
-    parsets = sorted(parsets,
+    sas_ids = set(sas_id_with_html).intersection(set(sas_id_with_plot))
+    unsorted_parsets = [parset_summary(sas_id, parset_path(sas_id))
+                        for sas_id in sas_ids]
+    parsets = sorted(unsorted_parsets,
                      key     = lambda parset: parset['start_time'],
                      reverse = True)
+    for parset in parsets:
+        obs_plot_root = os.path.join(plot_root, parset['sas_id'])
+        if parset['file_name']:
+            new_parset_name = os.path.join(obs_plot_root,
+                                           os.path.basename(parset['file_name']))
+        else:
+            new_parset_name = None
+        if parset['file_name'] and os.path.exists(parset['file_name']) \
+                and not os.path.exists(new_parset_name):
+            shutil.copy2(parset['file_name'], obs_plot_root)
+            
+        if new_parset_name and os.path.exists(new_parset_name):
+            parset['file_name'] = new_parset_name
+        else:
+            parset['file_name'] = None
+
     open(index_name, 'w').write('''
 <html>
     <head><title>LOFAR Inspection plots</title></head>
@@ -392,7 +468,7 @@ def main_index_html(plot_root, html_root):
         </table>
     </body>
 </html>
-''' % '\n'.join([observation_table_row(parset)
+''' % '\n'.join([observation_table_row(parset, html_root)
                  for parset in parsets] ))
     
 
