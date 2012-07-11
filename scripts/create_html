@@ -203,11 +203,11 @@ def contains(sub_string, strings):
 
 
 
-def plot_html(plot_path, image_width = 100):
+def plot_html(plot_path, image_width = 700):
     r'''
     '''
     return '''<a href="%(plot_path)s">
-    <img src="%(plot_path)s" width="%(image_width)d%%"></img>
+    <img src="%(plot_path)s" width="%(image_width)dpx"></img>
 </a>''' % {'plot_path'  : plot_path,
            'image_width': image_width}
 
@@ -315,8 +315,10 @@ def observation_html(parset, obs_plot_root, html_root):
 
     observation_index_name = os.path.join(obs_html_root, 'index.html')
     
+    subband_list = parset['subband_list']
+    subband_list += [0]*(len(sb_list) - len(subband_list))
     sb_page_list = ['<tr><td><a href="SBpages/%s.html">%s</a>&nbsp;&nbsp;&nbsp;</td> <td>%d&nbsp;&nbsp;&nbsp;</td></tr>' % (name, name, subband)
-                    for name, subband in zip(sb_list, parset['subband_list'])]
+                    for name, subband in zip(sb_list, subband_list)]
     open(observation_index_name, 'w').write('''
 <html>
     <head><title>L%(sas_id)s</title></head>
@@ -466,7 +468,8 @@ def main_index_html(plot_root, html_root):
     html_sas_id_pattern = os.path.join(html_root, '[0123456789]'*5)
     sas_id_with_html = [int(os.path.split(sas_id)[-1]) 
                         for sas_id in glob.glob(html_sas_id_pattern)]
-    sas_ids = set(sas_id_with_html).intersection(set(sas_id_with_plot))
+    sas_ids = sorted(set(sas_id_with_html).intersection(set(sas_id_with_plot)),
+                     reverse = True)
     unsorted_parsets = [parset_summary(sas_id, parset_path(sas_id))
                         for sas_id in sas_ids]
     parsets = sorted(unsorted_parsets,
