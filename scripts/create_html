@@ -315,7 +315,7 @@ def observation_html(parset, obs_plot_root, html_root):
 
     observation_index_name = os.path.join(obs_html_root, 'index.html')
     
-    sb_page_list = ['<tr><td><a href="SBpages/%s.html">%s</a></td> <td>%d</td></tr>' % (name, name, subband)
+    sb_page_list = ['<tr><td><a href="SBpages/%s.html">%s</a>&nbsp;&nbsp;&nbsp;</td> <td>%d&nbsp;&nbsp;&nbsp;</td></tr>' % (name, name, subband)
                     for name, subband in zip(sb_list, parset['subband_list'])]
     open(observation_index_name, 'w').write('''
 <html>
@@ -327,6 +327,7 @@ def observation_html(parset, obs_plot_root, html_root):
     </ul></p>
 
     <table>
+    <tr><th>Name</th> <th>Subband</th></tr>
     %(sub_band_pages)s
     </table>
     </body>
@@ -389,6 +390,7 @@ def parset_summary(sas_id, parset_name):
               'stop_time'    : '',
               'antenna_set'  : '',
               'band_filter'  : '',
+              'subband_list' : [],
               'file_name'    : None}
     
     if os.path.exists(parset_name):
@@ -428,6 +430,7 @@ def observation_table_row(parset, html_root):
         <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
+        <td>%(nr_subbands)s&nbsp;&nbsp;&nbsp;</td>
         <td><a href="%(parset_relpath)s">parset</a>&nbsp;&nbsp;&nbsp;</td>
     </tr>
 ''' % format_dict
@@ -438,6 +441,7 @@ def observation_table_row(parset, html_root):
         <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
+        <td>%(nr_subbands)s&nbsp;&nbsp;&nbsp;</td>
         <td>no parset&nbsp;&nbsp;&nbsp;</td>
     </tr>
 ''' % format_dict
@@ -487,6 +491,7 @@ def main_index_html(plot_root, html_root):
     <body>
         <h1>LOFAR inspection plots</h1>
         <table>
+        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Subbands</th> <th>Parset</th></tr>
         %s
         </table>
     </body>
@@ -501,5 +506,5 @@ if __name__ == '__main__':
     except SystemExit:
         raise
     except:
-        logging.error(str(sys.exc_info()[1]))
+        logging.error('%s: %s', str(sys.exc_info()[0].__name__), str(sys.exc_info()[1]))
         sys.exit(2)
