@@ -391,7 +391,8 @@ def parset_summary(sas_id, parset_name):
               'antenna_set'  : '',
               'band_filter'  : '',
               'subband_list' : [],
-              'file_name'    : None}
+              'file_name'    : None,
+              'clock_mhz'    : 0}
     
     if os.path.exists(parset_name):
         parset['file_name'] = parset_name
@@ -411,6 +412,8 @@ def parset_summary(sas_id, parset_name):
                 parset['band_filter'] = value(line)
             elif 'Observation.subbandList' in line:
                 parset['subband_list'] = parse_subband_list(value(line))
+            elif 'Observation.clockMode' in line:
+                parset['clock_mhz'] = int(value(line).strip('<<Clock \n\t'))
             else:
                 pass
     return parset
@@ -430,7 +433,7 @@ def observation_table_row(parset, html_root):
         <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
-        <td>%(nr_subbands)s&nbsp;&nbsp;&nbsp;</td>
+        <td>%(clock_mhz)d&nbsp;&nbsp;&nbsp;</td>     <td>%(nr_subbands)s&nbsp;&nbsp;&nbsp;</td>
         <td><a href="%(parset_relpath)s">parset</a>&nbsp;&nbsp;&nbsp;</td>
     </tr>
 ''' % format_dict
@@ -441,7 +444,7 @@ def observation_table_row(parset, html_root):
         <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
-        <td>%(nr_subbands)s&nbsp;&nbsp;&nbsp;</td>
+        <td>%(clock_mhz)d&nbsp;&nbsp;&nbsp;</td>     <td>%(nr_subbands)s&nbsp;&nbsp;&nbsp;</td>
         <td>no parset&nbsp;&nbsp;&nbsp;</td>
     </tr>
 ''' % format_dict
@@ -491,7 +494,7 @@ def main_index_html(plot_root, html_root):
     <body>
         <h1>LOFAR inspection plots</h1>
         <table>
-        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Subbands</th> <th>Parset</th></tr>
+        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subbands</th> <th>Parset</th></tr>
         %s
         </table>
     </body>
