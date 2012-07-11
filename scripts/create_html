@@ -203,11 +203,11 @@ def contains(sub_string, strings):
 
 
 
-def plot_html(plot_path, image_width = 700):
+def plot_html(plot_path, image_width = 100):
     r'''
     '''
     return '''<a href="%(plot_path)s">
-    <img src="%(plot_path)s" width="%(image_width)dpx"></img>
+    <img src="%(plot_path)s" width="%(image_width)d%%"></img>
 </a>''' % {'plot_path'  : plot_path,
            'image_width': image_width}
 
