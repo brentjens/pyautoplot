@@ -340,13 +340,17 @@ def observation_html(parset, obs_plot_root, html_root):
 
 def parse_subband_list(parset_subband_list):
     r'''
-    [154..163,185..194,215..224,245..254,275..284,305..314,335..344,374..383]
+    [154..163,185..194,215..224,245..254,275..284,305..314,335..344,10*374]
     '''
     sub_lists = [word.strip().split('..') for word in parset_subband_list.strip('[] \n\t').split(',')]
     subbands = []
     for sub_list in sub_lists:
         if len(sub_list) == 1:
-            subbands.append(int(sub_list[0]))
+            multiplication = sub_list[0].split('*')
+            if len(multiplication) == 2:
+                subbands += [int(multiplication[1])]*int(multiplication[0]))
+            else:
+                subbands.append(int(sub_list[0]))
         elif len(sub_list) == 2:
             subbands += range(int(sub_list[0]), int(sub_list[1])+1)
         else:
