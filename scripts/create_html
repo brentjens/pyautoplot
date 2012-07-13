@@ -317,8 +317,10 @@ def observation_html(parset, obs_plot_root, html_root):
     
     subband_list = parset['subband_list']
     subband_list += [0]*(len(sb_list) - len(subband_list))
-    sb_page_list = ['<tr><td><a href="SBpages/%s.html">%s</a>&nbsp;&nbsp;&nbsp;</td> <td>%d&nbsp;&nbsp;&nbsp;</td></tr>' % (name, name, subband)
-                    for name, subband in zip(sb_list, subband_list)]
+    subband_freqs_hz = parset['subband_freqs_hz']
+    subband_freqs_hz += [0]*(len(sb_list) - len(subband_freqs_hz))
+    sb_page_list = ['<tr><td><a href="SBpages/%s.html">%s</a>&nbsp;&nbsp;&nbsp;</td> <td>%d&nbsp;&nbsp;&nbsp;</td> <td>%7.3f&nbsp;&nbsp;&nbsp;</td></tr>' % (name, name, subband, freq_hz/1e6)
+                    for name, subband, freq_hz in zip(sb_list, subband_list, subband_freqs_hz)]
     open(observation_index_name, 'w').write('''
 <html>
     <head><title>L%(sas_id)s</title></head>
@@ -329,7 +331,8 @@ def observation_html(parset, obs_plot_root, html_root):
     </ul></p>
 
     <table>
-    <tr><th>Name</th> <th>Subband</th></tr>
+    <tr><th>Name</th> <th>Subband</th> <th>Freq.</th></tr>
+    <tr><th></th>     <th>(ID)</th> <th>(MHz)</th></tr>
     %(sub_band_pages)s
     </table>
     </body>
@@ -348,7 +351,7 @@ def parse_subband_list(parset_subband_list):
         if len(sub_list) == 1:
             multiplication = sub_list[0].split('*')
             if len(multiplication) == 2:
-                subbands += [int(multiplication[1])]*int(multiplication[0]))
+                subbands += [int(multiplication[1])]*int(multiplication[0])
             else:
                 subbands.append(int(sub_list[0]))
         elif len(sub_list) == 2:
@@ -358,6 +361,21 @@ def parse_subband_list(parset_subband_list):
             return []
     return subbands
 
+
+def subband_frequencies(subband_width, band_filter, subband_numbers):
+    r'''
+    '''
+    freq_offsets_hz = [sb_id*subband_width for sb_id in subband_numbers]
+    base_freq = 0.0
+    if 'HBA_110_190' == band_filter:
+        base_freq = 100e6
+    elif 'HBA_210_250' == band_filter:
+        base_freq = 200e6
+    elif 'HBA_170_230' == band_filter:
+        base_freq = 160e6
+    else:
+        base_freq = 0.0
+    return [freq_hz + base_freq for freq_hz in freq_offsets_hz]
 
 
 def parset_path(sas_id):
@@ -397,6 +415,8 @@ def parset_summary(sas_id, parset_name):
               'antenna_set'  : '',
               'band_filter'  : '',
               'subband_list' : [],
+              'subband_freqs_hz': [],
+              'subband_width': 0.0,
               'file_name'    : None,
               'clock_mhz'    : 0}
     
@@ -420,8 +440,13 @@ def parset_summary(sas_id, parset_name):
                 parset['subband_list'] = parse_subband_list(value(line))
             elif 'Observation.clockMode' in line:
                 parset['clock_mhz'] = int(value(line).strip('<<Clock \n\t'))
+            elif 'Observation.subbandWidth' in line:
+                parset['subband_width'] = float(value(line))
             else:
                 pass
+    parset['subband_freqs_hz'] = subband_frequencies(parset['subband_width']*1000.0,
+                                                     parset['band_filter'],
+                                                     parset['subband_list'])
     return parset
 
 
