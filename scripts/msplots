@@ -8,6 +8,7 @@ from getopt import GetoptError
 import os,sys,time
 
 from pyautoplot import *
+import pyautoplot.forkmap as forkmap
 from pyautoplot import __version__
 
 
@@ -130,11 +131,12 @@ def main(argv):
             output_directory = output_dir
         msses   = find_msses(str(sas_id))
         if len(msses) > 0:
-            node    = get_node_number_in_subcluster()
-            mymsses = msses[node % len(msses)::min(len(msses), 10)]
-            print('\n'.join(mymsses))
-            map(lambda ms: inspect_ms(ms, ms_id=sas_id, max_mem_bytes=int(memory*2**30), root=prefix, cmap=cm.gray_r, output_dir = output_directory),
-                mymsses)
+            #node    = get_node_number_in_subcluster()
+            #mymsses = msses[node % len(msses)::min(len(msses), 10)]
+            #print('\n'.join(mymsses))
+            forkmap.map(lambda ms: inspect_ms(ms, ms_id=sas_id, max_mem_bytes=int(memory*2**30), root=prefix, cmap=cm.gray_r, output_dir = output_directory),
+                        msses,
+                        n=max(1, forkmap.nprocessors()/2))
     return 0
 
 
