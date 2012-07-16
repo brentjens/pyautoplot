@@ -271,9 +271,12 @@ def subband_html(parset, sb_name, rel_plot_files):
 def relative_plot_paths(obs_plot_root, current_directory):
     r'''
     '''
-    pattern        = os.path.join(obs_plot_root, '*.png')
-    rel_plot_files = [os.path.relpath(full_path, current_directory)
-                      for full_path in glob.glob(pattern)]
+    patterns        = [os.path.join(obs_plot_root, extension)
+                       for extension in ['*.png', '*.jpg']]
+    rel_plot_files = []
+    for pattern in patterns:
+        rel_plot_files += [os.path.relpath(full_path, current_directory)
+                           for full_path in glob.glob(pattern)]
     return rel_plot_files
 
 
