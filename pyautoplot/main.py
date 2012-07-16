@@ -864,11 +864,11 @@ def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('
     write_plot('Flagged standard deviation', log10, vmax=1.0, vmin=-4.0, cmap=cmap)
     write_plot('Flags', log10, vmax=0.0, vmin=-3.0, cmap=cmap)
     write_plot('Zeroes',lambda x: 100*x, vmin=0.0, vmax=100.0, cmap=cmap)
-    write_plot('Fringe SNR 0', log10, vmin=-1.0, vmax=4.0, cmap=cmap)
+    # write_plot('Fringe SNR 0', log10, vmin=-1.0, vmax=4.0, cmap=cmap)
 
-    write_plot('Fringe SNR', log10, vmin=-1.0, vmax=4.0, cmap=cmap)
-    write_plot('Delay', lambda x:log10(abs(x)), vmin=-9.0, vmax=-3, cmap=cmap)
-    write_plot('Rate', lambda x:log10(abs(x)), vmin=-4, vmax=0.0, cmap=cmap)
+    # write_plot('Fringe SNR', log10, vmin=-1.0, vmax=4.0, cmap=cmap)
+    # write_plot('Delay', lambda x:log10(abs(x)), vmin=-9.0, vmax=-3, cmap=cmap)
+    # write_plot('Rate', lambda x:log10(abs(x)), vmin=-4, vmax=0.0, cmap=cmap)
 
     results_name=os.path.join(output_dir,msname.split('/')[-1][:-3]+'-data.pickle')
     pickle.dump(results, open(results_name, mode='w'), protocol=pickle.HIGHEST_PROTOCOL)
