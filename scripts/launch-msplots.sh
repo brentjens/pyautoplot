@@ -11,10 +11,10 @@ PATH="$PATH:/opt/cep/pyautoplot/bin"
 LOG=/globaldata/inspect/launch-msplots.log
 
 if test "$HOSTNAME" == "lhn001"; then
-    cexec locus: "bash -ilc \"use LofIm; use Pythonlibs; use Pyautoplot; msplots $@\""
+    date >> /globaldata/inspect/launch-msplots.log
+    cexec locus: "bash -ilc \"use LofIm; use Pythonlibs; use Pyautoplot; msplots $@\"" >> /globaldata/inspect/launch-msplots.log
 
     CREATE_HTML=`which create_html`
-    date >> /globaldata/inspect/launch-msplots.log
     echo "$@" >> /globaldata/inspect/launch-msplots.log
     if test "$CREATE_HTML" == ""; then
         echo "Cannot find create_html: no HTML generated" | tee -a $LOG
