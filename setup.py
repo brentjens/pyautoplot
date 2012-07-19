@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='pyautoplot',
-      version='0.9.6',
+      version='0.9.7',
       description='Library to build interferometric data inspection tools',
       author='Michiel Brentjens',
       author_email='brentjens@astron.nl',
