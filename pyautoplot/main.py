@@ -819,8 +819,8 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30), first_timeslot=0, max_time
     printnow('computing flagged std')
     bls_flagged_std    = calc_bl_stat(ma.std)
 
-    bls_sn = abs(bls_flagged_mean)/abs(bls_flagged_std/sqrt(bls_good-1))
-    bls_sn = set_nan_zero(bls_sn)
+    #bls_sn = abs(bls_flagged_mean)/abs(bls_flagged_std/sqrt(bls_good-1))
+    #bls_sn = set_nan_zero(bls_sn)
 
     printnow('computing delay/rate')
     peak, peak_delay, peak_rate = calc_delay_rate_stats(data)
@@ -832,12 +832,12 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30), first_timeslot=0, max_time
             'Mean'              : bls_mean,
             'Zeroes'            : bls_zeroes,
             'Good points'       : bls_good,
-            'Fringe SNR 0'      : bls_sn,
+            #'Fringe SNR 0'      : bls_sn,
             'Flags'             : bls_flags,
             'Flagged mean'      : bls_flagged_mean,
-            'Delay'             : peak_delay,
-            'Rate'              : peak_rate,
-            'Fringe SNR'        : peak/abs(bls_flagged_std/sqrt(bls_good-1)),
+            #'Delay'             : peak_delay,
+            #'Rate'              : peak_rate,
+            #'Fringe SNR'        : peak/abs(bls_flagged_std/sqrt(bls_good-1)),
             'Flagged standard deviation': bls_flagged_std}
 
 
