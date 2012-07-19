@@ -57,7 +57,7 @@ msplots [options] <SAS ID 1> <SAS ID 2> ...
                             <SAS ID>, e.g. 21426
 
   -m/--memory <GB>          Maximum amount of memory that msinspect
-                            may use in GB. Default is 4. Less than 1
+                            may use in GB. Default is 21. Less than 1
                             is not recommended.
 
   -h/--help                 Display this help
@@ -93,7 +93,7 @@ def main(argv):
     prefix=os.path.join('/globaldata', 'inspect')
     if not os.path.exists(prefix):
         prefix=os.path.expanduser('~/inspect/')
-    memory=4.0
+    memory=21.0
     output_dir=None
 
     for(option,value) in options:
@@ -129,14 +129,18 @@ def main(argv):
             output_directory = str(sas_id)
         else:
             output_directory = output_dir
-        msses   = find_msses(str(sas_id))
+        msses    = find_msses(str(sas_id))
+        max_cpus = max(1, forkmap.nprocessors()/2)
         if len(msses) > 0:
             #node    = get_node_number_in_subcluster()
             #mymsses = msses[node % len(msses)::min(len(msses), 10)]
             #print('\n'.join(mymsses))
-            forkmap.map(lambda ms: inspect_ms(ms, ms_id=sas_id, max_mem_bytes=int(memory*2**30), root=prefix, cmap=cm.gray_r, output_dir = output_directory),
+            forkmap.map(lambda ms: inspect_ms(
+                    ms, ms_id=sas_id,
+                    max_mem_bytes=int((memory/min(max_cpus, len(msses)))*2**30),
+                    root=prefix, cmap=cm.gray_r, output_dir = output_directory),
                         msses,
-                        n=max(1, forkmap.nprocessors()/2))
+                        n=max_cpus)
     return 0
 
 
