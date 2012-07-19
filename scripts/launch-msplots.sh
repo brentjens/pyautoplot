@@ -6,13 +6,19 @@
 # number as in its name. The script assumes that msplots is in the PATH
 # and that the pyautoplot module is in the PYTHONPATH.
 
-HOSTNAME=`hostname -s`
+HOSTNAME=`hostname`
 PATH="$PATH:/opt/cep/pyautoplot/bin"
 LOG=/globaldata/inspect/launch-msplots.log
 
+DATE=`date`
+echo "" | tee -a $LOG
+echo "=======================" | tee -a $LOG
+echo "Date: $DATE"|tee -a $LOG
+echo "$0 $@" | tee -a $LOG
+echo "On machine $HOSTNAME" | tee -a $LOG
+
 if test "$HOSTNAME" == "lhn001"; then
-    date >> /globaldata/inspect/launch-msplots.log
-    cexec locus: "bash -ilc \"use LofIm; use Pythonlibs; use Pyautoplot; msplots $@\"" >> /globaldata/inspect/launch-msplots.log
+    cexec locus: "bash -ilc \"use LofIm; use Pythonlibs; use Pyautoplot; msplots $@\"" | tee -a $LOG
 
     CREATE_HTML=`which create_html`
     echo "$@" >> /globaldata/inspect/launch-msplots.log
@@ -33,7 +39,9 @@ if test "$HOSTNAME" == "lhn001"; then
             echo "$result" | tee -a $LOG
         fi
     fi
-    echo "Done"
 else
-    cexec1 lce:1-54,64-72 "bash -ilc \"use LofIm;use Pythonlibs; use Pyautoplot; msplots $@\""
+    cexec1 lce:1-54,64-72 "bash -ilc \"use LofIm;use Pythonlibs; use Pyautoplot; msplots $@\"" | tee -a $LOG
 fi
+
+DATE_DONE=`date`
+echo "Done at $DATE_DONE" | tee -a $LOG

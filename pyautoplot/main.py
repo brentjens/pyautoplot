@@ -822,8 +822,8 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30), first_timeslot=0, max_time
     #bls_sn = abs(bls_flagged_mean)/abs(bls_flagged_std/sqrt(bls_good-1))
     #bls_sn = set_nan_zero(bls_sn)
 
-    printnow('computing delay/rate')
-    peak, peak_delay, peak_rate = calc_delay_rate_stats(data)
+    #printnow('computing delay/rate')
+    #peak, peak_delay, peak_rate = calc_delay_rate_stats(data)
 
     return {'Antennae'          : ms.tables['antennae'],
             'Spectral windows'  : ms.tables['spectral_windows'],
