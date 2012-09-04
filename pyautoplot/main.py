@@ -881,8 +881,8 @@ def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('
     ms = MeasurementSetSummary(msname)
     time_slots, vis_cube = collect_timeseries_ms(ms, num_points=240)
 
-    good_stations = ['CS002HBA', 'CS002HBA0', 'CS002LBA', 'CS004HBA0', 'CS004LBA',
-                     'RS106HBA', 'RS205HBA', 'RS205LBA', 'RS306LBA', 'RS406LBA']
+    good_stations = ['CS002HBA', 'CS002HBA0', 'CS002LBA', 'CS004HBA0', 'CS004LBA', 'CS004HBA',
+                     'RS307HBA', 'RS307LBA', 'RS508LBA', 'RS508HBA']
     plot_stations = list(set(good_stations).intersection(set(ant_names)))
     if len(plot_stations) == 0:
         plot_stations = unique([ant_names[0], ant_names[len(ant_names)/2], ant_names[-1]])
