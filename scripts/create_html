@@ -346,7 +346,22 @@ def observation_html(parset, obs_plot_root, html_root):
 
 def parse_subband_list(parset_subband_list):
     r'''
-    [154..163,185..194,215..224,245..254,275..284,305..314,335..344,10*374]
+    Parse a subband list from a parset.
+
+    **Parameters**
+    
+    parset_subband_list : string
+        Value of Observation.Beam[0].subbandList
+
+    **Returns**
+    
+    A list of integers containing the subband numbers.
+    
+    **Examples**
+    
+    
+    >>> parse_subband_list('[154..163,185..194,215..224,245..254,275..284,305..314,335..344,10*374]')
+    >>> parse_subband_list('[77..87,116..127,155..166,194..205,233..243,272..282,311..321]')
     '''
     sub_lists = [word.strip().split('..') for word in parset_subband_list.strip('[] \n\t').split(',')]
     subbands = []

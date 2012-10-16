@@ -8,7 +8,8 @@
 
 HOSTNAME=`hostname`
 PATH="$PATH:/opt/cep/pyautoplot/bin"
-LOG=/globaldata/inspect/launch-msplots.log
+INSPECT_ROOT=/globaldata/inspect
+LOG=$INSPECT_ROOT/launch-msplots.log
 
 DATE=`date`
 echo "" | tee -a $LOG
@@ -18,6 +19,9 @@ echo "$0 $@" | tee -a $LOG
 echo "On machine $HOSTNAME" | tee -a $LOG
 
 if test "$HOSTNAME" == "lhn001"; then
+    for sas_id in $@; do
+        mkdir $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id
+        done
     cexec locus: "bash -ilc \"use LofIm; use Pythonlibs; use Pyautoplot; msplots $@\"" | tee -a $LOG
 
     CREATE_HTML=`which create_html`
