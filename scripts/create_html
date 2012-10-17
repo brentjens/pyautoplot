@@ -551,7 +551,10 @@ def main_index_html(plot_root, html_root):
 
     open(index_name, 'w').write('''
 <html>
-    <head><title>LOFAR Inspection plots</title></head>
+    <head>
+        <meta http-equiv="refresh" content="60">
+        <title>LOFAR Inspection plots</title>
+    </head>
     <body>
         <h1>LOFAR inspection plots</h1>
         <table>
