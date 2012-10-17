@@ -11,6 +11,46 @@ PATH="$PATH:/opt/cep/pyautoplot/bin"
 INSPECT_ROOT=/globaldata/inspect
 LOG=$INSPECT_ROOT/launch-msplots.log
 
+
+#Time to wait for stuck processes before killing them
+export ALARMTIME=300
+ 
+PARENTPID=$$
+GLOBAL_ARGS=$@
+
+
+create_html_fn() {
+    CREATE_HTML=`which create_html`
+    echo "$GLOBAL_ARGS" | tee -a $LOG
+    if test "$CREATE_HTML" == ""; then
+        echo "Cannot find create_html: no HTML generated" | tee -a $LOG
+
+    else
+        echo "Creating HTML using $CREATE_HTML" | tee -a $LOG
+        command="$CREATE_HTML $GLOBAL_ARGS"
+        echo "$command"| tee -a $LOG
+        result=`$command`
+        exit_status="$?"
+        if test "$exit_status" == "0"; then
+            echo "HTML Created successfully" | tee -a $LOG
+        else 
+            echo "Problem creating HTML overview for $GLOBAL_ARGS." | tee -a $LOG
+            echo "Exit status: $exit_status" | tee -a $LOG
+            echo "$result" | tee -a $LOG
+        fi
+    fi
+}
+
+exit_timeout() {
+    echo "TIMEOUT : killing cexec" | tee -a $LOG
+    kill -9 $CEXEC_PID >/dev/null 2>&1
+    create_html_fn
+    DATE_DONE=`date`
+    echo "Done at $DATE_DONE" | tee -a $LOG
+    exit
+}
+
+
 DATE=`date`
 echo "" | tee -a $LOG
 echo "=======================" | tee -a $LOG
@@ -22,27 +62,25 @@ if test "$HOSTNAME" == "lhn001"; then
     for sas_id in $@; do
         mkdir $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id
         done
-    cexec locus: "bash -ilc \"use LofIm; use Pythonlibs; use Pyautoplot; msplots $@\"" | tee -a $LOG
 
-    CREATE_HTML=`which create_html`
-    echo "$@" >> /globaldata/inspect/launch-msplots.log
-    if test "$CREATE_HTML" == ""; then
-        echo "Cannot find create_html: no HTML generated" | tee -a $LOG
+    #Prepare to catch SIGALRM, call exit_timeout
+    trap exit_timeout SIGALRM
+    
+    (cexec locus: "bash -ilc \"use LofIm; use Pythonlibs; use Pyautoplot; msplots $@\"" | tee -a $LOG ) &
+    CEXEC_PID=$!
+    #Sleep in a subprocess, then signal parent with ALRM
+    (sleep $ALARMTIME; kill -ALRM $PARENTPID) &
+    #Record PID of subprocess
+    ALARMPID=$!
+    
+    #Wait for child processes to complete normally
+    wait $CEXEC_PID
+ 
+    #Tidy up the Alarm subprocess
+    kill $ALARMPID
+    
+    create_html_fn
 
-    else
-        echo "Creating HTML using $CREATE_HTML" | tee -a $LOG
-        command="$CREATE_HTML $@"
-        echo "$command"| tee -a $LOG
-        result=`$command`
-        exit_status="$?"
-        if test "$exit_status" == "0"; then
-            echo "HTML Created successfully" | tee -a $LOG
-        else 
-            echo "Problem creating HTML overview for $@." | tee -a $LOG
-            echo "Exit status: $exit_status" | tee -a $LOG
-            echo "$result" | tee -a $LOG
-        fi
-    fi
 else
     cexec1 lce:1-54,64-72 "bash -ilc \"use LofIm;use Pythonlibs; use Pyautoplot; msplots $@\"" | tee -a $LOG
 fi
