@@ -101,7 +101,7 @@ def create_html_main(argv):
     '''
     logging.debug('create_html_main(argv = %r)', argv)
     options, sas_ids = parse_command_line(argv)
-    parset_names = [parset_path(sas_id) for sas_id in sas_ids]
+    parset_names = [find_parset(sas_id) for sas_id in sas_ids]
     parsets = [parset_summary(sas_id, parset_name)
                for sas_id, parset_name in zip(sas_ids, parset_names)]
 
@@ -396,11 +396,17 @@ def subband_frequencies(subband_width, band_filter, subband_numbers):
     return [freq_hz + base_freq for freq_hz in freq_offsets_hz]
 
 
-def parset_path(sas_id):
+def find_parset(sas_id):
     r'''
     '''
-    return os.path.join('/globalhome', 'lofarsystem', 'log',
-                        'L'+str(sas_id)+'.parset')
+    search_path = [os.path.join('/globalhome', user, 'log',
+                                prefix+str(sas_id)+'.parset')
+                   for prefix in ['L', 'T']
+                   for user in ['lofarsystem', 'lofartest']]
+    for path in search_path:
+        if os.path.exists(path):
+            return path
+    return None
 
 
 def parset_summary(sas_id, parset_name):
@@ -438,7 +444,7 @@ def parset_summary(sas_id, parset_name):
               'file_name'    : None,
               'clock_mhz'    : 0}
     
-    if os.path.exists(parset_name):
+    if parset_name and os.path.exists(parset_name):
         parset['file_name'] = parset_name
         parset_lines = open(parset_name).readlines()
         for line in parset_lines:
@@ -517,7 +523,7 @@ def main_index_html(plot_root, html_root):
                         for sas_id in glob.glob(html_sas_id_pattern)]
     sas_ids = sorted(set(sas_id_with_html).intersection(set(sas_id_with_plot)),
                      reverse = True)
-    unsorted_parsets = [parset_summary(sas_id, parset_path(sas_id))
+    unsorted_parsets = [parset_summary(sas_id, find_parset(sas_id))
                         for sas_id in sas_ids]
     parsets = sorted(unsorted_parsets,
                      key     = lambda parset: parset['start_time'],
