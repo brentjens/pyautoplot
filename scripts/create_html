@@ -259,7 +259,7 @@ def subband_html(parset, sb_name, rel_plot_files):
 </html>'''
 
     return html_template % {
-        'title'        : 'L'+parset['sas_id']+' '+sb_name,
+        'title'        : parset['sas_id']+' '+sb_name,
         'overview_rows': '\n'.join(overview_rows),
         'flagged_std'  : flagged_std,
         'flagged_mean' : flagged_mean,
@@ -326,9 +326,9 @@ def observation_html(parset, obs_plot_root, html_root):
                     for name, subband, freq_hz in zip(sb_list, subband_list, subband_freqs_hz)]
     open(observation_index_name, 'w').write('''
 <html>
-    <head><title>L%(sas_id)s</title></head>
+    <head><title>%(sas_prefix)s%(sas_id)s</title></head>
     <body>
-    <h1>L%(sas_id)s</h1>
+    <h1>%(sas_prefix)s%(sas_id)s</h1>
     <p><ul>
         <li><a href="../index.html">Projects</a></li>
     </ul></p>
@@ -340,7 +340,8 @@ def observation_html(parset, obs_plot_root, html_root):
     </table>
     </body>
 </html>
-''' % {'sas_id'        : parset['sas_id'],
+''' % {'sas_prefix'    : parset['sas_prefix'],
+       'sas_id'        : parset['sas_id'],
        'sub_band_pages': ' '.join(sb_page_list)})
 
 
@@ -406,6 +407,7 @@ def find_parset(sas_id):
     for path in search_path:
         if os.path.exists(path):
             return path
+    logging.warn('Cannot find parset for SAS ID %d', sas_id)
     return None
 
 
@@ -432,6 +434,7 @@ def parset_summary(sas_id, parset_name):
         return line.split('=')[-1].strip('\' \n')
 
     parset = {'sas_id'       : str(sas_id),
+              'sas_prefix'   : '',
               'campaign_name': '',
               'target'       : '',
               'start_time'   : '',
@@ -445,7 +448,8 @@ def parset_summary(sas_id, parset_name):
               'clock_mhz'    : 0}
     
     if parset_name and os.path.exists(parset_name):
-        parset['file_name'] = parset_name
+        parset['file_name']  = parset_name
+        parset['sas_prefix'] = os.path.basename(parset_name).split('.parset')[0][0]
         parset_lines = open(parset_name).readlines()
         for line in parset_lines:
             if 'Campaign.name' in line:
@@ -479,12 +483,12 @@ def observation_table_row(parset, html_root):
     '''
     format_dict = parset.copy()
     format_dict['nr_subbands'] = len(parset['subband_list'])
-
+    
     if parset['file_name']:
         format_dict['parset_relpath'] = os.path.relpath(
             parset['file_name'], html_root)
         html = '''
-    <tr><th><a href="%(sas_id)s/index.html">L%(sas_id)s</a>&nbsp;&nbsp;&nbsp;</th>
+    <tr><th><a href="%(sas_id)s/index.html">%(sas_prefix)s%(sas_id)s</a>&nbsp;&nbsp;&nbsp;</th>
         <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
@@ -495,7 +499,7 @@ def observation_table_row(parset, html_root):
 
     else:
         html = '''
-    <tr><th><a href="%(sas_id)s/index.html">L%(sas_id)s</a>&nbsp;&nbsp;&nbsp;</th>
+    <tr><th><a href="%(sas_id)s/index.html">%(sas_prefix)s%(sas_id)s</a>&nbsp;&nbsp;&nbsp;</th>
         <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
@@ -537,6 +541,7 @@ def main_index_html(plot_root, html_root):
             new_parset_name = None
         if parset['file_name'] and os.path.exists(parset['file_name']) \
                 and not os.path.exists(new_parset_name):
+            force_mkdir(obs_plot_root)
             shutil.copy2(parset['file_name'], obs_plot_root)
             
         if new_parset_name and os.path.exists(new_parset_name):
