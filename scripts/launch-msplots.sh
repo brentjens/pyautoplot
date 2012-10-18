@@ -17,6 +17,7 @@ export ALARMTIME=300
  
 PARENTPID=$$
 GLOBAL_ARGS=$@
+COMMAND_NAME='msplots $@'
 
 
 create_html_fn() {
@@ -43,14 +44,16 @@ create_html_fn() {
 
 exit_timeout() {
     echo "TIMEOUT : killing cexec ($CEXEC_PID)" | tee -a $LOG
-    pkill -INT -P $CEXEC_PID > /dev/null 2>&1
-    kill -INT $CEXEC_PID >/dev/null 2>&1
+    child_pids=`ps -o user,pid,ppid,command ax |grep "$COMMAND_NAME"|grep -v grep|awk '{print $2}'`
+    for pid in $child_pids; do
+        pkill -TERM -P $pid > /dev/null 2>&1
+        done
+    pkill -TERM -P $CEXEC_PID >/dev/null 2>&1
     create_html_fn
     DATE_DONE=`date`
     echo "Done at $DATE_DONE" | tee -a $LOG
     exit
 }
-
 
 DATE=`date`
 echo "" | tee -a $LOG
@@ -67,7 +70,7 @@ if test "$HOSTNAME" == "lhn001"; then
     #Prepare to catch SIGALRM, call exit_timeout
     trap exit_timeout SIGALRM
     
-    cexec locus: "bash -ilc \"use LofIm; use Pythonlibs; use Pyautoplot; msplots $@\"" &
+    cexec locus: "bash -ilc \"use LofIm; use Pythonlibs; use Pyautoplot; $COMMAND_NAME\"" &
     CEXEC_PID=$!
     #Sleep in a subprocess, then signal parent with ALRM
     (sleep $ALARMTIME; kill -ALRM $PARENTPID) &
@@ -83,7 +86,7 @@ if test "$HOSTNAME" == "lhn001"; then
     create_html_fn
 
 else
-    cexec1 lce:1-54,64-72 "bash -ilc \"use LofIm;use Pythonlibs; use Pyautoplot; msplots $@\"" | tee -a $LOG
+    cexec1 lce:1-54,64-72 "bash -ilc \"use LofIm;use Pythonlibs; use Pyautoplot; $COMMAND_NAME\"" | tee -a $LOG
 fi
 
 DATE_DONE=`date`
