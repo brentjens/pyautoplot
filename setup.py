@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
-
+from pyautoplot import __version__
 setup(name='pyautoplot',
-      version='0.9.9',
+      version=__version__,
       description='Library to build interferometric data inspection tools',
       author='Michiel Brentjens',
       author_email='brentjens@astron.nl',

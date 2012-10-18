@@ -4,7 +4,7 @@
 import logging
 import os, sys, glob, socket, shutil
 from optparse import OptionParser
-
+import time
 
 
 def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
@@ -557,14 +557,16 @@ def main_index_html(plot_root, html_root):
     </head>
     <body>
         <h1>LOFAR inspection plots</h1>
+        <p><i>Last modified: %s UTC</i><p>
         <table>
         <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subbands</th> <th>Parset</th></tr>
         %s
         </table>
     </body>
 </html>
-''' % '\n'.join([observation_table_row(parset, html_root)
-                 for parset in parsets] ))
+''' % ( time.asctime(time.gmtime()),
+        '\n'.join([observation_table_row(parset, html_root)
+                   for parset in parsets])))
     
 
 if __name__ == '__main__':
