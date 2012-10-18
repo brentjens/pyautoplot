@@ -17,7 +17,7 @@ export ALARMTIME=300
  
 PARENTPID=$$
 GLOBAL_ARGS=$@
-COMMAND_NAME='msplots $@'
+COMMAND_NAME="msplots $@"
 
 
 create_html_fn() {
