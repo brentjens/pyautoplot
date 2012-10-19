@@ -5,7 +5,7 @@ import logging
 import os, sys, glob, socket, shutil
 from optparse import OptionParser
 import time
-
+import datetime
 
 def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
     r'''
@@ -518,7 +518,10 @@ def main_index_html(plot_root, html_root):
     logging.debug('main_index_html(plot_root = %r, html_root = %r)',
                   plot_root, html_root)
 
-    index_name = os.path.join(html_root, 'index.html')
+    index_name      = os.path.join(html_root, 'index.html')
+    long_index_name = os.path.join(html_root, 'fullindex.html')
+    beginning_of_short_index = datetime.datetime.now() - datetime.timedelta(14)
+
     plot_sas_id_pattern = os.path.join(plot_root, '[0123456789]'*5)
     sas_id_with_plot = [int(os.path.split(sas_id)[-1])
                         for sas_id in glob.glob(plot_sas_id_pattern)]
@@ -557,7 +560,7 @@ def main_index_html(plot_root, html_root):
     </head>
     <body>
         <h1>LOFAR inspection plots</h1>
-        <p><i>Last modified: %s UTC</i><p>
+        <p><i>Last modified: %s UTC</i>&nbsp;&nbsp;<a href="%s">Full list</a><p>
         <table>
         <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subbands</th> <th>Parset</th></tr>
         %s
@@ -565,8 +568,32 @@ def main_index_html(plot_root, html_root):
     </body>
 </html>
 ''' % ( time.asctime(time.gmtime()),
+        os.path.basename(long_index_name),
         '\n'.join([observation_table_row(parset, html_root)
-                   for parset in parsets])))
+                   for parset in parsets
+                   if datetime.datetime.strptime(parset['start_time']+' UTC', '%Y-%m-%d %H:%M:%S %Z') > beginning_of_short_index]
+                  )))
+
+    open(long_index_name, 'w').write('''
+<html>
+    <head>
+        <meta http-equiv="refresh" content="60">
+        <title>LOFAR Inspection plots</title>
+    </head>
+    <body>
+        <h1>LOFAR inspection plots</h1>
+        <p><i>Last modified: %s UTC</i>&nbsp;&nbsp;<a href="%s">Short index</a><p>
+        <table>
+        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subbands</th> <th>Parset</th></tr>
+        %s
+        </table>
+    </body>
+</html>
+''' % ( time.asctime(time.gmtime()),
+        os.path.basename(index_name),
+        '\n'.join([observation_table_row(parset, html_root)
+                   for parset in parsets]
+                  )))
     
 
 if __name__ == '__main__':
