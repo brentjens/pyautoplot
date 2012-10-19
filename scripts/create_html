@@ -571,7 +571,7 @@ def main_index_html(plot_root, html_root):
         os.path.basename(long_index_name),
         '\n'.join([observation_table_row(parset, html_root)
                    for parset in parsets
-                   if datetime.datetime.strptime(parset['start_time']+' UTC', '%Y-%m-%d %H:%M:%S %Z') > beginning_of_short_index]
+                   if parset['start_time'].strip() != '' and datetime.datetime.strptime(parset['start_time'], '%Y-%m-%d %H:%M:%S') > beginning_of_short_index]
                   )))
 
     open(long_index_name, 'w').write('''
