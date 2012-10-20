@@ -81,7 +81,7 @@ if test "$HOSTNAME" == "lhn001"; then
     wait $CEXEC_PID
  
     #Tidy up the Alarm subprocess
-    kill $ALARMPID
+    kill $ALARMPID > /dev/null 2>&1
     
     create_html_fn
 

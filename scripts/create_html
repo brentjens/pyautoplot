@@ -520,7 +520,7 @@ def main_index_html(plot_root, html_root):
 
     index_name      = os.path.join(html_root, 'index.html')
     long_index_name = os.path.join(html_root, 'fullindex.html')
-    beginning_of_short_index = datetime.datetime.now() - datetime.timedelta(14)
+    beginning_of_short_index = datetime.datetime.now() - datetime.timedelta(7)
 
     plot_sas_id_pattern = os.path.join(plot_root, '[0123456789]'*5)
     sas_id_with_plot = [int(os.path.split(sas_id)[-1])
