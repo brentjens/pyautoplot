@@ -2,6 +2,7 @@
 
 from distutils.core import setup
 from pyautoplot import __version__
+
 setup(name='pyautoplot',
       version=__version__,
       description='Library to build interferometric data inspection tools',

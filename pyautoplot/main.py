@@ -85,7 +85,7 @@ def single_correlation_flags(tf_plane, threshold=5.0, max_iter=5, previous_sums=
     if verbose:
         print('sum(flags): %s' % (sum_flags,))
         print('%5.3f%s flagged\n' % ((sum_flags*100.0/product(tf_plane.shape)),'%'))
-    if sum(flags) == product(flags.shape):
+    if sum_flags == product(flags.shape):
         return flags
     if max_iter <= 0:
         return ndimage.binary_dilation(flags,iterations=2)
@@ -356,7 +356,7 @@ def plot_all_correlations(data_col, plot_flags=True,amax_factor=1.0):
     
     scale=ma.max(abs(flagged_data))
     stddev = max(ma.std(flagged_data.real), ma.std(flagged_data.imag))
-    if sum(flags) == product(flags.shape):
+    if flags.sum() == product(flags.shape):
         amax=1.0
     else:
         amax=(scale-stddev)*amax_factor
@@ -416,7 +416,7 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     antenna_names   = array(ms_summary.subtable('ANTENNA').getcol('NAME'))[list(baseline)]
     print(antenna_names)
 
-    if sum(flagged_data.mask) == product(flagged_data.data.shape):
+    if flagged_data.mask.sum() == product(flagged_data.data.shape):
         scale=1.0
         stddev=0.1
         amax=1.0*amax_factor
