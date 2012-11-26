@@ -1,9 +1,15 @@
 from pyautoplot import __version__
 
 #from exceptions import *
-import os,gc,pickle
+import os,sys,gc,pickle
 import scipy.ndimage as ndimage
-import pyrap.tables as tables
+
+try:
+    import pyrap.tables as tables
+except ImportError:
+    print(sys.exc_info()[1])
+    print('No problem during setup. During normal use, ensure pyrap is in PYTHONPATH')
+
 from numpy import complex64, float32, float64, int64
 from numpy import arange, concatenate, logical_not, logical_or, newaxis, product
 from numpy import log10, conj, ceil, ones, sqrt, unique, zeros, where, median
