@@ -63,6 +63,9 @@ echo "$0 $@" | tee -a $LOG
 echo "On machine $HOSTNAME" | tee -a $LOG
 
 if test "$HOSTNAME" == "lhn001"; then
+
+    sleep 45 # to make sure writing of metadata in MSses has a reasonable chance to finishe before plots are created.
+
     for sas_id in $@; do
         mkdir $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id
         done
