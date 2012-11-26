@@ -187,6 +187,31 @@ def subband_from_file_name(plot_file_name):
             if item[0:2] == 'SB' and len(item) == 5][0]
 
 
+
+def sap_from_file_name(plot_file_name):
+    r'''
+    Extract sub array pointing name from ``plot_file_name``.
+    
+    **Parameters**
+
+    plot_file_name : string
+        File name of an inspection plot.
+
+    **Returns**
+    
+    A string containing the SAP identifier with format 'SAPnnn',
+    where ``nnn`` are three digits.
+
+    **Examples**
+
+    >>> sap_from_file_name('/globaldata/inspect/60873/L60873_SAP003_SB049_uv-flags.png')
+    'SAP003'
+    '''
+    return [item for item in plot_file_name.split('_')
+            if item[0:3] == 'SAP' and len(item) == 6][0]
+
+
+
 def force_mkdir(path_name):
     r'''
     '''
@@ -281,12 +306,12 @@ def relative_plot_paths(obs_plot_root, current_directory):
 
 
 
-def plot_paths_per_subband(plot_file_names):
+def plot_paths_per_sap_subband(plot_file_names):
     r'''
     '''
     sb_plots = {}
     for plot_file in plot_file_names:
-        keyword = subband_from_file_name(plot_file)
+        keyword = sap_from_file_name(plot_file)+'_'+subband_from_file_name(plot_file)
         if not sb_plots.has_key(keyword):
             sb_plots[keyword] = []
         sb_plots[keyword].append(plot_file)
@@ -309,7 +334,7 @@ def observation_html(parset, obs_plot_root, html_root):
     force_mkdir(sb_html_root)
 
     plot_files = relative_plot_paths(obs_plot_root, sb_html_root)
-    sb_plots   = plot_paths_per_subband(plot_files)
+    sb_plots   = plot_paths_per_sap_subband(plot_files)
     sb_list    = sorted(sb_plots.keys())
     for sb_name in sb_list:
         file_name = os.path.join(sb_html_root, sb_name+'.html')
@@ -318,12 +343,12 @@ def observation_html(parset, obs_plot_root, html_root):
 
     observation_index_name = os.path.join(obs_html_root, 'index.html')
     
-    subband_list = parset['subband_list']
-    subband_list += [0]*(len(sb_list) - len(subband_list))
-    subband_freqs_hz = parset['subband_freqs_hz']
-    subband_freqs_hz += [0]*(len(sb_list) - len(subband_freqs_hz))
+    subband_list     = parset['subband_list']
+    olap_subbands    = [int(sap_sb.split('_')[1][-3:]) for sap_sb in sb_list]
+    station_subbands = [subband_list[olap_sb] for olap_sb in olap_subbands]
+    subband_freqs_hz = [parset['subband_freqs_hz'][sb] for sb in olap_subbands]
     sb_page_list = ['<tr><td><a href="SBpages/%s.html">%s</a>&nbsp;&nbsp;&nbsp;</td> <td>%d&nbsp;&nbsp;&nbsp;</td> <td>%7.3f&nbsp;&nbsp;&nbsp;</td></tr>' % (name, name, subband, freq_hz/1e6)
-                    for name, subband, freq_hz in zip(sb_list, subband_list, subband_freqs_hz)]
+                    for name, subband, freq_hz in zip(sb_list, station_subbands, subband_freqs_hz)]
     open(observation_index_name, 'w').write('''
 <html>
     <head><title>%(sas_prefix)s%(sas_id)s</title></head>
