@@ -534,7 +534,7 @@ def observation_table_row(parset, html_root, ascii_table=False):
 ''' % format_dict
 
     if ascii_table:
-        html = '''%(sas_prefix)10s  %(campaign_name)15s  %(target)10s  %(antenna_set)16s %(start_time)s -- %(end_time)s''' % format_dict
+        html = '''%(sas_prefix)s%(sas_id)s   %(campaign_name)15s   %(target)20s   %(antenna_set)16s   %(band_filter)11s   %(start_time)s -- %(stop_time)s''' % format_dict
 
     return html
 
@@ -594,7 +594,7 @@ def main_index_html(plot_root, html_root):
     </head>
     <body>
         <h1>LOFAR inspection plots</h1>
-        <p><i>Last modified: %s UTC</i>&nbsp;&nbsp;<a href="%s">Full list</a><p>&nbsp;&nbsp;<a href="%s">Ascii table</a>
+        <p><i>Last modified: %s UTC</i>&nbsp;&nbsp;<a href="%s">Full list</a>&nbsp;&nbsp;<a href="%s">Ascii table</a></p>
         <table>
         <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subbands</th> <th>Parset</th></tr>
         %s
