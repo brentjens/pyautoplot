@@ -503,7 +503,7 @@ def parset_summary(sas_id, parset_name):
     return parset
 
 
-def observation_table_row(parset, html_root):
+def observation_table_row(parset, html_root, ascii_table=False):
     r'''
     '''
     format_dict = parset.copy()
@@ -533,6 +533,9 @@ def observation_table_row(parset, html_root):
     </tr>
 ''' % format_dict
 
+    if ascii_table:
+        html = '''%(sas_prefix)10s  %(campaign_name)15s  %(target)10s  %(antenna_set)16s %(start_time)s -- %(end_time)s''' % format_dict
+
     return html
 
 
@@ -544,6 +547,7 @@ def main_index_html(plot_root, html_root):
                   plot_root, html_root)
 
     index_name      = os.path.join(html_root, 'index.html')
+    index_txt_name  = os.path.join(html_root, 'index.txt')
     long_index_name = os.path.join(html_root, 'fullindex.html')
     beginning_of_short_index = datetime.datetime.now() - datetime.timedelta(7)
 
@@ -577,6 +581,11 @@ def main_index_html(plot_root, html_root):
         else:
             parset['file_name'] = None
 
+    open(index_txt_name, 'w').write('\n'.join(
+            [observation_table_row(parset, html_root, ascii_table=True)
+             for parset in parsets
+             if parset['start_time'].strip() != '' and datetime.datetime.strptime(parset['start_time'], '%Y-%m-%d %H:%M:%S') > beginning_of_short_index]))
+
     open(index_name, 'w').write('''
 <html>
     <head>
@@ -585,7 +594,7 @@ def main_index_html(plot_root, html_root):
     </head>
     <body>
         <h1>LOFAR inspection plots</h1>
-        <p><i>Last modified: %s UTC</i>&nbsp;&nbsp;<a href="%s">Full list</a><p>
+        <p><i>Last modified: %s UTC</i>&nbsp;&nbsp;<a href="%s">Full list</a><p>&nbsp;&nbsp;<a href="%s">Ascii table</a>
         <table>
         <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subbands</th> <th>Parset</th></tr>
         %s
@@ -594,6 +603,7 @@ def main_index_html(plot_root, html_root):
 </html>
 ''' % ( time.asctime(time.gmtime()),
         os.path.basename(long_index_name),
+        os.path.basename(index_txt_name),
         '\n'.join([observation_table_row(parset, html_root)
                    for parset in parsets
                    if parset['start_time'].strip() != '' and datetime.datetime.strptime(parset['start_time'], '%Y-%m-%d %H:%M:%S') > beginning_of_short_index]
