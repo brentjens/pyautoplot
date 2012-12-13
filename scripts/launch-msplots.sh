@@ -69,6 +69,7 @@ if test "$HOSTNAME" == "lhn001"; then
 
     for sas_id in $@; do
         mkdir $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id
+        cexec locus: "du -sm /data/L$sas_id/*" > $INSPECT_ROOT/$sas_id/file-sizes.txt
         done
 
     #Prepare to catch SIGALRM, call exit_timeout
