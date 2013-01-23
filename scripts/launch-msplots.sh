@@ -45,11 +45,12 @@ create_html_fn() {
 exit_timeout() {
     echo "TIMEOUT : killing cexec ($CEXEC_PID)" | tee -a $LOG
     child_pids=`ps -o user,pid,ppid,command ax |grep "$COMMAND_NAME"|grep -v grep|awk '{print $2}'`
+    kill -9 $CEXEC_PID >/dev/null 2>&1
+    sleep 1;
     for pid in $child_pids; do
-        pkill -KILL -P $pid > /dev/null 2>&1
+        kill -9 $pid > /dev/null 2>&1
         done
     sleep 1;
-    pkill -KILL -P $CEXEC_PID >/dev/null 2>&1
     create_html_fn
     DATE_DONE=`date`
     echo "Done at $DATE_DONE" | tee -a $LOG
