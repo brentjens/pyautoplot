@@ -690,7 +690,10 @@ def ant_ant_stat_frame(title_text, full_pol_array, station_names, output_name=No
 
     if output_name is not None:
         canvas = FigureCanvasAgg(fig)
-        canvas.print_figure(output_name, dpi=dpi)
+        if output_name[-4:] in ['.jpg', '.JPG']:
+            canvas.print_jpg(output_name, dpi=dpi, quality=55)
+        else:
+            canvas.print_figure(output_name, dpi=dpi)
         pass
     pass
 
@@ -976,7 +979,10 @@ def timeseries_station_page(ms, station_name, time_slots, data, fn=abs, output_n
     fig.subplots_adjust(hspace=0.0, top=0.95, bottom=0.04)
     if output_name is not None:
         canvas = FigureCanvasAgg(fig)
-        canvas.print_figure(output_name, dpi=dpi)
+        if output_name[-4:] in ['.jpg', '.JPG']:
+            canvas.print_jpg(output_name, dpi=dpi, quality=55)
+        else:
+            canvas.print_figure(output_name, dpi=dpi)
         pass
     pass
 
@@ -1038,6 +1044,10 @@ def station_gain_bar_chart(ms, station_name, time_slots, data, output_name= None
     
     if output_name is not None:
         canvas = FigureCanvasAgg(fig)
-        canvas.print_figure(output_name, dpi=dpi)
+        if output_name[-4:] in ['.jpg', '.JPG']:
+            canvas.print_jpg(output_name, dpi=dpi, quality=55)
+        else:
+            canvas.print_figure(output_name, dpi=dpi)
+        pass
 
     rcParams.update({'legend.fontsize': old_legend_fontsize})
