@@ -388,8 +388,12 @@ def parse_subband_list(parset_subband_list):
     
     >>> parse_subband_list('[154..163,185..194,215..224,245..254,275..284,305..314,335..344,10*374]')
     >>> parse_subband_list('[77..87,116..127,155..166,194..205,233..243,272..282,311..321]')
+    >>> parse_subband_list('[]')
     '''
-    sub_lists = [word.strip().split('..') for word in parset_subband_list.strip('[] \n\t').split(',')]
+    stripped_subband_list = parset_subband_list.strip('[] \n\t')
+    if stripped_subband_list == '':
+        return []
+    sub_lists = [word.strip().split('..') for word in stripped_subband_list.split(',')]
     subbands = []
     for sub_list in sub_lists:
         if len(sub_list) == 1:
@@ -490,7 +494,10 @@ def parset_summary(sas_id, parset_name):
             elif  'Observation.bandFilter' in line:
                 parset['band_filter'] = value(line)
             elif 'Observation.subbandList' in line:
-                parset['subband_list'] = parse_subband_list(value(line))
+                subband_list = parse_subband_list(value(line))
+                if len(subband_list) == 0:
+                    logging.warn('Empty subband list in %s', parset_name)
+                parset['subband_list'] = subband_list
             elif 'Observation.clockMode' in line:
                 parset['clock_mhz'] = int(value(line).strip('<<Clock \n\t'))
             elif 'Observation.subbandWidth' in line:
