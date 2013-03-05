@@ -54,7 +54,7 @@ msplots [options] <SAS ID 1> <SAS ID 2> ...
                             /globaldata/inspect, or, if that does
                             not exist, ~/inspect/
   -o/--output <name>        Name of output directory. Default is
-                            <SAS ID>, e.g. 21426
+                            <SAS ID>, e.g. 121426
 
   -m/--memory <GB>          Maximum amount of memory that msinspect
                             may use in GB. Default is 3. Less than 1
