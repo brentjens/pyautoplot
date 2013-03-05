@@ -558,12 +558,21 @@ def main_index_html(plot_root, html_root):
     long_index_name = os.path.join(html_root, 'fullindex.html')
     beginning_of_short_index = datetime.datetime.now() - datetime.timedelta(7)
 
-    plot_sas_id_pattern = os.path.join(plot_root, '[0123456789]'*5+'*')
+    plot_sas_id_pattern5 = os.path.join(plot_root, '[0123456789]'*5)
+    plot_sas_id_pattern6 = os.path.join(plot_root, '[0123456789]'*6)
+    plot_sas_id_pattern7 = os.path.join(plot_root, '[0123456789]'*7)
     sas_id_with_plot = [int(os.path.split(sas_id)[-1])
-                        for sas_id in glob.glob(plot_sas_id_pattern)]
-    html_sas_id_pattern = os.path.join(html_root, '[0123456789]'*5+'*')
+                        for sas_id in (glob.glob(plot_sas_id_pattern5)
+                                       + glob.glob(plot_sas_id_pattern6)
+                                       + glob.glob(plot_sas_id_pattern7))]
+
+    html_sas_id_pattern5 = os.path.join(html_root, '[0123456789]'*5)
+    html_sas_id_pattern6 = os.path.join(html_root, '[0123456789]'*6)
+    html_sas_id_pattern7 = os.path.join(html_root, '[0123456789]'*7)
     sas_id_with_html = [int(os.path.split(sas_id)[-1]) 
-                        for sas_id in glob.glob(html_sas_id_pattern)]
+                        for sas_id in (glob.glob(html_sas_id_pattern5)
+                                       + glob.glob(html_sas_id_pattern6)
+                                       + glob.glob(html_sas_id_pattern7))]
     sas_ids = sorted(set(sas_id_with_html).intersection(set(sas_id_with_plot)),
                      reverse = True)
     unsorted_parsets = [parset_summary(sas_id, find_parset(sas_id))
