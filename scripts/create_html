@@ -59,7 +59,7 @@ def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
     return log_file_name
 
 
-initialize_logging('DEBUG')
+initialize_logging('INFO')
 
 try:
     import matplotlib
@@ -265,6 +265,7 @@ def subband_html(parset, sb_name, rel_plot_files):
         <p>
           <ul>
             <li><a href="../index.html">Subbands</a> <a href="../../index.html">Projects</a></li>
+            <li><a href="http://www.lofar.org/wiki/doku.php?id=operator:system_validation_observations#lofar_inspection_page">What do I see here?</a></li>
           </ul>
         </p>
 
@@ -541,7 +542,7 @@ def observation_table_row(parset, html_root, ascii_table=False):
 ''' % format_dict
 
     if ascii_table:
-        html = '''%(sas_prefix)s%(sas_id)s   %(campaign_name)15s   %(target)20s   %(antenna_set)16s   %(band_filter)11s   %(start_time)s -- %(stop_time)s''' % format_dict
+        html = '''%(sas_prefix)s%(sas_id)s  %(campaign_name)8s  %(target)18s  %(antenna_set)16s  %(band_filter)11s  %(start_time)s -- %(stop_time)s''' % format_dict
 
     return html
 
