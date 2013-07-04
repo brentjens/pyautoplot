@@ -403,7 +403,7 @@ def delay_fringe_rate(tf_plane,padding=1):
 
 
 
-def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1.0, num_delay=80, num_fringe_rate=160,cmap=cm.hot, subband=0, taper=None, column='DATA', **kwargs):
+def plot_baseline(ms_summary, baseline, plot_flags=True, padding=1, amax_factor=1.0, num_delay=80, num_fringe_rate=160,cmap=cm.hot, subband=0, taper=None, column='DATA', apply_flagger = True, **kwargs):
     """
     Plot time/frequency planes and fringerate/delay plots for  baseline (i,j).
     
@@ -417,7 +417,11 @@ def plot_baseline(ms_summary, baseline, plot_flags=True,padding=1, amax_factor=1
     """
     print('plot_baseline subband: '+str(subband))
     data            = ms_summary.baseline(baseline[0], baseline[1], subband=subband, taper=taper, column=column, **kwargs)
-    flagged_data    = flag_data(data, threshold=5.0, max_iter=20)
+    if apply_flagger:
+        flagged_data    = flag_data(data, threshold=5.0, max_iter=20)
+    else:
+        flagged_data    = data
+        
     pp,pq,qp,qq,num_pol = split_data_col(ma.array(flagged_data))
     antenna_names   = array(ms_summary.subtable('ANTENNA').getcol('NAME'))[list(baseline)]
     print(antenna_names)
