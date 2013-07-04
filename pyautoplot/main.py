@@ -96,7 +96,7 @@ def single_correlation_flags(tf_plane, threshold=5.0, max_iter=5, previous_sums=
     if max_iter <= 0:
         return ndimage.binary_dilation(flags,iterations=2)
     med       = ma.median(tf_plane.real) +1j*ma.median(tf_plane.imag)
-    sigma     = max(ma.std(tf_plane.real), ma.std(tf_plane.imag))
+    sigma     = sqrt(ma.std(tf_plane.real)**2 + ma.std(tf_plane.imag)**2)
     bad_vis   = abs(tf_plane.data-med) > threshold*sigma
     new_flags = logical_or(flags, bad_vis)
     new_data  = ma.array(tf_plane.data, mask=new_flags)
