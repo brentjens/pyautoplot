@@ -474,6 +474,8 @@ def parset_summary(sas_id, parset_name):
               'subband_list' : [],
               'subband_freqs_hz': [],
               'subband_width': 0.0,
+              '200_subband_width': 0.0,
+              '160_subband_width': 0.0,
               'file_name'    : None,
               'clock_mhz'    : 0}
     
@@ -503,8 +505,20 @@ def parset_summary(sas_id, parset_name):
                 parset['clock_mhz'] = int(value(line).strip('<<Clock \n\t'))
             elif 'Observation.subbandWidth' in line:
                 parset['subband_width'] = float(value(line))
+            elif 'Clock200.subbandWidth' in line:
+                parset['200_subband_width'] = float(value(line))
+            elif 'Clock160.subbandWidth' in line:
+                parset['160_subband_width'] = float(value(line))
             else:
                 pass
+    if parset['clock_mhz'] == 160:
+        parset['subband_width'] = parset['160_subband_width']
+    if parset['clock_mhz'] == 200:
+        parset['subband_width'] = parset['200_subband_width']
+
+    if parset['subband_width'] == 0.0:
+        parset['subband_width'] = parset['clock_mhz']*1e6/1024.0/1000.0
+        
     parset['subband_freqs_hz'] = subband_frequencies(parset['subband_width']*1000.0,
                                                      parset['band_filter'],
                                                      parset['subband_list'])
