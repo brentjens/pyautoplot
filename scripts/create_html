@@ -556,7 +556,7 @@ def observation_table_row(parset, html_root, ascii_table=False):
 ''' % format_dict
 
     if ascii_table:
-        html = '''%(sas_prefix)s%(sas_id)s  %(campaign_name)8s  %(target)18s  %(antenna_set)16s  %(band_filter)11s  %(start_time)s -- %(stop_time)s''' % format_dict
+        html = '''%(sas_prefix)s%(sas_id)s  %(campaign_name)8s  %(target)19s  %(antenna_set)16s  %(band_filter)11s  %(start_time)s -- %(stop_time)s''' % format_dict
 
     return html
 
