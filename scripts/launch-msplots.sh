@@ -45,6 +45,12 @@ create_html_fn() {
 exit_timeout() {
     echo "TIMEOUT : killing cexec ($CEXEC_PID)" | tee -a $LOG
     child_pids=`ps -o user,pid,ppid,command ax |grep "$COMMAND_NAME"|grep -v grep|awk '{print $2}'`
+    kill $CEXEC_PID >/dev/null 2>&1
+    sleep 1;
+    for pid in $child_pids; do
+        kill $pid > /dev/null 2>&1
+        done
+    sleep 5;
     kill -9 $CEXEC_PID >/dev/null 2>&1
     sleep 1;
     for pid in $child_pids; do
@@ -76,7 +82,7 @@ if test "$HOSTNAME" == "lhn001"; then
     #Prepare to catch SIGALRM, call exit_timeout
     trap exit_timeout SIGALRM
     
-    cexec locus: "bash -ilc \"use LofIm; use Pythonlibs; use Pyautoplot; $COMMAND_NAME\"" &
+    cexec locus: "bash -ilc \"use Lofar; use Pyautoplot; $COMMAND_NAME\"" &
     CEXEC_PID=$!
     #Sleep in a subprocess, then signal parent with ALRM
     (sleep $ALARMTIME; kill -ALRM $PARENTPID) &
@@ -92,7 +98,7 @@ if test "$HOSTNAME" == "lhn001"; then
     create_html_fn
 
 else
-    cexec1 lce:1-54,64-72 "bash -ilc \"use LofIm;use Pythonlibs; use Pyautoplot; $COMMAND_NAME\"" | tee -a $LOG
+    cexec1 lce:1-54,64-72 "bash -ilc \"use Lofar; use Pyautoplot; $COMMAND_NAME\"" | tee -a $LOG
 fi
 
 DATE_DONE=`date`
