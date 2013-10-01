@@ -1,0 +1,260 @@
+************************* locus *************************
+--------- locus001 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus002 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus003 ---------
+1	/data/L181718/L181718_SAP000_B000_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B000_S0_P000_bf.raw
+--------- locus004 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus005 ---------
+1	/data/L181718/L181718_SAP000_B001_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B001_S0_P000_bf.raw
+--------- locus006 ---------
+1	/data/L181718/L181718_SAP000_B002_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B002_S0_P000_bf.raw
+--------- locus007 ---------
+1	/data/L181718/L181718_SAP000_B003_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B003_S0_P000_bf.raw
+--------- locus008 ---------
+1	/data/L181718/L181718_SAP000_B004_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B004_S0_P000_bf.raw
+--------- locus009 ---------
+1	/data/L181718/L181718_SAP000_B005_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B005_S0_P000_bf.raw
+--------- locus010 ---------
+1	/data/L181718/L181718_SAP000_B006_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B006_S0_P000_bf.raw
+--------- locus011 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus012 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus013 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus014 ---------
+1	/data/L181718/L181718_SAP000_B007_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B007_S0_P000_bf.raw
+--------- locus015 ---------
+1	/data/L181718/L181718_SAP000_B008_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B008_S0_P000_bf.raw
+--------- locus016 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus017 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus018 ---------
+1	/data/L181718/L181718_SAP000_B009_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B009_S0_P000_bf.raw
+--------- locus019 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus020 ---------
+1	/data/L181718/L181718_SAP000_B010_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B010_S0_P000_bf.raw
+--------- locus021 ---------
+1	/data/L181718/L181718_SAP000_B011_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B011_S0_P000_bf.raw
+--------- locus022 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus023 ---------
+1	/data/L181718/L181718_SAP000_B012_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B012_S0_P000_bf.raw
+--------- locus024 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus025 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus026 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus027 ---------
+1	/data/L181718/L181718_SAP000_B013_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B013_S0_P000_bf.raw
+--------- locus028 ---------
+1	/data/L181718/L181718_SAP000_B014_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B014_S0_P000_bf.raw
+--------- locus029 ---------
+1	/data/L181718/L181718_SAP000_B015_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B015_S0_P000_bf.raw
+--------- locus030 ---------
+1	/data/L181718/L181718_SAP000_B016_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B016_S0_P000_bf.raw
+--------- locus031 ---------
+1	/data/L181718/L181718_SAP000_B017_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B017_S0_P000_bf.raw
+--------- locus032 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus033 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus034 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus035 ---------
+1	/data/L181718/L181718_SAP000_B018_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B018_S0_P000_bf.raw
+--------- locus036 ---------
+1	/data/L181718/L181718_SAP000_B019_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B019_S0_P000_bf.raw
+--------- locus037 ---------
+1	/data/L181718/L181718_SAP000_B020_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B020_S0_P000_bf.raw
+--------- locus038 ---------
+1	/data/L181718/L181718_SAP000_B021_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B021_S0_P000_bf.raw
+--------- locus039 ---------
+1	/data/L181718/L181718_SAP000_B022_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B022_S0_P000_bf.raw
+--------- locus040 ---------
+1	/data/L181718/L181718_SAP000_B023_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B023_S0_P000_bf.raw
+--------- locus041 ---------
+1	/data/L181718/L181718_SAP000_B024_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B024_S0_P000_bf.raw
+--------- locus042 ---------
+1	/data/L181718/L181718_SAP000_B025_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B025_S0_P000_bf.raw
+--------- locus043 ---------
+1	/data/L181718/L181718_SAP000_B026_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B026_S0_P000_bf.raw
+--------- locus044 ---------
+1	/data/L181718/L181718_SAP000_B027_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B027_S0_P000_bf.raw
+--------- locus045 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus046 ---------
+1	/data/L181718/L181718_SAP000_B028_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B028_S0_P000_bf.raw
+--------- locus047 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus048 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus049 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus050 ---------
+1	/data/L181718/L181718_SAP000_B029_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B029_S0_P000_bf.raw
+--------- locus051 ---------
+1	/data/L181718/L181718_SAP000_B030_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B030_S0_P000_bf.raw
+--------- locus052 ---------
+1	/data/L181718/L181718_SAP000_B031_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B031_S0_P000_bf.raw
+--------- locus053 ---------
+1	/data/L181718/L181718_SAP000_B032_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B032_S0_P000_bf.raw
+--------- locus054 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus055 ---------
+1	/data/L181718/L181718_SAP000_B033_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B033_S0_P000_bf.raw
+--------- locus056 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus057 ---------
+1	/data/L181718/L181718_SAP000_B034_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B034_S0_P000_bf.raw
+--------- locus058 ---------
+1	/data/L181718/L181718_SAP000_B035_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B035_S0_P000_bf.raw
+--------- locus059 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus060 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus061 ---------
+1	/data/L181718/L181718_SAP000_B036_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B036_S0_P000_bf.raw
+--------- locus062 ---------
+1	/data/L181718/L181718_SAP000_B037_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B037_S0_P000_bf.raw
+--------- locus063 ---------
+1	/data/L181718/L181718_SAP000_B038_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B038_S0_P000_bf.raw
+--------- locus064 ---------
+1	/data/L181718/L181718_SAP000_B039_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B039_S0_P000_bf.raw
+--------- locus065 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus066 ---------
+1	/data/L181718/L181718_SAP000_B040_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B040_S0_P000_bf.raw
+--------- locus067 ---------
+1	/data/L181718/L181718_SAP000_B041_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B041_S0_P000_bf.raw
+--------- locus068 ---------
+1	/data/L181718/L181718_SAP000_B042_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B042_S0_P000_bf.raw
+--------- locus069 ---------
+1	/data/L181718/L181718_SAP000_B043_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B043_S0_P000_bf.raw
+--------- locus070 ---------
+1	/data/L181718/L181718_SAP000_B044_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B044_S0_P000_bf.raw
+--------- locus071 ---------
+1	/data/L181718/L181718_SAP000_B045_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B045_S0_P000_bf.raw
+--------- locus072 ---------
+1	/data/L181718/L181718_SAP000_B046_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B046_S0_P000_bf.raw
+--------- locus073 ---------
+1	/data/L181718/L181718_SAP000_B047_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B047_S0_P000_bf.raw
+--------- locus074 ---------
+1	/data/L181718/L181718_SAP000_B048_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B048_S0_P000_bf.raw
+--------- locus075 ---------
+1	/data/L181718/L181718_SAP000_B049_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B049_S0_P000_bf.raw
+--------- locus076 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus077 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus078 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus079 ---------
+1	/data/L181718/L181718_SAP000_B050_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B050_S0_P000_bf.raw
+--------- locus080 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus081 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus082 ---------
+1	/data/L181718/L181718_SAP000_B051_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B051_S0_P000_bf.raw
+--------- locus083 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus084 ---------
+1	/data/L181718/L181718_SAP000_B052_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B052_S0_P000_bf.raw
+--------- locus085 ---------
+1	/data/L181718/L181718_SAP000_B053_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B053_S0_P000_bf.raw
+--------- locus086 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus087 ---------
+1	/data/L181718/L181718_SAP000_B054_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B054_S0_P000_bf.raw
+--------- locus088 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus089 ---------
+1	/data/L181718/L181718_SAP000_B055_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B055_S0_P000_bf.raw
+--------- locus090 ---------
+1	/data/L181718/L181718_SAP000_B056_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B056_S0_P000_bf.raw
+--------- locus091 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus092 ---------
+1	/data/L181718/L181718_SAP000_B057_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B057_S0_P000_bf.raw
+--------- locus093 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus094 ---------
+1	/data/L181718/L181718_SAP000_B058_S0_P000_bf.h5
+171	/data/L181718/L181718_SAP000_B058_S0_P000_bf.raw
+--------- locus095 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus096 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus097 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus098 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus099 ---------
+du: cannot access `/data/L181718/*': No such file or directory
+--------- locus100 ---------
+du: cannot access `/data/L181718/*': No such file or directory

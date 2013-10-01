@@ -6,6 +6,7 @@ import os, sys, glob, socket, shutil
 from optparse import OptionParser
 import time
 import datetime
+from numpy import array, median
 
 def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
     r'''
@@ -333,6 +334,40 @@ def observation_html(parset, obs_plot_root, html_root):
     
     force_mkdir(obs_html_root)
     force_mkdir(sb_html_root)
+    
+    file_size_html = '<h3>No file size information found</h3>'
+    try:
+        file_sizes_dict = parse_file_sizes(os.path.join(obs_plot_root, 'file-sizes.txt'))
+        file_size_data  = file_size_analysis(parset, file_sizes_dict)
+
+        if len(file_size_data['missing_data_sets']) == 0:
+            missing_html = '<h3>All data sets are there</h3>'
+        else:
+            missing_html = '<h3>Missing data:</h3><ul>'+'<li>'+ '</li><li>'.join(file_size_data['missing_data_sets'])+'</li></ul>',
+        
+        if len(file_size_data['odd_sized_data_sets']) == 0:
+            odd_sized_html = ''
+        else:
+            odd_sized_html = '<h3>Odd size data:</h3><table>'+'<tr>' +'</tr><tr>'.join(['<td>%s</td><td>:</td><td>%d MB</td>' % (name, size) for (name, size) in file_size_data['odd_sized_data_sets']])+'</tr></table>'
+            
+        file_size_html = '''
+        
+        <h3>Median file sizes (MB):</h3>
+        <table>
+        <tr><td>Correlated data</td> <td>:</td> <td>%r</td></tr>
+        <tr><td>Beamformed data</td> <td>:</td> <td>%r</td></tr>
+        </table>
+        
+        %s
+
+        %s
+        ''' % (file_size_data['median_ms_size_mb'],
+               file_size_data['median_raw_size_mb'],
+               missing_html,
+               odd_sized_html)
+    except:
+        logging.error('%s: %s', str(sys.exc_info()[0].__name__), str(sys.exc_info()[1]))
+    
 
     plot_files = relative_plot_paths(obs_plot_root, sb_html_root)
     sb_plots   = plot_paths_per_sap_subband(plot_files)
@@ -359,6 +394,8 @@ def observation_html(parset, obs_plot_root, html_root):
         <li><a href="../index.html">Projects</a></li>
     </ul></p>
 
+    %(file_size_info)s
+
     <table>
     <tr><th>Name</th> <th>Subband</th> <th>Freq.</th></tr>
     <tr><th></th>     <th>(ID)</th> <th>(MHz)</th></tr>
@@ -368,6 +405,7 @@ def observation_html(parset, obs_plot_root, html_root):
 </html>
 ''' % {'sas_prefix'    : parset['sas_prefix'],
        'sas_id'        : parset['sas_id'],
+       'file_size_info': file_size_html,
        'sub_band_pages': ' '.join(sb_page_list)})
 
 
@@ -459,6 +497,8 @@ def parset_summary(sas_id, parset_name):
     Observation.subbandList = [77..320]
     Observation.subbandWidth = 195.3125
     OLAP.nrBitsPerSample = 16
+    Observation.DataProducts.Output_Correlated.filenames = [L178900_SAP000_SB000_uv.MS,L178900_SAP000_SB001_uv.MS,L178900_SAP000_SB002_uv.MS,L178900_SAP000_SB003_uv.MS,L178900_SAP000_SB004_uv.MS,L178900_SAP000_SB005_uv.MS,L178900_SAP000_SB006_uv.MS,L178900_SAP000_SB007_uv.MS]
+    Observation.DataProducts.Output_Beamformed.filenames = [L181718_SAP000_B000_S0_P000_bf.raw,L181718_SAP000_B001_S0_P000_bf.raw,L181718_SAP000_B002_S0_P000_bf.raw,L181718_SAP000_B003_S0_P000_bf.raw,L181718_SAP000_B004_S0_P000_bf.raw,L181718_SAP000_B005_S0_P000_bf.raw,L181718_SAP000_B006_S0_P000_bf.raw]
     '''
     def value(line):
         return line.split('=')[-1].strip('\' \n')
@@ -477,8 +517,14 @@ def parset_summary(sas_id, parset_name):
               '200_subband_width': 0.0,
               '160_subband_width': 0.0,
               'file_name'    : None,
-              'clock_mhz'    : 0}
-    
+              'clock_mhz'    : 0,
+              'correlator_products': [],
+              'correlator_locations': [],
+              'beamformer_products': [],
+              'beamformer_locations': []
+              }
+
+   
     if parset_name and os.path.exists(parset_name):
         parset['file_name']  = parset_name
         parset['sas_prefix'] = os.path.basename(parset_name).split('.parset')[0][0]
@@ -509,6 +555,18 @@ def parset_summary(sas_id, parset_name):
                 parset['200_subband_width'] = float(value(line))
             elif 'Clock160.subbandWidth' in line:
                 parset['160_subband_width'] = float(value(line))
+            elif 'Observation.DataProducts.Output_Correlated.filenames' in line:
+                parset['correlator_products'] = [name.strip()
+                                                 for name in  value(line).strip('[] ').split(',')]
+            elif 'Observation.DataProducts.Output_Correlated.locations' in line:
+                parset['correlator_locations'] = [name.strip().split(':')[0]
+                                                  for name in  value(line).strip('[] ').split(',')]
+            elif 'Observation.DataProducts.Output_Beamformed.filenames' in line:
+                parset['beamformer_products'] = [name.strip()
+                                                 for name in  value(line).strip('[] ').split(',')]
+            elif 'Observation.DataProducts.Output_Beamformed.locations' in line:
+                parset['beamformer_locations'] = [name.strip().split(':')[0]
+                                                  for name in  value(line).strip('[] ').split(',')]
             else:
                 pass
     if parset['clock_mhz'] == 160:
@@ -523,6 +581,100 @@ def parset_summary(sas_id, parset_name):
                                                      parset['band_filter'],
                                                      parset['subband_list'])
     return parset
+
+
+
+def parse_file_sizes(file_name):
+    r'''
+    Parse the file-sizes.txt file normally residing at
+    /globaldata/inspect/<sas_id>/file-sizes.txt.
+
+    **Parameters**
+    
+    file_name : string
+       Full path to the file.
+
+    **Returns**
+    
+    A dictionary with the file name of the data set (without full
+    path) as a key, and a tuple (locus_node, full_path_to_data,
+    file_size_in_mb)
+
+    **Examples**
+    
+    >>> parse_file_sizes('test_data/crosscor-file-sizes.txt')
+    >>> parse_file_sizes('test_data/flyseye-file-sizes.txt')
+    '''
+    lines = [line.strip().split() for line in open(file_name).readlines()
+             if ('No such file or directory' not in line and
+                 '************'  not in line)]
+    results = {}
+    locus_node = None
+    for line in lines:
+        if len(line) == 3 and 'locus' in line[1]:
+            locus_node = line[1]
+        elif len(line) == 2:
+            data_size_mb = int(line[0])
+            full_path    = line[1]
+            file_name    = os.path.basename(full_path)
+            results[file_name] = (locus_node, full_path, data_size_mb)
+        else:
+            logging.warning('parse_file_sizes(): incomprehensible line %r',
+                            line)
+    return results
+
+
+
+
+def file_size_analysis(parset, file_sizes_dict):
+    r'''
+    Analyze the file sizes agains the expected files as listed in the parset.
+    '''
+    #logging.info('file_size_analysis(): %r', file_sizes_dict)
+    ms_sizes  = array([value[2] for keyword, value in file_sizes_dict.iteritems()
+                       if '.MS'  in keyword])
+    raw_sizes = array([value[2] for keyword, value in file_sizes_dict.iteritems()
+                       if '.raw' in keyword])
+    #logging.info('file_size_analysis(): %r', ms_sizes)
+    #logging.info('file_size_analysis(): %r', raw_sizes)
+
+    median_ms_size_mb = 0
+    if len(ms_sizes) > 0:
+        median_ms_size_mb  = median(ms_sizes)
+    median_raw_size_mb = 0
+    if len(raw_sizes) > 0:
+        median_raw_size_mb = median(raw_sizes)
+    
+    missing_data_sets   = []
+    odd_sized_data_sets = []
+    
+    for msname, locus_node in zip(parset['correlator_products'], parset['correlator_locations']):
+        node_and_name = '%s:%s' % (locus_node, msname)
+        try:
+            locus_actual, full_path, data_size_mb = file_sizes_dict[msname]
+            if median_ms_size_mb > 0:
+                if abs(float(data_size_mb)/float(median_ms_size_mb) -1.0) > 0.01:
+                    odd_sized_data_sets.append((node_and_name, data_size_mb))
+        except KeyError:
+            missing_data_sets.append(node_and_name)
+                
+    for raw_name, locus_node in zip(parset['beamformer_products'], parset['beamformer_locations']):
+        node_and_name = '%s:%s' % (locus_node, raw_name)
+        try:
+            locus_actual, full_path, data_size_mb = file_sizes_dict[raw_name]
+            if median_raw_size_mb > 0:
+                if abs(float(data_size_mb)/float(median_raw_size_mb) -1.0) > 0.01:
+                    odd_sized_data_sets.append((node_and_name, data_size_mb))
+        except KeyError:
+            missing_data_sets.append(node_and_name)
+    
+    return {'median_ms_size_mb': median_ms_size_mb,
+            'median_raw_size_mb': median_raw_size_mb,
+            'missing_data_sets': missing_data_sets,
+            'odd_sized_data_sets': odd_sized_data_sets}
+
+    
+
 
 
 def observation_table_row(parset, html_root, ascii_table=False):

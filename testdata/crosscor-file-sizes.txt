@@ -1,0 +1,384 @@
+************************* locus *************************
+--------- locus001 ---------
+468	/data/L178900/L178900_SAP000_SB000_uv.MS
+468	/data/L178900/L178900_SAP000_SB061_uv.MS
+468	/data/L178900/L178900_SAP000_SB122_uv.MS
+468	/data/L178900/L178900_SAP000_SB183_uv.MS
+--------- locus002 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus003 ---------
+468	/data/L178900/L178900_SAP000_SB001_uv.MS
+468	/data/L178900/L178900_SAP000_SB062_uv.MS
+468	/data/L178900/L178900_SAP000_SB123_uv.MS
+468	/data/L178900/L178900_SAP000_SB184_uv.MS
+--------- locus004 ---------
+468	/data/L178900/L178900_SAP000_SB002_uv.MS
+468	/data/L178900/L178900_SAP000_SB063_uv.MS
+468	/data/L178900/L178900_SAP000_SB124_uv.MS
+468	/data/L178900/L178900_SAP000_SB185_uv.MS
+--------- locus005 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus006 ---------
+468	/data/L178900/L178900_SAP000_SB003_uv.MS
+468	/data/L178900/L178900_SAP000_SB064_uv.MS
+468	/data/L178900/L178900_SAP000_SB125_uv.MS
+468	/data/L178900/L178900_SAP000_SB186_uv.MS
+--------- locus007 ---------
+468	/data/L178900/L178900_SAP000_SB004_uv.MS
+468	/data/L178900/L178900_SAP000_SB065_uv.MS
+468	/data/L178900/L178900_SAP000_SB126_uv.MS
+468	/data/L178900/L178900_SAP000_SB187_uv.MS
+--------- locus008 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus009 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus010 ---------
+468	/data/L178900/L178900_SAP000_SB005_uv.MS
+468	/data/L178900/L178900_SAP000_SB066_uv.MS
+468	/data/L178900/L178900_SAP000_SB127_uv.MS
+468	/data/L178900/L178900_SAP000_SB188_uv.MS
+--------- locus011 ---------
+468	/data/L178900/L178900_SAP000_SB006_uv.MS
+468	/data/L178900/L178900_SAP000_SB067_uv.MS
+468	/data/L178900/L178900_SAP000_SB128_uv.MS
+468	/data/L178900/L178900_SAP000_SB189_uv.MS
+--------- locus012 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus013 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus014 ---------
+468	/data/L178900/L178900_SAP000_SB007_uv.MS
+468	/data/L178900/L178900_SAP000_SB068_uv.MS
+468	/data/L178900/L178900_SAP000_SB129_uv.MS
+468	/data/L178900/L178900_SAP000_SB190_uv.MS
+--------- locus015 ---------
+468	/data/L178900/L178900_SAP000_SB008_uv.MS
+468	/data/L178900/L178900_SAP000_SB069_uv.MS
+468	/data/L178900/L178900_SAP000_SB130_uv.MS
+468	/data/L178900/L178900_SAP000_SB191_uv.MS
+--------- locus016 ---------
+468	/data/L178900/L178900_SAP000_SB009_uv.MS
+468	/data/L178900/L178900_SAP000_SB070_uv.MS
+468	/data/L178900/L178900_SAP000_SB131_uv.MS
+468	/data/L178900/L178900_SAP000_SB192_uv.MS
+--------- locus017 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus018 ---------
+468	/data/L178900/L178900_SAP000_SB010_uv.MS
+468	/data/L178900/L178900_SAP000_SB071_uv.MS
+468	/data/L178900/L178900_SAP000_SB132_uv.MS
+468	/data/L178900/L178900_SAP000_SB193_uv.MS
+--------- locus019 ---------
+468	/data/L178900/L178900_SAP000_SB011_uv.MS
+468	/data/L178900/L178900_SAP000_SB072_uv.MS
+468	/data/L178900/L178900_SAP000_SB133_uv.MS
+468	/data/L178900/L178900_SAP000_SB194_uv.MS
+--------- locus020 ---------
+468	/data/L178900/L178900_SAP000_SB012_uv.MS
+468	/data/L178900/L178900_SAP000_SB073_uv.MS
+468	/data/L178900/L178900_SAP000_SB134_uv.MS
+468	/data/L178900/L178900_SAP000_SB195_uv.MS
+--------- locus021 ---------
+468	/data/L178900/L178900_SAP000_SB013_uv.MS
+468	/data/L178900/L178900_SAP000_SB074_uv.MS
+468	/data/L178900/L178900_SAP000_SB135_uv.MS
+468	/data/L178900/L178900_SAP000_SB196_uv.MS
+--------- locus022 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus023 ---------
+468	/data/L178900/L178900_SAP000_SB014_uv.MS
+468	/data/L178900/L178900_SAP000_SB075_uv.MS
+468	/data/L178900/L178900_SAP000_SB136_uv.MS
+468	/data/L178900/L178900_SAP000_SB197_uv.MS
+--------- locus024 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus025 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus026 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus027 ---------
+468	/data/L178900/L178900_SAP000_SB015_uv.MS
+468	/data/L178900/L178900_SAP000_SB076_uv.MS
+468	/data/L178900/L178900_SAP000_SB137_uv.MS
+468	/data/L178900/L178900_SAP000_SB198_uv.MS
+--------- locus028 ---------
+468	/data/L178900/L178900_SAP000_SB016_uv.MS
+468	/data/L178900/L178900_SAP000_SB077_uv.MS
+468	/data/L178900/L178900_SAP000_SB138_uv.MS
+468	/data/L178900/L178900_SAP000_SB199_uv.MS
+--------- locus029 ---------
+468	/data/L178900/L178900_SAP000_SB017_uv.MS
+468	/data/L178900/L178900_SAP000_SB078_uv.MS
+468	/data/L178900/L178900_SAP000_SB139_uv.MS
+468	/data/L178900/L178900_SAP000_SB200_uv.MS
+--------- locus030 ---------
+468	/data/L178900/L178900_SAP000_SB018_uv.MS
+468	/data/L178900/L178900_SAP000_SB079_uv.MS
+468	/data/L178900/L178900_SAP000_SB140_uv.MS
+468	/data/L178900/L178900_SAP000_SB201_uv.MS
+--------- locus031 ---------
+468	/data/L178900/L178900_SAP000_SB019_uv.MS
+468	/data/L178900/L178900_SAP000_SB080_uv.MS
+468	/data/L178900/L178900_SAP000_SB141_uv.MS
+468	/data/L178900/L178900_SAP000_SB202_uv.MS
+--------- locus032 ---------
+468	/data/L178900/L178900_SAP000_SB020_uv.MS
+468	/data/L178900/L178900_SAP000_SB081_uv.MS
+468	/data/L178900/L178900_SAP000_SB142_uv.MS
+468	/data/L178900/L178900_SAP000_SB203_uv.MS
+--------- locus033 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus034 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus035 ---------
+468	/data/L178900/L178900_SAP000_SB021_uv.MS
+468	/data/L178900/L178900_SAP000_SB082_uv.MS
+468	/data/L178900/L178900_SAP000_SB143_uv.MS
+468	/data/L178900/L178900_SAP000_SB204_uv.MS
+--------- locus036 ---------
+468	/data/L178900/L178900_SAP000_SB022_uv.MS
+468	/data/L178900/L178900_SAP000_SB083_uv.MS
+468	/data/L178900/L178900_SAP000_SB144_uv.MS
+468	/data/L178900/L178900_SAP000_SB205_uv.MS
+--------- locus037 ---------
+468	/data/L178900/L178900_SAP000_SB023_uv.MS
+468	/data/L178900/L178900_SAP000_SB084_uv.MS
+468	/data/L178900/L178900_SAP000_SB145_uv.MS
+468	/data/L178900/L178900_SAP000_SB206_uv.MS
+--------- locus038 ---------
+468	/data/L178900/L178900_SAP000_SB024_uv.MS
+468	/data/L178900/L178900_SAP000_SB085_uv.MS
+468	/data/L178900/L178900_SAP000_SB146_uv.MS
+468	/data/L178900/L178900_SAP000_SB207_uv.MS
+--------- locus039 ---------
+468	/data/L178900/L178900_SAP000_SB025_uv.MS
+468	/data/L178900/L178900_SAP000_SB086_uv.MS
+468	/data/L178900/L178900_SAP000_SB147_uv.MS
+468	/data/L178900/L178900_SAP000_SB208_uv.MS
+--------- locus040 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus041 ---------
+468	/data/L178900/L178900_SAP000_SB026_uv.MS
+468	/data/L178900/L178900_SAP000_SB087_uv.MS
+468	/data/L178900/L178900_SAP000_SB148_uv.MS
+468	/data/L178900/L178900_SAP000_SB209_uv.MS
+--------- locus042 ---------
+468	/data/L178900/L178900_SAP000_SB027_uv.MS
+468	/data/L178900/L178900_SAP000_SB088_uv.MS
+468	/data/L178900/L178900_SAP000_SB149_uv.MS
+468	/data/L178900/L178900_SAP000_SB210_uv.MS
+--------- locus043 ---------
+468	/data/L178900/L178900_SAP000_SB028_uv.MS
+468	/data/L178900/L178900_SAP000_SB089_uv.MS
+468	/data/L178900/L178900_SAP000_SB150_uv.MS
+468	/data/L178900/L178900_SAP000_SB211_uv.MS
+--------- locus044 ---------
+468	/data/L178900/L178900_SAP000_SB029_uv.MS
+468	/data/L178900/L178900_SAP000_SB090_uv.MS
+468	/data/L178900/L178900_SAP000_SB151_uv.MS
+468	/data/L178900/L178900_SAP000_SB212_uv.MS
+--------- locus045 ---------
+468	/data/L178900/L178900_SAP000_SB030_uv.MS
+468	/data/L178900/L178900_SAP000_SB091_uv.MS
+468	/data/L178900/L178900_SAP000_SB152_uv.MS
+468	/data/L178900/L178900_SAP000_SB213_uv.MS
+--------- locus046 ---------
+468	/data/L178900/L178900_SAP000_SB031_uv.MS
+468	/data/L178900/L178900_SAP000_SB092_uv.MS
+468	/data/L178900/L178900_SAP000_SB153_uv.MS
+468	/data/L178900/L178900_SAP000_SB214_uv.MS
+--------- locus047 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus048 ---------
+468	/data/L178900/L178900_SAP000_SB032_uv.MS
+468	/data/L178900/L178900_SAP000_SB093_uv.MS
+468	/data/L178900/L178900_SAP000_SB154_uv.MS
+468	/data/L178900/L178900_SAP000_SB215_uv.MS
+--------- locus049 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus050 ---------
+468	/data/L178900/L178900_SAP000_SB033_uv.MS
+468	/data/L178900/L178900_SAP000_SB094_uv.MS
+468	/data/L178900/L178900_SAP000_SB155_uv.MS
+468	/data/L178900/L178900_SAP000_SB216_uv.MS
+--------- locus051 ---------
+468	/data/L178900/L178900_SAP000_SB034_uv.MS
+468	/data/L178900/L178900_SAP000_SB095_uv.MS
+468	/data/L178900/L178900_SAP000_SB156_uv.MS
+468	/data/L178900/L178900_SAP000_SB217_uv.MS
+--------- locus052 ---------
+468	/data/L178900/L178900_SAP000_SB035_uv.MS
+468	/data/L178900/L178900_SAP000_SB096_uv.MS
+468	/data/L178900/L178900_SAP000_SB157_uv.MS
+468	/data/L178900/L178900_SAP000_SB218_uv.MS
+--------- locus053 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus054 ---------
+468	/data/L178900/L178900_SAP000_SB036_uv.MS
+468	/data/L178900/L178900_SAP000_SB097_uv.MS
+468	/data/L178900/L178900_SAP000_SB158_uv.MS
+468	/data/L178900/L178900_SAP000_SB219_uv.MS
+--------- locus055 ---------
+468	/data/L178900/L178900_SAP000_SB037_uv.MS
+468	/data/L178900/L178900_SAP000_SB098_uv.MS
+468	/data/L178900/L178900_SAP000_SB159_uv.MS
+468	/data/L178900/L178900_SAP000_SB220_uv.MS
+--------- locus056 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus057 ---------
+468	/data/L178900/L178900_SAP000_SB038_uv.MS
+468	/data/L178900/L178900_SAP000_SB099_uv.MS
+468	/data/L178900/L178900_SAP000_SB160_uv.MS
+468	/data/L178900/L178900_SAP000_SB221_uv.MS
+--------- locus058 ---------
+468	/data/L178900/L178900_SAP000_SB039_uv.MS
+468	/data/L178900/L178900_SAP000_SB100_uv.MS
+468	/data/L178900/L178900_SAP000_SB161_uv.MS
+468	/data/L178900/L178900_SAP000_SB222_uv.MS
+--------- locus059 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus060 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus061 ---------
+468	/data/L178900/L178900_SAP000_SB040_uv.MS
+468	/data/L178900/L178900_SAP000_SB101_uv.MS
+468	/data/L178900/L178900_SAP000_SB162_uv.MS
+468	/data/L178900/L178900_SAP000_SB223_uv.MS
+--------- locus062 ---------
+468	/data/L178900/L178900_SAP000_SB041_uv.MS
+468	/data/L178900/L178900_SAP000_SB102_uv.MS
+468	/data/L178900/L178900_SAP000_SB163_uv.MS
+468	/data/L178900/L178900_SAP000_SB224_uv.MS
+--------- locus063 ---------
+468	/data/L178900/L178900_SAP000_SB042_uv.MS
+468	/data/L178900/L178900_SAP000_SB103_uv.MS
+468	/data/L178900/L178900_SAP000_SB164_uv.MS
+468	/data/L178900/L178900_SAP000_SB225_uv.MS
+--------- locus064 ---------
+468	/data/L178900/L178900_SAP000_SB043_uv.MS
+468	/data/L178900/L178900_SAP000_SB104_uv.MS
+468	/data/L178900/L178900_SAP000_SB165_uv.MS
+468	/data/L178900/L178900_SAP000_SB226_uv.MS
+--------- locus065 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus066 ---------
+468	/data/L178900/L178900_SAP000_SB044_uv.MS
+468	/data/L178900/L178900_SAP000_SB105_uv.MS
+468	/data/L178900/L178900_SAP000_SB166_uv.MS
+468	/data/L178900/L178900_SAP000_SB227_uv.MS
+--------- locus067 ---------
+468	/data/L178900/L178900_SAP000_SB045_uv.MS
+468	/data/L178900/L178900_SAP000_SB106_uv.MS
+468	/data/L178900/L178900_SAP000_SB167_uv.MS
+468	/data/L178900/L178900_SAP000_SB228_uv.MS
+--------- locus068 ---------
+468	/data/L178900/L178900_SAP000_SB046_uv.MS
+468	/data/L178900/L178900_SAP000_SB107_uv.MS
+468	/data/L178900/L178900_SAP000_SB168_uv.MS
+468	/data/L178900/L178900_SAP000_SB229_uv.MS
+--------- locus069 ---------
+468	/data/L178900/L178900_SAP000_SB047_uv.MS
+468	/data/L178900/L178900_SAP000_SB108_uv.MS
+468	/data/L178900/L178900_SAP000_SB169_uv.MS
+468	/data/L178900/L178900_SAP000_SB230_uv.MS
+--------- locus070 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus071 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus072 ---------
+468	/data/L178900/L178900_SAP000_SB048_uv.MS
+468	/data/L178900/L178900_SAP000_SB109_uv.MS
+468	/data/L178900/L178900_SAP000_SB170_uv.MS
+468	/data/L178900/L178900_SAP000_SB231_uv.MS
+--------- locus073 ---------
+468	/data/L178900/L178900_SAP000_SB049_uv.MS
+468	/data/L178900/L178900_SAP000_SB110_uv.MS
+468	/data/L178900/L178900_SAP000_SB171_uv.MS
+468	/data/L178900/L178900_SAP000_SB232_uv.MS
+--------- locus074 ---------
+468	/data/L178900/L178900_SAP000_SB050_uv.MS
+468	/data/L178900/L178900_SAP000_SB111_uv.MS
+468	/data/L178900/L178900_SAP000_SB172_uv.MS
+468	/data/L178900/L178900_SAP000_SB233_uv.MS
+--------- locus075 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus076 ---------
+468	/data/L178900/L178900_SAP000_SB051_uv.MS
+468	/data/L178900/L178900_SAP000_SB112_uv.MS
+468	/data/L178900/L178900_SAP000_SB173_uv.MS
+468	/data/L178900/L178900_SAP000_SB234_uv.MS
+--------- locus077 ---------
+468	/data/L178900/L178900_SAP000_SB052_uv.MS
+468	/data/L178900/L178900_SAP000_SB113_uv.MS
+468	/data/L178900/L178900_SAP000_SB174_uv.MS
+468	/data/L178900/L178900_SAP000_SB235_uv.MS
+--------- locus078 ---------
+468	/data/L178900/L178900_SAP000_SB053_uv.MS
+468	/data/L178900/L178900_SAP000_SB114_uv.MS
+468	/data/L178900/L178900_SAP000_SB175_uv.MS
+468	/data/L178900/L178900_SAP000_SB236_uv.MS
+--------- locus079 ---------
+468	/data/L178900/L178900_SAP000_SB054_uv.MS
+468	/data/L178900/L178900_SAP000_SB115_uv.MS
+468	/data/L178900/L178900_SAP000_SB176_uv.MS
+468	/data/L178900/L178900_SAP000_SB237_uv.MS
+--------- locus080 ---------
+468	/data/L178900/L178900_SAP000_SB055_uv.MS
+468	/data/L178900/L178900_SAP000_SB116_uv.MS
+468	/data/L178900/L178900_SAP000_SB177_uv.MS
+468	/data/L178900/L178900_SAP000_SB238_uv.MS
+--------- locus081 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus082 ---------
+468	/data/L178900/L178900_SAP000_SB056_uv.MS
+468	/data/L178900/L178900_SAP000_SB117_uv.MS
+468	/data/L178900/L178900_SAP000_SB178_uv.MS
+468	/data/L178900/L178900_SAP000_SB239_uv.MS
+--------- locus083 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus084 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus085 ---------
+468	/data/L178900/L178900_SAP000_SB057_uv.MS
+468	/data/L178900/L178900_SAP000_SB118_uv.MS
+468	/data/L178900/L178900_SAP000_SB179_uv.MS
+468	/data/L178900/L178900_SAP000_SB240_uv.MS
+--------- locus086 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus087 ---------
+468	/data/L178900/L178900_SAP000_SB058_uv.MS
+468	/data/L178900/L178900_SAP000_SB119_uv.MS
+468	/data/L178900/L178900_SAP000_SB180_uv.MS
+468	/data/L178900/L178900_SAP000_SB241_uv.MS
+--------- locus088 ---------
+468	/data/L178900/L178900_SAP000_SB059_uv.MS
+468	/data/L178900/L178900_SAP000_SB120_uv.MS
+468	/data/L178900/L178900_SAP000_SB181_uv.MS
+468	/data/L178900/L178900_SAP000_SB242_uv.MS
+--------- locus089 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus090 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus091 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus092 ---------
+468	/data/L178900/L178900_SAP000_SB060_uv.MS
+468	/data/L178900/L178900_SAP000_SB121_uv.MS
+468	/data/L178900/L178900_SAP000_SB182_uv.MS
+468	/data/L178900/L178900_SAP000_SB243_uv.MS
+--------- locus093 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus094 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus095 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus096 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus097 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus098 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus099 ---------
+du: cannot access `/data/L178900/*': No such file or directory
+--------- locus100 ---------
+du: cannot access `/data/L178900/*': No such file or directory
