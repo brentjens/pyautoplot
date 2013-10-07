@@ -31,7 +31,7 @@ class TestMaskedArrays (unittest.TestCase):
         'fromfunction', 'getdata', 'getmask', 'getmaskarray',
         'greater', 'greater_equal', 'harden_mask', 'hsplit', 'hstack',
         'hypot', 'identity', 'ids', 'indices', 'inner',
-        'innerproduct', 'intersect1d', 'intersect1d_nu', 'isMA',
+        'innerproduct', 'intersect1d', 'isMA',
         'isMaskedArray', 'is_mask', 'is_masked', 'isarray',
         'left_shift', 'less', 'less_equal', 'load', 'loads', 'log',
         'log10', 'logical_and', 'logical_not', 'logical_or',
@@ -50,15 +50,15 @@ class TestMaskedArrays (unittest.TestCase):
         'outerproduct', 'polyfit', 'power', 'prod', 'product', 'ptp',
         'put', 'putmask', 'rank', 'ravel', 'remainder', 'repeat',
         'reshape', 'resize', 'right_shift', 'round', 'round_',
-        'row_stack', 'set_fill_value', 'setdiff1d', 'setmember1d',
+        'row_stack', 'set_fill_value', 'setdiff1d',
         'setxor1d', 'shape', 'sin', 'sinh', 'size', 'soften_mask',
         'sometrue', 'sort', 'sqrt', 'squeeze', 'std', 'subtract',
         'sum', 'swapaxes', 'take', 'tan', 'tanh', 'trace',
-        'transpose', 'true_divide', 'union1d', 'unique1d', 'vander',
+        'transpose', 'true_divide', 'union1d', 'unique', 'vander',
         'var', 'vstack', 'where', 'zeros']
 
         for s in expected_symbols:
-            self.assertTrue(s in dir(ma)) 
+            self.assertIn(s, dir(ma))
     pass
 
 #
