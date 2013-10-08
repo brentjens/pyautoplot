@@ -30,8 +30,8 @@ def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
 
     **Examples**
 
-    >>> initialize_logging(log_level = 'INFO')
-    '/globaldata/inspect/create_html.log'
+    >>> initialize_logging(log_level = 'INFO', log_dir='test-output')
+    'test-output/create_html.log'
     '''
     log_levels   = {'DEBUG'  : logging.DEBUG,
                     'INFO'   : logging.INFO,
@@ -60,21 +60,25 @@ def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
     return log_file_name
 
 
-initialize_logging('INFO')
+if __name__ == '__main__':
+    initialize_logging('INFO')
 
 try:
     import matplotlib
     matplotlib.use('agg') # Prevent initialisation of GUI system
     from pyautoplot import __version__
 except ImportError:
-    logging.warning(str(sys.exc_info()[1]))
-    logging.warning('Command line: %s', ' '.join(sys.argv))
+    if __name__ == '__main__':
+        logging.warning(str(sys.exc_info()[1]))
+        logging.warning('Command line: %s', ' '.join(sys.argv))
     __version__ = 'unknown'
 
-logging.debug('Using pyautoplot version %s', __version__)
-logging.debug('Environment:\n%s', '\n'.join(['%15s: %s' % 
-                                             (key.ljust(15), os.environ[key])
-                                             for key in os.environ.keys()]))
+if __name__ == '__main__':
+    logging.debug('Using pyautoplot version %s', __version__)
+    logging.debug('Environment:\n%s',
+                  '\n'.join(['%15s: %s' % 
+                             (key.ljust(15), os.environ[key])
+                             for key in os.environ.keys()]))
 
 
 
@@ -97,8 +101,7 @@ def create_html_main(argv):
 
     **Examples**
 
-    >>> create_html_main(['create_html', '60807', '60806'])
-    0
+    >> create_html_main(['create_html', '60807', '60806'])
     '''
     logging.debug('create_html_main(argv = %r)', argv)
     options, sas_ids = parse_command_line(argv)
@@ -143,6 +146,33 @@ def create_html_main(argv):
 
 def parse_command_line(argv):
     r'''
+    Parse the command line arguments.
+
+    **Parameters**
+    
+    argv : list of strings
+        The contents of ``sys.argv``
+
+    **Example**
+
+    >>> parse_command_line(['create_html'])
+    Traceback (most recent call last):
+    ...
+    ValueError: Specify at least one SAS ID
+
+    >>> opts, sas = parse_command_line(['create_html', '1232456'])
+    >>> str(opts)
+    "{'plot_root': '/globaldata/inspect', 'html_root': '/globaldata/inspect/HTML'}"
+    >>> sas
+    [1232456]
+    >>> opts, sas = parse_command_line(['create_html', '--plot-root', '/home/user/plots',
+    ...                                 '--html-root', '/home/user/public_html',
+    ...                                 '1232456', '6542311'])
+    >>> str(opts)
+    "{'plot_root': '/home/user/plots', 'html_root': '/home/user/public_html'}"
+    >>> sas
+    [1232456, 6542311]
+
     '''
     logging.debug('parse_command_line(argv = %r)', argv)
     parser = OptionParser(usage   = '%prog <sas ID>',
@@ -431,8 +461,11 @@ def parse_subband_list(parset_subband_list):
     
     
     >>> parse_subband_list('[154..163,185..194,215..224,245..254,275..284,305..314,335..344,10*374]')
+    [154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374]
     >>> parse_subband_list('[77..87,116..127,155..166,194..205,233..243,272..282,311..321]')
+    [77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321]
     >>> parse_subband_list('[]')
+    []
     '''
     stripped_subband_list = parset_subband_list.strip('[] \n\t')
     if stripped_subband_list == '':
@@ -607,8 +640,12 @@ def parse_file_sizes(file_name):
 
     **Examples**
     
-    >>> parse_file_sizes('test_data/crosscor-file-sizes.txt')
-    >>> parse_file_sizes('test_data/flyseye-file-sizes.txt')
+    >>> cc_sizes = parse_file_sizes('testdata/crosscor-file-sizes.txt')
+    >>> cc_sizes['L178900_SAP000_SB000_uv.MS']
+    ('locus001', '/data/L178900/L178900_SAP000_SB000_uv.MS', 468)
+    >>> cc_sizes['L178900_SAP000_SB243_uv.MS']
+    ('locus092', '/data/L178900/L178900_SAP000_SB243_uv.MS', 468)
+    >>> fe_sizes = parse_file_sizes('testdata/flyseye-file-sizes.txt')
     '''
     lines = [line.strip().split() for line in open(file_name).readlines()
              if ('No such file or directory' not in line and

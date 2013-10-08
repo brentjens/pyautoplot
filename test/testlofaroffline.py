@@ -131,7 +131,7 @@ class LofarOfflineTest(testcase.TestCase):
     def test_find_msses(self):
         self.assertEquals(len(find_msses('L2010_98765', root='testdata/net', node_name='lce040')), 0)
 
-        msses = (find_msses('L2010_12345', root='testdata/net', node_name='lce030'))
+        msses = sorted(find_msses('L2010_12345', root='testdata/net', node_name='lce030'))
         expected = ['testdata/net/sub4/lse010/data1/L2010_12345/L12345_SB117-uv.MS',
                     'testdata/net/sub4/lse010/data1/L2010_12345/L12345_SB118-uv.MS',
                     'testdata/net/sub4/lse010/data1/L2010_12345/L12345_SB119-uv.MS',
