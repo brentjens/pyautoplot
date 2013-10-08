@@ -251,14 +251,58 @@ def sap_from_file_name(plot_file_name):
 
 def force_mkdir(path_name):
     r'''
+    Create a directory if it does not already exists. Does not throw
+    exceptions if the path already exists. It Does throw exceptions if
+    anything else goes wrong.
+
+    **Parameters**
+    
+    path_name : string
+        Path to create.
+
+    **Examples**
+
+    >>> os.path.exists('test-output/new-dir/')
+    False
+    >>> force_mkdir('test-output/new-dir')
+    >>> os.path.exists('test-output/new-dir/')
+    True
+    >>> force_mkdir('test-output/new-dir/')
+    >>> os.path.exists('test-output/new-dir/')
+    True
+    >>> os.path.exists('/my-own-nice-little-corner/')
+    False
+    >>> force_mkdir('/my-own-nice-little-corner/')
+    Traceback (most recent call last):
+    ...
+    OSError: [Errno 13] Permission denied: '/my-own-nice-little-corner/'
+
     '''
     logging.debug('force_mkdir(path_name = %r)', path_name)
     if not os.path.exists(path_name):
         os.mkdir(path_name)
 
+
+
+
  
 def contains(sub_string, strings):
     r'''
+    Returns the sorted list of strings from ``strings`` that contain
+    ``sub_string``. 
+
+    **Parameters**
+
+    sub_string : string
+        The string to test for.
+    
+    strings : list of strings
+        The strings in which to search.
+
+    **Examples**
+
+    >>> contains('abba', ['abda', '1287d1abba12kjb', 'ababababbba', 'abbababba'])
+    ['1287d1abba12kjb', 'abbababba']
     '''
     return sorted([string for string in strings if sub_string in string])
 
@@ -331,6 +375,8 @@ def subband_html(parset, sb_name, rel_plot_files):
 
 
 
+
+
 def relative_plot_paths(obs_plot_root, current_directory):
     r'''
     '''
@@ -341,6 +387,8 @@ def relative_plot_paths(obs_plot_root, current_directory):
         rel_plot_files += [os.path.relpath(full_path, current_directory)
                            for full_path in glob.glob(pattern)]
     return rel_plot_files
+
+
 
 
 
@@ -356,9 +404,13 @@ def plot_paths_per_sap_subband(plot_file_names):
     return sb_plots
 
 
+
+
+
 def observation_html(parset, file_size_data, obs_plot_root, html_root):
     r'''
     '''
+    logging.info('Creating HTML for observation %s', parset['sas_id'])
     logging.debug(
         'observation_html(parset = %r, obs_plot_root = %r, html_root = %r)',
         parset, obs_plot_root, html_root)
@@ -444,6 +496,10 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
        'sub_band_pages': ' '.join(sb_page_list)})
 
 
+
+
+
+
 def parse_subband_list(parset_subband_list):
     r'''
     Parse a subband list from a parset.
@@ -503,6 +559,8 @@ def subband_frequencies(subband_width, band_filter, subband_numbers):
     return [freq_hz + base_freq for freq_hz in freq_offsets_hz]
 
 
+
+
 def find_parset(sas_id):
     r'''
     '''
@@ -515,6 +573,8 @@ def find_parset(sas_id):
             return path
     logging.warn('Cannot find parset for SAS ID %d', sas_id)
     return None
+
+
 
 
 def parset_summary(sas_id, parset_name):
@@ -537,6 +597,9 @@ def parset_summary(sas_id, parset_name):
     OLAP.nrBitsPerSample = 16
     Observation.DataProducts.Output_Correlated.filenames = [L178900_SAP000_SB000_uv.MS,L178900_SAP000_SB001_uv.MS,L178900_SAP000_SB002_uv.MS,L178900_SAP000_SB003_uv.MS,L178900_SAP000_SB004_uv.MS,L178900_SAP000_SB005_uv.MS,L178900_SAP000_SB006_uv.MS,L178900_SAP000_SB007_uv.MS]
     Observation.DataProducts.Output_Beamformed.filenames = [L181718_SAP000_B000_S0_P000_bf.raw,L181718_SAP000_B001_S0_P000_bf.raw,L181718_SAP000_B002_S0_P000_bf.raw,L181718_SAP000_B003_S0_P000_bf.raw,L181718_SAP000_B004_S0_P000_bf.raw,L181718_SAP000_B005_S0_P000_bf.raw,L181718_SAP000_B006_S0_P000_bf.raw]
+
+    test case 182238 parset
+
     '''
     def value(line):
         return line.split('=')[-1].strip('\' \n')
@@ -595,16 +658,20 @@ def parset_summary(sas_id, parset_name):
                 parset['160_subband_width'] = float(value(line))
             elif 'Observation.DataProducts.Output_Correlated.filenames' in line:
                 parset['correlator_products'] = [name.strip()
-                                                 for name in  value(line).strip('[] ').split(',')]
+                                                 for name in  value(line).strip('[] ').split(',')
+                                                 if name.strip() != '']
             elif 'Observation.DataProducts.Output_Correlated.locations' in line:
                 parset['correlator_locations'] = [name.strip().split(':')[0]
-                                                  for name in  value(line).strip('[] ').split(',')]
+                                                  for name in  value(line).strip('[] ').split(',')
+                                                  if name.strip() != '' and name.strip().split(':')[0] != '']
             elif 'Observation.DataProducts.Output_Beamformed.filenames' in line:
                 parset['beamformer_products'] = [name.strip()
-                                                 for name in  value(line).strip('[] ').split(',')]
+                                                 for name in  value(line).strip('[] ').split(',')
+                                                 if name.strip() != '']
             elif 'Observation.DataProducts.Output_Beamformed.locations' in line:
                 parset['beamformer_locations'] = [name.strip().split(':')[0]
-                                                  for name in  value(line).strip('[] ').split(',')]
+                                                  for name in  value(line).strip('[] ').split(',')
+                                                  if name.strip() != '' and name.strip().split(':')[0] != '']
             else:
                 pass
     if parset['clock_mhz'] == 160:
@@ -654,7 +721,8 @@ def parse_file_sizes(file_name):
                  'connect to host' not in line and
                  'request failed' not in line and
                  'not resolve' not in line and
-                 'remaining bytes' not in line)]
+                 'remaining bytes' not in line and
+                 'Write failed: Broken pipe' not in line)]
     results = {}
     locus_node = None
     for line in lines:
@@ -673,24 +741,22 @@ def parse_file_sizes(file_name):
 
 
 
+
 def file_size_analysis(parset, file_sizes_dict):
     r'''
     Analyze the file sizes agains the expected files as listed in the parset.
     '''
-    #logging.info('file_size_analysis(): %r', file_sizes_dict)
     ms_sizes  = array([value[2] for keyword, value in file_sizes_dict.iteritems()
                        if '.MS'  in keyword])
     raw_sizes = array([value[2] for keyword, value in file_sizes_dict.iteritems()
                        if '.raw' in keyword])
-    #logging.info('file_size_analysis(): %r', ms_sizes)
-    #logging.info('file_size_analysis(): %r', raw_sizes)
 
     median_ms_size_mb = 0
     if len(ms_sizes) > 0:
-        median_ms_size_mb  = median(ms_sizes)
+        median_ms_size_mb  = max(median(ms_sizes), 1.5)
     median_raw_size_mb = 0
     if len(raw_sizes) > 0:
-        median_raw_size_mb = median(raw_sizes)
+        median_raw_size_mb = max(median(raw_sizes), 1.5)
     
     missing_data_sets   = []
     odd_sized_data_sets = []
@@ -709,7 +775,9 @@ def file_size_analysis(parset, file_sizes_dict):
         except KeyError:
             missing_data_sets.append(node_and_name)
             problematic_data_products += 1
-                
+            
+   
+             
     for raw_name, locus_node in zip(parset['beamformer_products'], parset['beamformer_locations']):
         node_and_name = '%s:%s' % (locus_node, raw_name)
         try:
@@ -721,7 +789,7 @@ def file_size_analysis(parset, file_sizes_dict):
         except KeyError:
             missing_data_sets.append(node_and_name)
             problematic_data_products += 1
-    
+
     percentage_complete = 0.0
     if total_data_products > 0:
         percentage_complete = floor(100.0*float(total_data_products - problematic_data_products)/total_data_products)
