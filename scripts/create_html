@@ -133,7 +133,7 @@ def create_html_main(argv):
         except IOError:
             logging.error(str(sys.exc_info()[1]))
 
-        if num % 10 == 0:
+        if num % 20 == 0:
             main_index_html(plot_root = options.plot_root,
                             html_root = options.html_root)
 
