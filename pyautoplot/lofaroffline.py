@@ -95,16 +95,3 @@ def find_msses(sas_id, root='/net', node_name=gethostname()):
 
 
 
-def find_my_msses(msname, root='/net', node_name=gethostname(), nodes_per_subcluster=None):
-    if nodes_per_subcluster is None:
-        if is_locus_node(node_name):
-            nodes_per_subcluster = 1
-        else:
-            nodes_per_subcluster = 9
-    msnames=find_msses(msname, root=root, node_name=node_name)
-    if msnames == []:
-        return []
-    proc_id=get_node_number_in_subcluster(node_name=node_name)%len(msnames)
-    return msnames[proc_id::nodes_per_subcluster]
-
-
