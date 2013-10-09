@@ -38,7 +38,7 @@ def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
                     'WARNING': logging.WARNING,
                     'ERROR'  : logging.ERROR}
     level = log_levels[log_level]
-    
+
     log_format     = ('create_html@' + socket.gethostname() +
                       ' %(asctime)s %(levelname)8s - %(message)s')
     log_file_name  = os.path.join(log_dir, 'create_html.log')
@@ -52,7 +52,7 @@ def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
 
     file_handler = logging.FileHandler(log_file_name)
     logger.addHandler(file_handler)
-        
+
     for handler in logger.handlers:
         handler.setFormatter(formatter)
         handler.setLevel(level)
@@ -76,14 +76,14 @@ except ImportError:
 if __name__ == '__main__':
     logging.debug('Using pyautoplot version %s', __version__)
     logging.debug('Environment:\n%s',
-                  '\n'.join(['%15s: %s' % 
+                  '\n'.join(['%15s: %s' %
                              (key.ljust(15), os.environ[key])
                              for key in os.environ.keys()]))
 
 
 
 
-    
+
 
 
 def create_html_main(argv):
@@ -91,12 +91,12 @@ def create_html_main(argv):
     The program's main function.
 
     **Parameters**
-    
+
     argv : list of strings
         The contents of ``sys.argv``
 
     **Returns**
-    
+
     An integer, where success is indicated by the value 0.
 
     **Examples**
@@ -137,7 +137,7 @@ def create_html_main(argv):
             main_index_html(plot_root = options.plot_root,
                             html_root = options.html_root)
 
-            
+
     main_index_html(plot_root = options.plot_root,
                     html_root = options.html_root)
     return 0
@@ -149,7 +149,7 @@ def parse_command_line(argv):
     Parse the command line arguments.
 
     **Parameters**
-    
+
     argv : list of strings
         The contents of ``sys.argv``
 
@@ -193,7 +193,7 @@ def parse_command_line(argv):
         default = os.path.join('/', 'globaldata', 'inspect', 'HTML'))
 
     (options, args) = parser.parse_args(argv[1:])
-    
+
     if len(args) == 0:
         raise ValueError('Specify at least one SAS ID')
     sas_ids = [int(arg) for arg in args]
@@ -204,14 +204,14 @@ def parse_command_line(argv):
 def subband_from_file_name(plot_file_name):
     r'''
     Extract sub band name from ``plot_file_name``.
-    
+
     **Parameters**
 
     plot_file_name : string
         File name of an inspection plot.
 
     **Returns**
-    
+
     A string containing the sub band identifier with format 'SBnnn',
     where ``nnn`` are three digits.
 
@@ -228,14 +228,14 @@ def subband_from_file_name(plot_file_name):
 def sap_from_file_name(plot_file_name):
     r'''
     Extract sub array pointing name from ``plot_file_name``.
-    
+
     **Parameters**
 
     plot_file_name : string
         File name of an inspection plot.
 
     **Returns**
-    
+
     A string containing the SAP identifier with format 'SAPnnn',
     where ``nnn`` are three digits.
 
@@ -256,7 +256,7 @@ def force_mkdir(path_name):
     anything else goes wrong.
 
     **Parameters**
-    
+
     path_name : string
         Path to create.
 
@@ -285,17 +285,17 @@ def force_mkdir(path_name):
 
 
 
- 
+
 def contains(sub_string, strings):
     r'''
     Returns the sorted list of strings from ``strings`` that contain
-    ``sub_string``. 
+    ``sub_string``.
 
     **Parameters**
 
     sub_string : string
         The string to test for.
-    
+
     strings : list of strings
         The strings in which to search.
 
@@ -325,7 +325,7 @@ def subband_html(parset, sb_name, rel_plot_files):
                           for image in contains('timeseries', rel_plot_files)]
     sensitivities_html = [plot_html(image)
                           for image in contains('station-gain', rel_plot_files)]
-    
+
     overview_rows = ['<tr><td>'+line_graph+'</td><td>'+bar_graph+'</td></tr>'
                      for (line_graph, bar_graph)
                      in zip(timeseries_html, sensitivities_html)]
@@ -419,10 +419,10 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
 
     if not os.path.exists(obs_plot_root):
         raise IOError('Directory "%s" does not exist' % obs_plot_root)
-    
+
     force_mkdir(obs_html_root)
     force_mkdir(sb_html_root)
-    
+
     file_size_html = '<h3>No file size information found</h3>'
     try:
         if file_size_data is None:
@@ -430,21 +430,21 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
         if len(file_size_data['missing_data_sets']) == 0:
             missing_html = '<h3>All data sets are there</h3>'
         else:
-            missing_html = '<h3>Missing data:</h3><ul>'+'<li>'+ '</li><li>'.join(file_size_data['missing_data_sets'])+'</li></ul>'
-        
+            missing_html = '<h3>Missing data:</h3><ul>'+'<li>'+ '</li><li>'.join(sorted(file_size_data['missing_data_sets']))+'</li></ul>'
+
         if len(file_size_data['odd_sized_data_sets']) == 0:
             odd_sized_html = ''
         else:
-            odd_sized_html = '<h3>Odd size data:</h3><table>'+'<tr>' +'</tr><tr>'.join(['<td>%s</td><td>:</td><td>%d MB</td>' % (name, size) for (name, size) in file_size_data['odd_sized_data_sets']])+'</tr></table>'
-            
+            odd_sized_html = '<h3>Odd size data:</h3><table>'+'<tr>' +'</tr><tr>'.join(['<td>%s</td><td>:</td><td>%d MB</td>' % (name, size) for (name, size) in sorted(file_size_data['odd_sized_data_sets'])])+'</tr></table>'
+
         file_size_html = '''
-        
+
         <h3>Median file sizes (MB):</h3>
         <table>
         <tr><td>Correlated data</td> <td>:</td> <td>%r</td></tr>
         <tr><td>Beamformed data</td> <td>:</td> <td>%r</td></tr>
         </table>
-        
+
         %s
 
         %s
@@ -454,7 +454,7 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
                odd_sized_html)
     except:
         logging.error('%s: %s', str(sys.exc_info()[0].__name__), str(sys.exc_info()[1]))
-    
+
 
     plot_files = relative_plot_paths(obs_plot_root, sb_html_root)
     sb_plots   = plot_paths_per_sap_subband(plot_files)
@@ -465,7 +465,7 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
             subband_html(parset, sb_name, sb_plots[sb_name]))
 
     observation_index_name = os.path.join(obs_html_root, 'index.html')
-    
+
     subband_list     = parset['subband_list']
     olap_subbands    = [int(sap_sb.split('_')[1][-3:]) for sap_sb in sb_list]
     station_subbands = [subband_list[olap_sb] for olap_sb in olap_subbands]
@@ -505,17 +505,17 @@ def parse_subband_list(parset_subband_list):
     Parse a subband list from a parset.
 
     **Parameters**
-    
+
     parset_subband_list : string
         Value of Observation.Beam[0].subbandList
 
     **Returns**
-    
+
     A list of integers containing the subband numbers.
-    
+
     **Examples**
-    
-    
+
+
     >>> parse_subband_list('[154..163,185..194,215..224,245..254,275..284,305..314,335..344,10*374]')
     [154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 374, 374, 374, 374, 374, 374, 374, 374, 374, 374]
     >>> parse_subband_list('[77..87,116..127,155..166,194..205,233..243,272..282,311..321]')
@@ -625,7 +625,7 @@ def parset_summary(sas_id, parset_name):
               'beamformer_locations': []
               }
 
-   
+
     if parset_name and os.path.exists(parset_name):
         parset['file_name']  = parset_name
         parset['sas_prefix'] = os.path.basename(parset_name).split('.parset')[0][0]
@@ -681,7 +681,7 @@ def parset_summary(sas_id, parset_name):
 
     if parset['subband_width'] == 0.0:
         parset['subband_width'] = parset['clock_mhz']*1e6/1024.0/1000.0
-        
+
     parset['subband_freqs_hz'] = subband_frequencies(parset['subband_width']*1000.0,
                                                      parset['band_filter'],
                                                      parset['subband_list'])
@@ -695,18 +695,18 @@ def parse_file_sizes(file_name):
     /globaldata/inspect/<sas_id>/file-sizes.txt.
 
     **Parameters**
-    
+
     file_name : string
        Full path to the file.
 
     **Returns**
-    
+
     A dictionary with the file name of the data set (without full
     path) as a key, and a tuple (locus_node, full_path_to_data,
     file_size_in_mb)
 
     **Examples**
-    
+
     >>> cc_sizes = parse_file_sizes('testdata/crosscor-file-sizes.txt')
     >>> cc_sizes['L178900_SAP000_SB000_uv.MS']
     ('locus001', '/data/L178900/L178900_SAP000_SB000_uv.MS', 468)
@@ -757,7 +757,7 @@ def file_size_analysis(parset, file_sizes_dict):
     median_raw_size_mb = 0
     if len(raw_sizes) > 0:
         median_raw_size_mb = max(median(raw_sizes), 1.5)
-    
+
     missing_data_sets   = []
     odd_sized_data_sets = []
 
@@ -775,9 +775,9 @@ def file_size_analysis(parset, file_sizes_dict):
         except KeyError:
             missing_data_sets.append(node_and_name)
             problematic_data_products += 1
-            
-   
-             
+
+
+
     for raw_name, locus_node in zip(parset['beamformer_products'], parset['beamformer_locations']):
         node_and_name = '%s:%s' % (locus_node, raw_name)
         try:
@@ -800,7 +800,7 @@ def file_size_analysis(parset, file_sizes_dict):
             'odd_sized_data_sets': odd_sized_data_sets,
             'percentage_complete': percentage_complete}
 
-    
+
 
 
 
@@ -810,7 +810,7 @@ def observation_table_row(parset, percentage_complete, html_root, ascii_table=Fa
     format_dict = parset.copy()
     format_dict['nr_subbands']         = len(parset['subband_list'])
     format_dict['percentage_complete'] = int(floor(percentage_complete))
-    
+
     if parset['file_name']:
         format_dict['parset_relpath'] = os.path.relpath(
             parset['file_name'], html_root)
@@ -866,7 +866,7 @@ def main_index_html(plot_root, html_root):
     html_sas_id_pattern5 = os.path.join(html_root, '[0123456789]'*5)
     html_sas_id_pattern6 = os.path.join(html_root, '[0123456789]'*6)
     html_sas_id_pattern7 = os.path.join(html_root, '[0123456789]'*7)
-    sas_id_with_html = [int(os.path.split(sas_id)[-1]) 
+    sas_id_with_html = [int(os.path.split(sas_id)[-1])
                         for sas_id in (glob.glob(html_sas_id_pattern5)
                                        + glob.glob(html_sas_id_pattern6)
                                        + glob.glob(html_sas_id_pattern7))]
@@ -889,7 +889,7 @@ def main_index_html(plot_root, html_root):
                 and not os.path.exists(new_parset_name):
             force_mkdir(obs_plot_root)
             shutil.copy2(parset['file_name'], obs_plot_root)
-            
+
         if new_parset_name and os.path.exists(new_parset_name):
             parset['file_name'] = new_parset_name
         else:
@@ -952,7 +952,7 @@ def main_index_html(plot_root, html_root):
         '\n'.join([observation_table_row(parset, file_size['percentage_complete'], html_root)
                    for parset, file_size in zip(parsets, file_sizes)]
                   )))
-    
+
 
 if __name__ == '__main__':
     try:
