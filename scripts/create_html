@@ -705,9 +705,10 @@ def parset_summary(sas_id, parset_name):
     if parset['subband_width'] == 0.0:
         parset['subband_width'] = parset['clock_mhz']*1e6/1024.0/1000.0
 
-    parset['subband_freqs_hz'] = subband_frequencies(parset['subband_width']*1000.0,
-                                                     parset['band_filter'],
-                                                     parset['subband_list'])
+    parset['subband_freqs_hz'] = subband_frequencies(
+        parset['subband_width']*1000.0,
+        parset['band_filter'],
+        parset['subband_list'])
     return parset
 
 
@@ -769,9 +770,11 @@ def file_size_analysis(parset, file_sizes_dict):
     r'''
     Analyze the file sizes agains the expected files as listed in the parset.
     '''
-    ms_sizes  = array([value[2] for keyword, value in file_sizes_dict.iteritems()
+    ms_sizes  = array([value[2]
+                       for keyword, value in file_sizes_dict.iteritems()
                        if '.MS'  in keyword])
-    raw_sizes = array([value[2] for keyword, value in file_sizes_dict.iteritems()
+    raw_sizes = array([value[2]
+                       for keyword, value in file_sizes_dict.iteritems()
                        if '.raw' in keyword])
 
     median_ms_size_mb = 0
@@ -784,7 +787,8 @@ def file_size_analysis(parset, file_sizes_dict):
     missing_data_sets   = []
     odd_sized_data_sets = []
 
-    total_data_products = len(parset['correlator_products']) + len(parset['beamformer_products'])
+    total_data_products = (len(parset['correlator_products']) +
+                           len(parset['beamformer_products']))
     problematic_data_products = 0
 
     for msname, locus_node in zip(parset['correlator_products'], parset['correlator_locations']):
@@ -827,7 +831,8 @@ def file_size_analysis(parset, file_sizes_dict):
 
 
 
-def observation_table_row(parset, percentage_complete, html_root, ascii_table=False):
+def observation_table_row(parset, percentage_complete, html_root,
+                          ascii_table=False):
     r'''
     '''
     format_dict = parset.copy()
@@ -843,7 +848,7 @@ def observation_table_row(parset, percentage_complete, html_root, ascii_table=Fa
         <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(clock_mhz)d&nbsp;&nbsp;&nbsp;</td>     <td>%(nr_subbands)s&nbsp;&nbsp;&nbsp;</td>
-        <td>%(percentage_complete)d%%</td>
+        <td><a href="%(sas_id)s/index.html">%(percentage_complete)d%%</a></td>
         <td><a href="%(parset_relpath)s">parset</a>&nbsp;&nbsp;&nbsp;</td>
     </tr>
 ''' % format_dict
