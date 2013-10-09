@@ -165,7 +165,8 @@ def parse_command_line(argv):
     "{'plot_root': '/globaldata/inspect', 'html_root': '/globaldata/inspect/HTML'}"
     >>> sas
     [1232456]
-    >>> opts, sas = parse_command_line(['create_html', '--plot-root', '/home/user/plots',
+    >>> opts, sas = parse_command_line(['create_html',
+    ...                                 '--plot-root', '/home/user/plots',
     ...                                 '--html-root', '/home/user/public_html',
     ...                                 '1232456', '6542311'])
     >>> str(opts)
@@ -397,7 +398,8 @@ def plot_paths_per_sap_subband(plot_file_names):
     '''
     sb_plots = {}
     for plot_file in plot_file_names:
-        keyword = sap_from_file_name(plot_file)+'_'+subband_from_file_name(plot_file)
+        keyword = '_'.join([sap_from_file_name(plot_file),
+                            subband_from_file_name(plot_file)])
         if not sb_plots.has_key(keyword):
             sb_plots[keyword] = []
         sb_plots[keyword].append(plot_file)
@@ -430,12 +432,24 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
         if len(file_size_data['missing_data_sets']) == 0:
             missing_html = '<h3>All data sets are there</h3>'
         else:
-            missing_html = '<h3>Missing data:</h3><ul>'+'<li>'+ '</li><li>'.join(sorted(file_size_data['missing_data_sets']))+'</li></ul>'
+            missing_html = ('<h3>Missing data:</h3><ul>' +
+                            '<li>' +
+                            '</li><li>'.join(
+                                sorted(file_size_data['missing_data_sets'])) +
+                            '</li></ul>')
 
         if len(file_size_data['odd_sized_data_sets']) == 0:
             odd_sized_html = ''
         else:
-            odd_sized_html = '<h3>Odd size data:</h3><table>'+'<tr>' +'</tr><tr>'.join(['<td>%s</td><td>:</td><td>%d MB</td>' % (name, size) for (name, size) in sorted(file_size_data['odd_sized_data_sets'])])+'</tr></table>'
+            odd_sized_html = (
+                '<h3>Odd size data:</h3><table>'+
+                '<tr>' +
+                '</tr><tr>'.join(
+                    ['<td>%s</td><td>:</td><td>%d MB</td>' %
+                     (name, size)
+                     for (name, size) in sorted(
+                             file_size_data['odd_sized_data_sets'])]) +
+                '</tr></table>')
 
         file_size_html = '''
 
@@ -470,8 +484,11 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
     olap_subbands    = [int(sap_sb.split('_')[1][-3:]) for sap_sb in sb_list]
     station_subbands = [subband_list[olap_sb] for olap_sb in olap_subbands]
     subband_freqs_hz = [parset['subband_freqs_hz'][sb] for sb in olap_subbands]
-    sb_page_list = ['<tr><td><a href="SBpages/%s.html">%s</a>&nbsp;&nbsp;&nbsp;</td> <td>%d&nbsp;&nbsp;&nbsp;</td> <td>%7.3f&nbsp;&nbsp;&nbsp;</td></tr>' % (name, name, subband, freq_hz/1e6)
-                    for name, subband, freq_hz in zip(sb_list, station_subbands, subband_freqs_hz)]
+    sb_page_list = ['<tr><td><a href="SBpages/%s.html">%s</a>&nbsp;&nbsp;&nbsp;</td> <td>%d&nbsp;&nbsp;&nbsp;</td> <td>%7.3f&nbsp;&nbsp;&nbsp;</td></tr>' %
+                    (name, name, subband, freq_hz/1e6)
+                    for name, subband, freq_hz in zip(
+                            sb_list, station_subbands, subband_freqs_hz)]
+
     open(observation_index_name, 'w').write('''
 <html>
     <head><title>%(sas_prefix)s%(sas_id)s</title></head>
@@ -526,7 +543,8 @@ def parse_subband_list(parset_subband_list):
     stripped_subband_list = parset_subband_list.strip('[] \n\t')
     if stripped_subband_list == '':
         return []
-    sub_lists = [word.strip().split('..') for word in stripped_subband_list.split(',')]
+    sub_lists = [word.strip().split('..')
+                 for word in stripped_subband_list.split(',')]
     subbands = []
     for sub_list in sub_lists:
         if len(sub_list) == 1:
@@ -538,7 +556,8 @@ def parse_subband_list(parset_subband_list):
         elif len(sub_list) == 2:
             subbands += range(int(sub_list[0]), int(sub_list[1])+1)
         else:
-            logging.error('%r is not a valid sub_range in a subband list', sub_list)
+            logging.error('%r is not a valid sub_range in a subband list',
+                          sub_list)
             return []
     return subbands
 
@@ -657,21 +676,25 @@ def parset_summary(sas_id, parset_name):
             elif 'Clock160.subbandWidth' in line:
                 parset['160_subband_width'] = float(value(line))
             elif 'Observation.DataProducts.Output_Correlated.filenames' in line:
-                parset['correlator_products'] = [name.strip()
-                                                 for name in  value(line).strip('[] ').split(',')
-                                                 if name.strip() != '']
+                parset['correlator_products'] = [
+                    name.strip()
+                    for name in  value(line).strip('[] ').split(',')
+                    if name.strip() != '']
             elif 'Observation.DataProducts.Output_Correlated.locations' in line:
-                parset['correlator_locations'] = [name.strip().split(':')[0]
-                                                  for name in  value(line).strip('[] ').split(',')
-                                                  if name.strip() != '' and name.strip().split(':')[0] != '']
+                parset['correlator_locations'] = [
+                    name.strip().split(':')[0]
+                    for name in  value(line).strip('[] ').split(',')
+                    if name.strip() != '' and name.strip().split(':')[0] != '']
             elif 'Observation.DataProducts.Output_Beamformed.filenames' in line:
-                parset['beamformer_products'] = [name.strip()
-                                                 for name in  value(line).strip('[] ').split(',')
-                                                 if name.strip() != '']
+                parset['beamformer_products'] = [
+                    name.strip()
+                    for name in  value(line).strip('[] ').split(',')
+                    if name.strip() != '']
             elif 'Observation.DataProducts.Output_Beamformed.locations' in line:
-                parset['beamformer_locations'] = [name.strip().split(':')[0]
-                                                  for name in  value(line).strip('[] ').split(',')
-                                                  if name.strip() != '' and name.strip().split(':')[0] != '']
+                parset['beamformer_locations'] = [
+                    name.strip().split(':')[0]
+                    for name in  value(line).strip('[] ').split(',')
+                    if name.strip() != '' and name.strip().split(':')[0] != '']
             else:
                 pass
     if parset['clock_mhz'] == 160:
