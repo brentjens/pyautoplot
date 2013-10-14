@@ -582,6 +582,8 @@ def subband_frequencies(subband_width, band_filter, subband_numbers):
 
 def find_parset(sas_id):
     r'''
+    Look for a parset in CEP2. If it found the parset, it returns the
+    path. Otherwise, it issues a warning and returns None.
     '''
     search_path = [os.path.join('/globalhome', user, 'log',
                                 prefix+str(sas_id)+'.parset')
@@ -845,10 +847,10 @@ def observation_table_row(parset, percentage_complete, html_root,
         html = '''
     <tr><th><a href="%(sas_id)s/index.html">%(sas_prefix)s%(sas_id)s</a>&nbsp;&nbsp;&nbsp;</th>
         <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
+        <td align="right"><a href="%(sas_id)s/index.html">%(percentage_complete)d%%</a></td>
         <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(clock_mhz)d&nbsp;&nbsp;&nbsp;</td>     <td>%(nr_subbands)s&nbsp;&nbsp;&nbsp;</td>
-        <td><a href="%(sas_id)s/index.html">%(percentage_complete)d%%</a></td>
         <td><a href="%(parset_relpath)s">parset</a>&nbsp;&nbsp;&nbsp;</td>
     </tr>
 ''' % format_dict
@@ -857,16 +859,16 @@ def observation_table_row(parset, percentage_complete, html_root,
         html = '''
     <tr><th><a href="%(sas_id)s/index.html">%(sas_prefix)s%(sas_id)s</a>&nbsp;&nbsp;&nbsp;</th>
         <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
+        <td align="right">????</td>
         <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(clock_mhz)d&nbsp;&nbsp;&nbsp;</td>     <td>%(nr_subbands)s&nbsp;&nbsp;&nbsp;</td>
-        <td>???</td>
         <td>no parset&nbsp;&nbsp;&nbsp;</td>
     </tr>
 ''' % format_dict
 
     if ascii_table:
-        html = '''%(sas_prefix)s%(sas_id)s  %(campaign_name)8s  %(target)19s  %(antenna_set)16s  %(band_filter)11s  %(start_time)s -- %(stop_time)s %(percentage_complete)d%%''' % format_dict
+        html = '''%(sas_prefix)s%(sas_id)s  %(campaign_name)8s  %(target)19s   %(percentage_complete)d%% %(antenna_set)16s  %(band_filter)11s  %(start_time)s -- %(stop_time)s''' % format_dict
 
     return html
 
@@ -947,7 +949,7 @@ def main_index_html(plot_root, html_root):
         <h1>LOFAR inspection plots</h1>
         <p><i>Last modified: %s UTC</i>&nbsp;&nbsp;<a href="%s">Full list</a>&nbsp;&nbsp;<a href="%s">Ascii table</a></p>
         <table>
-        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subb</th> <th>Compl</th> <th>Parset</th></tr>
+        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>Compl</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subb</th> <th>Parset</th></tr>
         %s
         </table>
     </body>
@@ -970,7 +972,7 @@ def main_index_html(plot_root, html_root):
         <h1>LOFAR inspection plots</h1>
         <p><i>Last modified: %s UTC</i>&nbsp;&nbsp;<a href="%s">Short index</a><p>
         <table>
-        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subb</th> <th>Compl</th> <th>Parset</th></tr>
+        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>Compl</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subb</th> <th>Parset</th></tr>
         %s
         </table>
     </body>
