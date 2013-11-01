@@ -600,24 +600,23 @@ def find_parset(sas_id):
 
 def parset_summary(sas_id, parset_name):
     r'''
-    Observation.antennaSet = LBA_INNER
-    Observation.bandFilter = LBA_10_90
-    Observation.startTime = '2012-07-03 14:44:44'
-    Observation.stopTime = '2012-07-03 14:46:44'
-    Observation.Beam[0].target = '3C 196'
-    Observation.Beamformer.stationList = []
-    Observation.Campaign.CO_I = 'Pizzo, Dr. Roberto Francesco'
-    Observation.Campaign.PI = 'Polatidis, Dr Antonios'
-    Observation.Campaign.contact = 'Polatidis, Dr Antonios'
-    Observation.Campaign.name = 2012LOFAROBS
-    Observation.Campaign.title = 2012LOFAROBS
-    Observation.clockMode = <<Clock200
-    Observation.channelsPerSubband = 64
-    Observation.subbandList = [77..320]
-    Observation.subbandWidth = 195.3125
-    OLAP.nrBitsPerSample = 16
-    Observation.DataProducts.Output_Correlated.filenames = [L178900_SAP000_SB000_uv.MS,L178900_SAP000_SB001_uv.MS,L178900_SAP000_SB002_uv.MS,L178900_SAP000_SB003_uv.MS,L178900_SAP000_SB004_uv.MS,L178900_SAP000_SB005_uv.MS,L178900_SAP000_SB006_uv.MS,L178900_SAP000_SB007_uv.MS]
-    Observation.DataProducts.Output_Beamformed.filenames = [L181718_SAP000_B000_S0_P000_bf.raw,L181718_SAP000_B001_S0_P000_bf.raw,L181718_SAP000_B002_S0_P000_bf.raw,L181718_SAP000_B003_S0_P000_bf.raw,L181718_SAP000_B004_S0_P000_bf.raw,L181718_SAP000_B005_S0_P000_bf.raw,L181718_SAP000_B006_S0_P000_bf.raw]
+
+    Parse a parset into a dictionary.
+
+    **Parameters**
+    
+    sas_id :  int
+        SAS ID of the observation.
+
+    parset_name : string
+        Path to the file containing the parset.
+
+    **Examples**
+    
+    >>> fe_parset = parset_summary(181718,
+        'testdata/flyseye-parset.txt')
+    
+    >>> xc_parset = parset_summary(178900, 'testdata/crosscor-parset.txt')
 
     test case 182238 parset
 
@@ -653,7 +652,7 @@ def parset_summary(sas_id, parset_name):
         parset_lines = open(parset_name).readlines()
         for line in parset_lines:
             if 'Campaign.name' in line:
-                parset['campaign_name'] = value(line)
+                parset['campaign_name'] = value(line).strip().strip('"\'')
             elif 'Beam[0].target' in line:
                 parset['target'] = value(line)
             elif 'Observation.startTime' in line:
@@ -664,11 +663,12 @@ def parset_summary(sas_id, parset_name):
                 parset['antenna_set'] = value(line)
             elif  'Observation.bandFilter' in line:
                 parset['band_filter'] = value(line)
-            elif 'Observation.subbandList' in line:
+            elif 'Observation.Beam[' in line and '].subbandList' in line:
                 subband_list = parse_subband_list(value(line))
                 if len(subband_list) == 0:
                     logging.warn('Empty subband list in %s', parset_name)
-                parset['subband_list'] = subband_list
+                else:
+                    parset['subband_list'] += subband_list
             elif 'Observation.clockMode' in line:
                 parset['clock_mhz'] = int(value(line).strip('<<Clock \n\t'))
             elif 'Observation.subbandWidth' in line:
@@ -991,4 +991,4 @@ if __name__ == '__main__':
         raise
     except:
         logging.error('%s: %s', str(sys.exc_info()[0].__name__), str(sys.exc_info()[1]))
-        sys.exit(2)
+        raise #sys.exit(2)
