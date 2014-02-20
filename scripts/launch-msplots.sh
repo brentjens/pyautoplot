@@ -57,6 +57,10 @@ exit_timeout() {
         kill -9 $pid > /dev/null 2>&1
         done
     sleep 1;
+
+    for sas_id in $GLOBAL_ARGS; do
+        cexec locus: "du --apparent-size -sm /data/L$sas_id/*" > $INSPECT_ROOT/$sas_id/file-sizes.txt
+        done
     create_html_fn
     DATE_DONE=`date`
     echo "Done at $DATE_DONE" | tee -a $LOG
@@ -76,7 +80,6 @@ if test "$HOSTNAME" == "lhn001"; then
 
     for sas_id in $@; do
         mkdir $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id
-        cexec locus: "du -sm /data/L$sas_id/*" > $INSPECT_ROOT/$sas_id/file-sizes.txt
         done
 
     #Prepare to catch SIGALRM, call exit_timeout
@@ -95,6 +98,10 @@ if test "$HOSTNAME" == "lhn001"; then
     #Tidy up the Alarm subprocess
     kill $ALARMPID > /dev/null 2>&1
     
+    for sas_id in $@; do
+        cexec locus: "du --apparent-size -sm /data/L$sas_id/*" > $INSPECT_ROOT/$sas_id/file-sizes.txt
+        done
+
     create_html_fn
 
 else
