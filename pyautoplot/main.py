@@ -913,7 +913,7 @@ def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('
 
 
 
-def collect_timeseries_ms(ms, num_points=240, subband=0):
+def collect_timeseries_ms(ms, num_points=240, subband=0, column_name='DATA'):
     mstab      = tables.table(ms.msname)
     num_ant    = len(ms.tables['antennae'])
     rowincr    = max(1, floor(len(ms.times)/num_points))
@@ -927,7 +927,7 @@ def collect_timeseries_ms(ms, num_points=240, subband=0):
     ant1       = selection.getcol('ANTENNA1')
     ant2       = selection.getcol('ANTENNA2')
     time_col   = selection.getcol('TIME')
-    data_mean  = map_casa_table(bl_mean_no_edges, selection, chunksize=20000)
+    data_mean  = map_casa_table(bl_mean_no_edges, selection, chunksize=20000, column_name=column_name)
     print(data_mean.shape)
     output     = zeros((num_ant, num_ant, data_mean.shape[1], len(time_slots)), dtype=complex64)
     
