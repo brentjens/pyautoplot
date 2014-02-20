@@ -671,14 +671,16 @@ def ant_ant_stat_plot(fig, ax, title_text, single_pol_array, station_names, **kw
 
 
 
-def ant_ant_stat_frame(title_text, full_pol_array, station_names, output_name=None, **kwargs):
-    dpi=50
+def ant_ant_stat_frame(title_text, full_pol_array, station_names, output_name=None, dpi=50, **kwargs):
     if output_name is None:
-        fig = figure(figsize=(32,24), dpi=dpi)
+        fig = figure(figsize=(32,30), dpi=dpi)
     else:
-        fig=Figure(figsize=(32,24), dpi=dpi)
+        fig=Figure(figsize=(32,30), dpi=dpi)
 
-    fig.suptitle(title_text+' '+output_name, fontsize=30)
+    if output_name is None:
+        fig.suptitle(title_text, fontsize=30)
+    else:
+        fig.suptitle(title_text+' '+output_name, fontsize=30)
     
     ax1=fig.add_subplot(2,2,1)
     ant_ant_stat_plot(fig, ax1, title_text+' XX', full_pol_array[:,:,0], station_names, **kwargs)
