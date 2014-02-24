@@ -51,8 +51,7 @@ def corr_type(corr_id):
         return CORR_TYPE[corr_id]
 
     
-
-def map_casa_table(function, casa_table, column_name='DATA', flag_name='FLAG', chunksize=1000, rowincr=1, nrow=None):
+def map_casa_table(function, casa_table, column_name='DATA', flag_name='FLAG', chunksize=10000, rowincr=1, nrow=None, max_chunks=None):
     """function should take a complex array of (timeslots,channels,polarizations) dimension, and return an array of values
     per timeslot. """
     chunksize=chunksize-(chunksize % rowincr)
@@ -66,12 +65,16 @@ def map_casa_table(function, casa_table, column_name='DATA', flag_name='FLAG', c
     complete_chunks = nrows / chunksize
     results = []
     for chunk in range(complete_chunks):
+        if max_chunks:
+            if chunk >= max_chunks:
+                break
         print('%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows))
         results += [function(set_nan_zero(ma.array(selection.getcol(column_name, startrow=chunk*chunksize, nrow=chunksize),
                                                    mask=selection.getcol(flag_name, startrow=chunk*chunksize, nrow=chunksize))))]
-    print('%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows))
-    results += [function(set_nan_zero(ma.array(selection.getcol(column_name,startrow=complete_chunks*chunksize, nrow=lastset),
-                                               mask=selection.getcol(flag_name,startrow=complete_chunks*chunksize, nrow=lastset))))]
+    if max_chunks is None or (chunk == max_chunks-1):
+        print('%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows))
+        results += [function(set_nan_zero(ma.array(selection.getcol(column_name,startrow=complete_chunks*chunksize, nrow=lastset),
+                                                   mask=selection.getcol(flag_name,startrow=complete_chunks*chunksize, nrow=lastset))))]
     return concatenate(results, axis=0)
 
 
