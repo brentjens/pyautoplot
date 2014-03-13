@@ -642,7 +642,11 @@ def parset_summary(sas_id, parset_name):
               'correlator_products': [],
               'correlator_locations': [],
               'beamformer_products': [],
-              'beamformer_locations': []
+              'beamformer_locations': [],
+              'coherent_stokes_products': [],
+              'coherent_stokes_locations': [],
+              'incoherent_stokes_products': [],
+              'incoherent_stokes_locations': []
               }
 
 
@@ -688,12 +692,32 @@ def parset_summary(sas_id, parset_name):
                     for name in  value(line).strip('[] ').split(',')
                     if name.strip() != '' and name.strip().split(':')[0] != '']
             elif 'Observation.DataProducts.Output_Beamformed.filenames' in line:
-                parset['beamformer_products'] = [
+                parset['beamformer_products'] += [
                     name.strip()
                     for name in  value(line).strip('[] ').split(',')
                     if name.strip() != '']
             elif 'Observation.DataProducts.Output_Beamformed.locations' in line:
-                parset['beamformer_locations'] = [
+                parset['beamformer_locations'] += [
+                    name.strip().split(':')[0]
+                    for name in  value(line).strip('[] ').split(',')
+                    if name.strip() != '' and name.strip().split(':')[0] != '']
+            elif 'Observation.DataProducts.Output_IncoherentStokes.filenames' in line:
+                parset['beamformer_products'] += [
+                    name.strip()
+                    for name in  value(line).strip('[] ').split(',')
+                    if name.strip() != '']
+            elif 'Observation.DataProducts.Output_IncoherentStokes.locations' in line:
+                parset['beamformer_locations'] += [
+                    name.strip().split(':')[0]
+                    for name in  value(line).strip('[] ').split(',')
+                    if name.strip() != '' and name.strip().split(':')[0] != '']
+            elif 'Observation.DataProducts.Output_CoherentStokes.filenames' in line:
+                parset['beamformer_products'] += [
+                    name.strip()
+                    for name in  value(line).strip('[] ').split(',')
+                    if name.strip() != '']
+            elif 'Observation.DataProducts.Output_CoherentStokes.locations' in line:
+                parset['beamformer_locations'] += [
                     name.strip().split(':')[0]
                     for name in  value(line).strip('[] ').split(',')
                     if name.strip() != '' and name.strip().split(':')[0] != '']
