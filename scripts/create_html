@@ -426,6 +426,13 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
     force_mkdir(sb_html_root)
 
     file_size_html = '<h3>No file size information found</h3>'
+    input_loss_html = observation_input_loss_html(os.path.join(obs_plot_root, 'rtcp-%d.loss' % int(parset['sas_id'])))
+    if input_loss_html == '':
+        input_loss_html = '<h3>No input loss report</h3>'
+    elif '<tr>' not in input_loss_html:
+        input_loss_html = '<h3>Input loss report</h3><p>All station data arrived!</p>'
+    else:
+        input_loss_html = '<h3>Input loss report</h3>\n'+input_loss_html
     try:
         if file_size_data is None:
             raise RuntimeError('No file size data provided')
@@ -500,6 +507,8 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
 
     %(file_size_info)s
 
+    %(input_loss)s
+
     <table>
     <tr><th>Name</th> <th>Subband</th> <th>Freq.</th></tr>
     <tr><th></th>     <th>(ID)</th> <th>(MHz)</th></tr>
@@ -510,6 +519,7 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
 ''' % {'sas_prefix'    : parset['sas_prefix'],
        'sas_id'        : parset['sas_id'],
        'file_size_info': file_size_html,
+       'input_loss'    : input_loss_html,
        'sub_band_pages': ' '.join(sb_page_list)})
 
 
@@ -855,6 +865,45 @@ def file_size_analysis(parset, file_sizes_dict):
 
 
 
+
+def parse_loss_log_line(line):
+    words = line.split()
+    station = words[7][:-1]
+    loss_fraction = float(words[11][:-1])/100.0
+    return (station, loss_fraction)
+
+def cmp_antenna_field_names(name_a, name_b):
+    if name_a == name_b:
+        return 0
+    if 'CS' in name_a and 'CS' not in name_b:
+        return -1
+    if 'CS' not in name_a and 'CS' in name_b:
+        return +1
+    if 'CS' in name_a and 'CS' in name_b:
+        return cmp(name_a, name_b)
+    return cmp(int(name_a[2:5]), int(name_b[2:5]))
+
+
+def sort_by_station(station_loss_tuples):
+    return sorted(station_loss_tuples,
+                  key=lambda x: x[0],
+                  cmp=cmp_antenna_field_names)
+
+def read_loss(log_file):
+    with open(log_file, mode='r') as input_file:
+        loss_lines = [parse_loss_log_line(line)
+                      for line in input_file if 'loss' in line]
+    return sort_by_station(loss_lines)
+
+
+def observation_input_loss_html(input_loss_filename):
+    if not os.path.exists(input_loss_filename):
+        return ''
+    table_rows = '\n'.join([
+        '<tr><th>%s:</th><td>%8.4f%%</td></tr>' % (station, loss*100.0)
+        for (station, loss) in read_loss(input_loss_filename)
+        if loss > 0.0])
+    return '<table>\n' + table_rows + '\n</table>\n'
 
 
 def observation_table_row(parset, percentage_complete, html_root,

@@ -1,5 +1,5 @@
 #!/bin/bash
-# This cript is to be called from lfe001 and will launch msplots
+# This script is to be called from lfe001 and will launch msplots
 # instances on all non-developer compute nodes. Any arguments are passed
 # directly to the msplots instances.
 # cexec1 is used because it allows us to address each lce node by the same
@@ -42,6 +42,21 @@ create_html_fn() {
     fi
 }
 
+
+report_global_status(){
+    sas_id=$1
+    if [[ ! -e  $INSPECT_ROOT/$sas_id/file-sizes.txt ]] ; then
+        cexec locus: "du --apparent-size -sm /data/L${sas_id}/*" > $INSPECT_ROOT/$sas_id/file-sizes.txt
+    fi
+    if [[ ! -e  $INSPECT_ROOT/$sas_id/rtcp-$sas_id.loss ]] ; then
+        ssh -A cbt001-10gb01 "tail -3000 log/rtcp-${sas_id}.log|grep loss|sort -k 8"|grep GPUProc > $INSPECT_ROOT/$sas_id/rtcp-$sas_id.loss
+    fi
+    if [[ ! -e  $INSPECT_ROOT/$sas_id/rtcp-$sas_id.errors ]] ; then
+        ssh -A cbt001-10gb01 "egrep 'ERR|WARN|runObservation|Signalling|Alarm|SIG|feed-back|Result code' log/rtcp-${sas_id}.log"|grep -v Flagging > $INSPECT_ROOT/$sas_id/rtcp-$sas_id.errors
+    fi
+}
+
+
 exit_timeout() {
     echo "TIMEOUT : killing cexec ($CEXEC_PID)" | tee -a $LOG
     child_pids=`ps -o user,pid,ppid,command ax |grep "$COMMAND_NAME"|grep -v grep|awk '{print $2}'`
@@ -59,7 +74,7 @@ exit_timeout() {
     sleep 1;
 
     for sas_id in $GLOBAL_ARGS; do
-        cexec locus: "du --apparent-size -sm /data/L$sas_id/*" > $INSPECT_ROOT/$sas_id/file-sizes.txt
+        report_global_status $sas_id
         done
     create_html_fn
     DATE_DONE=`date`
@@ -99,7 +114,7 @@ if test "$HOSTNAME" == "lhn001"; then
     kill $ALARMPID > /dev/null 2>&1
     
     for sas_id in $@; do
-        cexec locus: "du --apparent-size -sm /data/L$sas_id/*" > $INSPECT_ROOT/$sas_id/file-sizes.txt
+        report_global_status sas_id
         done
 
     create_html_fn
