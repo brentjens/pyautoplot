@@ -424,8 +424,15 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
 
     force_mkdir(obs_html_root)
     force_mkdir(sb_html_root)
+    cobalt_error_file = os.path.join(obs_plot_root, 'rtcp-%d.errors' % int(parset['sas_id']))
+    cobalt_error_log_html = ''
+    if os.path.exists(cobalt_error_file):
+        if len(open(cobalt_error_file).read().strip()) > 0:
+            error_rel_path = os.path.relpath(
+                cobalt_error_file, html_root)
+            cobalt_error_log_html = '<p><a href="%s">Cobalt ERROR log</a></p>' % error_rel_path
 
-    file_size_html = '<h3>No file size information found</h3>'
+            
     input_loss_html = observation_input_loss_html(os.path.join(obs_plot_root, 'rtcp-%d.loss' % int(parset['sas_id'])))
     if input_loss_html == '':
         input_loss_html = '<h3>No input loss report</h3>'
@@ -433,6 +440,8 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
         input_loss_html = '<h3>Input loss report</h3><p>All station data arrived!</p>'
     else:
         input_loss_html = '<h3>Input loss report</h3>\n'+input_loss_html
+
+    file_size_html = '<h3>No file size information found</h3>'
     try:
         if file_size_data is None:
             raise RuntimeError('No file size data provided')
@@ -505,6 +514,8 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
         <li><a href="../index.html">Projects</a></li>
     </ul></p>
 
+    %(cobalt_error_log)s
+
     %(file_size_info)s
 
     %(input_loss)s
@@ -520,6 +531,7 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
        'sas_id'        : parset['sas_id'],
        'file_size_info': file_size_html,
        'input_loss'    : input_loss_html,
+       'cobalt_error_log': cobalt_error_log_html,
        'sub_band_pages': ' '.join(sb_page_list)})
 
 
