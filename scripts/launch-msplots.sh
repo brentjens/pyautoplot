@@ -20,7 +20,7 @@ GLOBAL_ARGS=$@
 COMMAND_NAME="msplots $@"
 
 
-create_html_fn() {
+function create_html_fn() {
     CREATE_HTML=`which create_html`
     echo "$GLOBAL_ARGS" | tee -a $LOG
     if test "$CREATE_HTML" == ""; then
@@ -43,21 +43,27 @@ create_html_fn() {
 }
 
 
-report_global_status(){
-    sas_id=$1
-    if [[ ! -e  $INSPECT_ROOT/$sas_id/file-sizes.txt ]] ; then
-        cexec locus: "du --apparent-size -sm /data/L${sas_id}/*" > $INSPECT_ROOT/$sas_id/file-sizes.txt
+function report_global_status(){
+    local sas_id=${1}
+    echo "report_global_status for ${sas_id}"
+    if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/file-sizes.txt ]] ; then
+        echo "  - determining file sizes"
+        cexec locus: "du --apparent-size -sm /data/L${sas_id}/*" > ${INSPECT_ROOT}/${sas_id}/file-sizes.txt
     fi
-    if [[ ! -e  $INSPECT_ROOT/$sas_id/rtcp-$sas_id.loss ]] ; then
-        ssh -A cbt001-10gb01 "tail -3000 log/rtcp-${sas_id}.log|grep loss|sort -k 8"|grep GPUProc > $INSPECT_ROOT/$sas_id/rtcp-$sas_id.loss
+    sleep 2
+    if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.loss ]] ; then
+        echo "  - determining input losses"
+        ssh -A cbt001-10gb01 "tail -10000 log/rtcp-${sas_id}.log|grep loss|sort -k 8"|grep GPUProc > ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.loss
     fi
-    if [[ ! -e  $INSPECT_ROOT/$sas_id/rtcp-$sas_id.errors ]] ; then
-        ssh -A cbt001-10gb01 "egrep 'ERR|WARN|runObservation|Signalling|Alarm|SIG|feed-back|Result code' log/rtcp-${sas_id}.log"|grep -v Flagging > $INSPECT_ROOT/$sas_id/rtcp-$sas_id.errors
+    sleep 2
+    if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.errors ]] ; then
+        echo "  - determining warnings / errors"
+        ssh -A cbt001-10gb01 "egrep 'ERR|WARN|FATAL|runObservation|Signalling|Alarm|SIG|feed-back|Result code' log/rtcp-${sas_id}.log"|grep -v Flagging > $INSPECT_ROOT/${sas_id}/rtcp-${sas_id}.errors
     fi
 }
 
 
-exit_timeout() {
+function exit_timeout() {
     echo "TIMEOUT : killing cexec ($CEXEC_PID)" | tee -a $LOG
     child_pids=`ps -o user,pid,ppid,command ax |grep "$COMMAND_NAME"|grep -v grep|awk '{print $2}'`
     kill $CEXEC_PID >/dev/null 2>&1
@@ -74,7 +80,7 @@ exit_timeout() {
     sleep 1;
 
     for sas_id in $GLOBAL_ARGS; do
-        report_global_status $sas_id
+        report_global_status ${sas_id}
         done
     create_html_fn
     DATE_DONE=`date`
@@ -114,7 +120,7 @@ if test "$HOSTNAME" == "lhn001"; then
     kill $ALARMPID > /dev/null 2>&1
     
     for sas_id in $@; do
-        report_global_status sas_id
+        report_global_status ${sas_id}
         done
 
     create_html_fn

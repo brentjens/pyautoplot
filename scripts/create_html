@@ -429,8 +429,8 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
     if os.path.exists(cobalt_error_file):
         if len(open(cobalt_error_file).read().strip()) > 0:
             error_rel_path = os.path.relpath(
-                cobalt_error_file, html_root)
-            cobalt_error_log_html = '<p><a href="%s">Cobalt ERROR log</a></p>' % error_rel_path
+                cobalt_error_file, obs_html_root)
+            cobalt_error_log_html = '<h3><a href="%s">Cobalt ERROR log</a></h3>' % error_rel_path
 
             
     input_loss_html = observation_input_loss_html(os.path.join(obs_plot_root, 'rtcp-%d.loss' % int(parset['sas_id'])))
@@ -911,6 +911,8 @@ def read_loss(log_file):
 def observation_input_loss_html(input_loss_filename):
     if not os.path.exists(input_loss_filename):
         return ''
+    if os.stat(input_loss_filename).st_size == 0:
+        return ''
     table_rows = '\n'.join([
         '<tr><th>%s:</th><td>%8.4f%%</td></tr>' % (station, loss*100.0)
         for (station, loss) in read_loss(input_loss_filename)
@@ -918,10 +920,13 @@ def observation_input_loss_html(input_loss_filename):
     return '<table>\n' + table_rows + '\n</table>\n'
 
 
-def observation_table_row(parset, percentage_complete, html_root,
+def observation_table_row(parset, file_sizes_dict, html_root,
                           ascii_table=False):
     r'''
     '''
+    percentage_complete = -1
+    if file_sizes_dict is not None:
+        percentage_complete = file_sizes_dict['percentage_complete']
     format_dict = parset.copy()
     format_dict['nr_subbands']         = len(parset['subband_list'])
     format_dict['percentage_complete'] = int(floor(percentage_complete))
@@ -1019,10 +1024,11 @@ def main_index_html(plot_root, html_root):
 
 
     open(index_txt_name, 'w').write('\n'.join(
-            [observation_table_row(parset, file_size['percentage_complete'],
+            [observation_table_row(parset, file_size,
                                    html_root, ascii_table=True)
              for parset, file_size in zip(parsets, file_sizes)
-             if parset['start_time'].strip() != '' and datetime.datetime.strptime(parset['start_time'], '%Y-%m-%d %H:%M:%S') > beginning_of_short_index]))
+             if parset['start_time'].strip() != ''
+             and datetime.datetime.strptime(parset['start_time'], '%Y-%m-%d %H:%M:%S') > beginning_of_short_index]))
 
     open(index_name, 'w').write('''
 <html>
@@ -1042,7 +1048,7 @@ def main_index_html(plot_root, html_root):
 ''' % ( time.asctime(time.gmtime()),
         os.path.basename(long_index_name),
         os.path.basename(index_txt_name),
-        '\n'.join([observation_table_row(parset, file_size['percentage_complete'], html_root)
+        '\n'.join([observation_table_row(parset, file_size, html_root)
                    for parset, file_size in zip(parsets, file_sizes)
                    if parset['start_time'].strip() != '' and datetime.datetime.strptime(parset['start_time'], '%Y-%m-%d %H:%M:%S') > beginning_of_short_index]
                   )))
@@ -1064,7 +1070,7 @@ def main_index_html(plot_root, html_root):
 </html>
 ''' % ( time.asctime(time.gmtime()),
         os.path.basename(index_name),
-        '\n'.join([observation_table_row(parset, file_size['percentage_complete'], html_root)
+        '\n'.join([observation_table_row(parset, file_size, html_root)
                    for parset, file_size in zip(parsets, file_sizes)]
                   )))
 
