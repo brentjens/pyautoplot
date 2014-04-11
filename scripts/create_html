@@ -635,8 +635,7 @@ def parset_summary(sas_id, parset_name):
 
     **Examples**
     
-    >>> fe_parset = parset_summary(181718,
-        'testdata/flyseye-parset.txt')
+    >>> fe_parset = parset_summary(181718, 'testdata/flyseye-parset.txt')
     
     >>> xc_parset = parset_summary(178900, 'testdata/crosscor-parset.txt')
 

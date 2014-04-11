@@ -1,5 +1,5 @@
 import os,sys
-from numpy import isnan
+from numpy import isnan, concatenate, arange
 import ma
 
 def is_list(obj):
@@ -26,3 +26,30 @@ def printnow (s):
     print s
     sys.stdout.flush()
     pass
+
+
+def map_casa_table(function, casa_table, column_name='DATA', flag_name='FLAG', chunksize=10000, rowincr=1, nrow=None, max_chunks=None):
+    """function should take a complex array of (timeslots,channels,polarizations) dimension, and return an array of values
+    per timeslot. """
+    chunksize=chunksize-(chunksize % rowincr)
+    selection = casa_table
+    nrows = selection.nrows()
+    if nrow is not None:
+        nrows = min(nrow, nrows)
+    selection = selection.selectrows(arange(0, nrows, rowincr))
+    nrows = selection.nrows()
+    lastset = nrows % chunksize
+    complete_chunks = nrows / chunksize
+    results = []
+    for chunk in range(complete_chunks):
+        if max_chunks:
+            if chunk >= max_chunks:
+                break
+        print('%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows))
+        results += [function(set_nan_zero(ma.array(selection.getcol(column_name, startrow=chunk*chunksize, nrow=chunksize),
+                                                   mask=selection.getcol(flag_name, startrow=chunk*chunksize, nrow=chunksize))))]
+    if max_chunks is None or (chunk == max_chunks-1):
+        print('%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows))
+        results += [function(set_nan_zero(ma.array(selection.getcol(column_name,startrow=complete_chunks*chunksize, nrow=lastset),
+                                                   mask=selection.getcol(flag_name,startrow=complete_chunks*chunksize, nrow=lastset))))]
+    return concatenate(results, axis=0)
