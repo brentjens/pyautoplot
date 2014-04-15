@@ -1,6 +1,7 @@
 import os,sys
 from numpy import isnan, concatenate, arange
 import ma
+import logging
 
 def is_list(obj):
     return type(obj) == type([])
@@ -15,6 +16,7 @@ def set_nan_zero(data_array):
     """
     Set any NaN values in *data_array* to zero and return result. This function modifies *data_array*.
     """
+    logging.debug('pyautoplot.utilities.set_nan_zero(%r)', data_array.shape)
     where_it_is_nan = isnan(data_array)
     if is_masked_array(data_array):
         data_array.mask[where_it_is_nan] = True
@@ -45,11 +47,11 @@ def map_casa_table(function, casa_table, column_name='DATA', flag_name='FLAG', c
         if max_chunks:
             if chunk >= max_chunks:
                 break
-        print('%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows))
+        logging.info('%d -- %d / %d', chunk*chunksize+1, (chunk+1)*chunksize, nrows)
         results += [function(set_nan_zero(ma.array(selection.getcol(column_name, startrow=chunk*chunksize, nrow=chunksize),
                                                    mask=selection.getcol(flag_name, startrow=chunk*chunksize, nrow=chunksize))))]
     if max_chunks is None or (chunk == max_chunks-1):
-        print('%d -- %d / %d' % (complete_chunks*chunksize+1, nrows, nrows))
+        logging.info('%d -- %d / %d', complete_chunks*chunksize+1, nrows, nrows)
         results += [function(set_nan_zero(ma.array(selection.getcol(column_name,startrow=complete_chunks*chunksize, nrow=lastset),
                                                    mask=selection.getcol(flag_name,startrow=complete_chunks*chunksize, nrow=lastset))))]
     return concatenate(results, axis=0)
