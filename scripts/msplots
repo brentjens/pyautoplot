@@ -5,7 +5,7 @@ import matplotlib
 matplotlib.use('agg')
 from getopt import gnu_getopt as getopt
 from getopt import GetoptError
-import os,sys,time
+import os,sys,time, socket
 
 from pyautoplot import *
 import pyautoplot.forkmap as forkmap
@@ -76,6 +76,30 @@ Output
     return -1
 
 
+def process_names():
+    '''Return (process_name, RSS mem) tuples'''
+    proc_dirs = [os.path.join('/proc', pid_name) for pid_name in os.listdir('/proc')]
+    cmd_lines = []
+    for proc_dir in proc_dirs:
+        try:
+            cmd_lines.append((open(os.path.join(proc_dir, 'cmdline')).readline(),
+                              open(os.path.join(proc_dir, 'stat')).readline().split()[21]))
+        except IOError:
+            pass
+    return [(cmd_line[0].strip(' \t\n\r').split('\x00'), int(cmd_line[1]))
+            for cmd_line in cmd_lines if cmd_line[0].strip('\t\n\r\x00') != '']
+
+
+def msplots_mem_use_bytes():
+    r'''
+    Compute RSS memory claimed by *all* currently running msplots
+    processes and their associated launchers.
+    '''
+    processes_plus_rss_mem = process_names()
+    msplots_procs = [proc for proc in processes_plus_rss_mem
+                     if 'msplots' in ' '.join(proc[0])]
+    return sum([rss for name, rss in msplots_procs])
+    
 
 def main(argv):
     print('')
@@ -93,7 +117,7 @@ def main(argv):
     prefix=os.path.join('/globaldata', 'inspect')
     if not os.path.exists(prefix):
         prefix=os.path.expanduser('~/inspect/')
-    memory=3.0
+    memory=2.25
     output_dir=None
 
     for(option,value) in options:
@@ -125,6 +149,9 @@ def main(argv):
         raise OSError('Directory prefix %s does not exist.' % (prefix,))
 
     for sas_id in sas_ids:
+        if 'locus' in socket.gethostname().lower():
+            if msplots_mem_use_bytes() > 3*memory*(1024**3):
+                continue # Skip this run if there are too many processes still consuming memory
         if output_dir is None:
             output_directory = str(sas_id)
         else:
