@@ -6,7 +6,7 @@ import os, sys, glob, socket, shutil
 from optparse import OptionParser
 import time
 import datetime
-from numpy import array, median, floor
+from numpy import array, floor
 
 def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
     r'''
@@ -469,7 +469,7 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
 
         file_size_html = '''
 
-        <h3>Median file sizes (MB):</h3>
+        <h3>Max file sizes (MB):</h3>
         <table>
         <tr><td>Correlated data</td> <td>:</td> <td>%r</td></tr>
         <tr><td>Beamformed data</td> <td>:</td> <td>%r</td></tr>
@@ -478,8 +478,8 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
         %s
 
         %s
-        ''' % (file_size_data['median_ms_size_mb'],
-               file_size_data['median_raw_size_mb'],
+        ''' % (file_size_data['max_ms_size_mb'],
+               file_size_data['max_raw_size_mb'],
                missing_html,
                odd_sized_html)
     except:
@@ -614,6 +614,8 @@ def find_parset(sas_id):
     for path in search_path:
         if os.path.exists(path):
             return path
+    #if os.path.exists(os.path.join('/globalhome', 'inspect', str(sas_id), 'L'+str(sas_id)+'.parset')):
+    #    return os.path.join('/globalhome', 'inspect', str(sas_id), 'L'+str(sas_id)+'.parset')
     logging.warn('Cannot find parset for SAS ID %d', sas_id)
     return None
 
@@ -824,12 +826,12 @@ def file_size_analysis(parset, file_sizes_dict):
                        for keyword, value in file_sizes_dict.iteritems()
                        if '.raw' in keyword])
 
-    median_ms_size_mb = 0
+    max_ms_size_mb = 0
     if len(ms_sizes) > 0:
-        median_ms_size_mb  = max(median(ms_sizes), 1.5)
-    median_raw_size_mb = 0
+        max_ms_size_mb  = max(ms_sizes.max(), 1.5)
+    max_raw_size_mb = 0
     if len(raw_sizes) > 0:
-        median_raw_size_mb = max(median(raw_sizes), 1.5)
+        max_raw_size_mb = max(raw_sizes.max(), 1.5)
 
     missing_data_sets   = []
     odd_sized_data_sets = []
@@ -842,8 +844,8 @@ def file_size_analysis(parset, file_sizes_dict):
         node_and_name = '%s:%s' % (locus_node, msname)
         try:
             locus_actual, full_path, data_size_mb = file_sizes_dict[msname]
-            if median_ms_size_mb > 0:
-                if abs(float(data_size_mb)/float(median_ms_size_mb) -1.0) > 0.01:
+            if max_ms_size_mb > 0:
+                if abs(float(data_size_mb)/float(max_ms_size_mb) -1.0) > 0.01:
                     odd_sized_data_sets.append((node_and_name, data_size_mb))
                     problematic_data_products += 1
         except KeyError:
@@ -852,12 +854,13 @@ def file_size_analysis(parset, file_sizes_dict):
 
 
 
-    for raw_name, locus_node in zip(parset['beamformer_products'], parset['beamformer_locations']):
+    for h5_name, locus_node in zip(parset['beamformer_products'], parset['beamformer_locations']):
+        raw_name = h5_name.replace('.h5', '.raw')
         node_and_name = '%s:%s' % (locus_node, raw_name)
         try:
             locus_actual, full_path, data_size_mb = file_sizes_dict[raw_name]
-            if median_raw_size_mb > 0:
-                if abs((float(data_size_mb)/float(median_raw_size_mb)) -1.0) > 0.01:
+            if max_raw_size_mb > 0:
+                if abs((float(data_size_mb)/float(max_raw_size_mb)) -1.0) > 0.01:
                     odd_sized_data_sets.append((node_and_name, data_size_mb))
                     problematic_data_products += 1
         except KeyError:
@@ -868,8 +871,8 @@ def file_size_analysis(parset, file_sizes_dict):
     if total_data_products > 0:
         percentage_complete = floor(100.0*float(total_data_products - problematic_data_products)/total_data_products)
 
-    return {'median_ms_size_mb': median_ms_size_mb,
-            'median_raw_size_mb': median_raw_size_mb,
+    return {'max_ms_size_mb': max_ms_size_mb,
+            'max_raw_size_mb': max_raw_size_mb,
             'missing_data_sets': missing_data_sets,
             'odd_sized_data_sets': odd_sized_data_sets,
             'percentage_complete': percentage_complete}
