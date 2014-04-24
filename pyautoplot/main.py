@@ -858,8 +858,8 @@ def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('
                                   os.path.join(output_dir,msname.split('/')[-1][:-3]+'-'+quantity_name.lower().replace(' ','-')+extension),
                                   **kwargs)
 
-    write_plot('Flagged mean', log10, vmax=2.0, vmin=-5.0, cmap=cmap)
-    write_plot('Flagged standard deviation', log10, vmax=1.0, vmin=-4.0, cmap=cmap)
+    write_plot('Flagged mean', log10, vmax=8.0, vmin=4.0, cmap=cmap)
+    write_plot('Flagged standard deviation', log10, vmax=8.0, vmin=4.0, cmap=cmap)
     write_plot('Flags', log10, vmax=0.0, vmin=-3.0, cmap=cmap)
     write_plot('Zeroes',lambda x: 100*x, vmin=0.0, vmax=100.0, cmap=cmap)
     # write_plot('Fringe SNR 0', log10, vmin=-1.0, vmax=4.0, cmap=cmap)
