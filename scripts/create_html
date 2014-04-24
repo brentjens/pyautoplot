@@ -614,8 +614,6 @@ def find_parset(sas_id):
     for path in search_path:
         if os.path.exists(path):
             return path
-    #if os.path.exists(os.path.join('/globalhome', 'inspect', str(sas_id), 'L'+str(sas_id)+'.parset')):
-    #    return os.path.join('/globalhome', 'inspect', str(sas_id), 'L'+str(sas_id)+'.parset')
     logging.warn('Cannot find parset for SAS ID %d', sas_id)
     return None
 
