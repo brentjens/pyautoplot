@@ -53,7 +53,7 @@ function report_global_status(){
     sleep 2
     if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.loss ]] ; then
         echo "  - determining input losses"
-        ssh -A cbt001-10gb01 "tail -10000 log/rtcp-${sas_id}.log|grep loss|sort -k 8"|grep GPUProc > ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.loss
+        ssh -A cbt001-10gb01 "tail -100000 log/rtcp-${sas_id}.log|grep loss|sort -k 8"|grep GPUProc > ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.loss
     fi
     sleep 2
     if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.errors ]] ; then
