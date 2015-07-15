@@ -793,7 +793,8 @@ def parse_file_sizes(file_name):
                  'request failed' not in line and
                  'not resolve' not in line and
                  'remaining bytes' not in line and
-                 'Write failed: Broken pipe' not in line)]
+                 'Write failed: Broken pipe' not in line and
+                 'open display' not in line)]
     results = {}
     locus_node = None
     for line in lines:
