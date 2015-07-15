@@ -882,7 +882,11 @@ def file_size_analysis(parset, file_sizes_dict):
 def parse_loss_log_line(line):
     words = line.split()
     station = words[7][:-1]
-    loss_fraction = float(words[11][:-1])/100.0
+    try:
+        loss_fraction = float(words[11][:-1])/100.0
+    except ValueError:
+        station = 'CSERR'
+        loss_fraction = -1.0
     return (station, loss_fraction)
 
 def cmp_antenna_field_names(name_a, name_b):
