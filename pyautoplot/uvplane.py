@@ -2,7 +2,10 @@ from numpy import array, arange, copy, isnan, newaxis, pi, remainder
 from numpy import angle, cos, floor, median
 from numpy.fft import fftshift, fftn
 from pylab import clf, colorbar, figtext, is_string_like, subplot, title, imshow
-import pyfits as p
+try:
+    import pyfits as p
+except ImportError:
+    import astropy.io.fits as p
 import gc
 
 
