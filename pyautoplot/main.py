@@ -24,13 +24,22 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.backend_bases import FigureCanvasBase
 
-import pyautoplot.ma      as ma
-import pyautoplot.forkmap as forkmap
-import pyautoplot.uvplane as uvplane
-from pyautoplot.tableformatter import *
-from pyautoplot.angle import *
-from pyautoplot.utilities import *
-from pyautoplot.lofaroffline import *
+try:
+    import pyautoplot.ma      as ma
+    import pyautoplot.forkmap as forkmap
+    import pyautoplot.uvplane as uvplane
+    from pyautoplot.tableformatter import *
+    from pyautoplot.angle import *
+    from pyautoplot.utilities import *
+    from pyautoplot.lofaroffline import *
+except:
+    import ma      as ma
+    import forkmap as forkmap
+    import uvplane as uvplane
+    from tableformatter import *
+    from angle import *
+    from utilities import *
+    from lofaroffline import *
 
 
 def corr_type(corr_id):
