@@ -3,3 +3,5 @@
 .figleaf
 report-coverage.txt
 testlog.txt
+.coverage
+MANIFEST
