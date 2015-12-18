@@ -947,9 +947,11 @@ def station_beamlet_statistics_plots_html(parset, rel_plot_files):
                           for image in rel_plot_files if "_00.png" in image]
     bst_one_html    = [plot_html(image)
                           for image in rel_plot_files if "_01.png" in image]
-    overview_rows = ['<tr><td>'+station_bst_zero+'</td><td>'+station_bst_one+'</td></tr>'
-                     for (station_bst_zero, station_bst_one)
-                     in zip(bst_zero_html, bst_one_html)]
+    bst_zero_norm_html    = [plot_html(image)
+                          for image in rel_plot_files if "_00_norm.png" in image]
+    bst_one_norm_html    = [plot_html(image)
+                          for image in rel_plot_files if "_01_norm.png" in image]
+    overview_rows = ['<tr><td>'+station_bst_zero+'</td><td>'+station_bst_one+'</td><td>'+station_zero_norm+'</td><td>'+station_one_norm+'</td></tr>' for (station_bst_zero, station_bst_one, station_zero_norm, station_one_norm) in zip(bst_zero_html, bst_one_html, bst_zero_norm_html, bst_one_norm_html)]
     html_template = '''
 <html>
     <head> <title}%(title)s</title> </head>

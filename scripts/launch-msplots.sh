@@ -99,6 +99,7 @@ if test "$HOSTNAME" == "lhn001"; then
 
     for sas_id in $@; do
         mkdir $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id
+        ssh -n -t -x kis001 lcurun today "/home/fallows/inspect_bsts_msplots.bash $sas_id"
     done
 
     sleep 45 # to make sure writing of metadata in MSses has a reasonable chance to finish before plots are created.
