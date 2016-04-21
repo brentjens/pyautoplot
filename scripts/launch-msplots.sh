@@ -82,6 +82,9 @@ function exit_timeout() {
     for sas_id in $GLOBAL_ARGS; do
         report_global_status ${sas_id}
         done
+    for sas_id in $GLOBAL_ARGS; do
+        ssh -n -t -x kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
+    done
     create_html_fn
     DATE_DONE=`date`
     echo "Done at $DATE_DONE" | tee -a $LOG
@@ -98,8 +101,7 @@ echo "On machine $HOSTNAME" | tee -a $LOG
 if test "$HOSTNAME" == "lhn001"; then
 
     for sas_id in $@; do
-        mkdir $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id
-        ssh -n -t -x kis001 lcurun today "/home/fallows/inspect_bsts_msplots.bash $sas_id"
+        mkdir -v $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id 2>&1 | tee -a $LOG
     done
 
     sleep 45 # to make sure writing of metadata in MSses has a reasonable chance to finish before plots are created.
@@ -122,8 +124,12 @@ if test "$HOSTNAME" == "lhn001"; then
     
     for sas_id in $@; do
         report_global_status ${sas_id}
-        done
+    done
 
+    for sas_id in $@; do
+        ssh -n -t -x kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
+    done
+    
     create_html_fn
 
 else
