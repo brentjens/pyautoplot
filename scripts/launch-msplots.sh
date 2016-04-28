@@ -20,6 +20,38 @@ GLOBAL_ARGS=$@
 COMMAND_NAME="msplots $@"
 
 
+function remote_parset_lookup() {
+    parset_host=$1
+    sas_id=$2
+    parset_key=$3
+
+    ssh $parset_host "grep $parset_key /localhome/lofarsystem/parsets/rtcp-$sas_id.parset" 2>/dev/null;
+}
+
+
+function sas_id_project() {
+    sas_id=$1
+    remote_parset_lookup cbm001 $sas_id 'Observation.Campaign.name'|sed -e's/=/ /g' -e 's/"/ /g'|awk '{ print $2 }';
+}
+
+
+function hostname_fqdn() {
+    # Return the fully qualified domain name of a LOFAR server
+    # Sadly -- on some machines -- hostname returns the FQDN
+    # while hostname -f returns the short name >_<
+    (hostname;hostname -f)|awk '{ print length, $0 }' | sort -n -s | cut -d" " -f2-
+}
+
+
+function cep_cluster(){
+    case `hostname_fqdn` in
+        *cep2*) echo CEP2;;
+        *cep4*) echo CEP4;;
+        *) echo OTHER;;
+    esac
+}
+
+
 function create_html_fn() {
     CREATE_HTML=`which create_html`
     echo "$GLOBAL_ARGS" | tee -a $LOG
