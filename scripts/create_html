@@ -2,7 +2,7 @@
 # -*- python -*-
 
 import logging
-import os, sys, glob, socket, shutil
+import os, sys, glob, socket, shutil, subprocess
 from optparse import OptionParser
 import time
 import datetime
@@ -141,7 +141,7 @@ def create_html_main(argv):
     main_index_html(plot_root = options.plot_root,
                     html_root = options.html_root)
     for start_num in [4,5,6,7,8,9]:
-        os.system(" pushd /globaldata/inspect/; for sas in `find . -maxdepth 1  -mindepth 1 -iname \"%d*\" -ctime +21|sed -e 's/\.\///g'|sort`; do echo $sas ;rm -rf $sas HTML/$sas; done;popd " % start_num)
+        os.system("pushd /globaldata/inspect/; for sas in `find . -maxdepth 1  -mindepth 1 -iname \"%d*\" -ctime +21|sed -e 's/\.\///g'|sort`; do echo $sas ;rm -rf $sas HTML/$sas; done;popd " % start_num)
     return 0
 
 
@@ -402,8 +402,12 @@ def plot_paths_per_sap_subband(plot_file_names):
     for plot_file in plot_file_names:
         keyword = '_'.join([sap_from_file_name(plot_file),
                             subband_from_file_name(plot_file)])
-        if not sb_plots.has_key(keyword):
-            sb_plots[keyword] = []
+        try:
+            if not keyword in sb_plots:
+                sb_plots[keyword] = []
+        except:
+            if not sb_plots.has_key(keyword):
+                sb_plots[keyword] = []
         sb_plots[keyword].append(plot_file)
     return sb_plots
 
@@ -448,7 +452,8 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
 
     station_beamlet_html = '<h3>No beamlet plots found</h3>'
     plot_files = relative_plot_paths(obs_plot_root, stn_html_root)
-    plot_files = [ file for file in plot_files if "beamlets" in file ]
+    plot_files = [plot_file for plot_file in plot_files
+                  if "beamlets" in plot_file ]
     plot_files = sorted(plot_files)
     if plot_files:
         file_name = os.path.join(stn_html_root, 'station_beamlets.html')
@@ -625,6 +630,10 @@ def find_parset(sas_id):
     r'''
     Look for a parset in CEP2. If it found the parset, it returns the
     path. Otherwise, it issues a warning and returns None.
+
+    If no local path is found, but the file exists on another machine,
+    it returns "<machine>:<path>", for example
+    "cbm001:/localhome/lofarsystem/parsets/rtcp-123456.parset"
     '''
     search_path = [os.path.join('/globalhome', user, 'log',
                                 prefix+str(sas_id)+'.parset')
@@ -633,7 +642,17 @@ def find_parset(sas_id):
     for path in search_path:
         if os.path.exists(path):
             return path
-    logging.warn('Cannot find parset for SAS ID %d', sas_id)
+    # Nothing found yet, check if on Cobalt
+    try:
+        expected_fname = os.path.join('/localhome/lofarsystem/parsets/',
+                                      'rtcp-%d.parset' % sas_id)
+        fname = subprocess.check_output(['ssh', 'cbm001', 'ls',
+                                         '%s' % expected_fname])
+        if fname.strip() == expected_fname.encode().strip():
+            return 'cbm001:'+expected_fname
+    except:
+        pass
+    logging.warning('Cannot find parset for SAS ID %d', sas_id)
     return None
 
 
@@ -908,22 +927,10 @@ def parse_loss_log_line(line):
         loss_fraction = -1.0
     return (station, loss_fraction)
 
-def cmp_antenna_field_names(name_a, name_b):
-    if name_a == name_b:
-        return 0
-    if 'CS' in name_a and 'CS' not in name_b:
-        return -1
-    if 'CS' not in name_a and 'CS' in name_b:
-        return +1
-    if 'CS' in name_a and 'CS' in name_b:
-        return cmp(name_a, name_b)
-    return cmp(int(name_a[2:5]), int(name_b[2:5]))
-
 
 def sort_by_station(station_loss_tuples):
     return sorted(station_loss_tuples,
-                  key=lambda x: x[0],
-                  cmp=cmp_antenna_field_names)
+                  key=lambda x: (x[0][2:5])+(x[0][-1]))
 
 def read_loss(log_file):
     with open(log_file, mode='r') as input_file:
@@ -1072,10 +1079,14 @@ def main_index_html(plot_root, html_root):
                                            os.path.basename(parset['file_name']))
         else:
             new_parset_name = None
-        if parset['file_name'] and os.path.exists(parset['file_name']) \
-                and not os.path.exists(new_parset_name):
+        if parset['file_name'] \
+           and (':' in parset['file_name'] or os.path.exists(parset['file_name'])) \
+           and not os.path.exists(new_parset_name):
             force_mkdir(obs_plot_root)
-            shutil.copy2(parset['file_name'], obs_plot_root)
+            if ':' in parset['file_name']:
+                subprocess.check_call(['scp', parset['file_name'], obs_plot_root])
+            else:
+                shutil.copy2(parset['file_name'], obs_plot_root)
 
         if new_parset_name and os.path.exists(new_parset_name):
             parset['file_name'] = new_parset_name
