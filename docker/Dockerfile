@@ -1,7 +1,7 @@
 #
 # base
 #
-FROM ubuntu:latest
+FROM ubuntu:16.04
 
 #
 # common-environment
@@ -21,7 +21,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 ENV CASACORE_VERSION=2.0.3 \
     CASAREST_VERSION=1.4.1 \
     PYTHON_CASACORE_VERSION=2.0.1 \
-    BOOST_VERSION=1.54
+    BOOST_VERSION=1.58
 
 #
 # set-uid
@@ -38,8 +38,8 @@ ENV J=8
 #
 #RUN sed -i 's/archive.ubuntu.com/osmirror.rug.nl/' /etc/apt/sources.list 
 RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y sudo python2.7 libpython2.7 && \
-    apt-get install -y libblas3 liblapacke python-numpy libcfitsio3 libwcs4 libfftw3-bin libhdf5-7 libboost-python${BOOST_VERSION}.0
+RUN apt-get install -y sudo rsync ssh python2.7 libpython2.7 && \
+    apt-get install -y libblas3 liblapacke python-numpy libcfitsio-bin libcfitsio-dev libwcs5 libfftw3-bin libhdf5-10 libboost-python${BOOST_VERSION}.0
 
 #
 # setup-account
@@ -83,7 +83,7 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y wg
 #   Casarest
 # *******************
 #
-RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y git cmake g++ gfortran libboost-system-dev libboost-thread-dev libhdf5-dev libcfitsio3-dev wcslib-dev && \
+RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y git cmake g++ gfortran libboost-system-dev libboost-thread-dev libhdf5-dev libcfitsio3-dev wcslib-dev libblas-dev liblapacke-dev && \
     mkdir -p ${INSTALLDIR}/casarest/build && \
     cd ${INSTALLDIR}/casarest && git clone https://github.com/casacore/casarest.git src && \
     if [ "${CASAREST_VERSION}" != "latest" ]; then cd ${INSTALLDIR}/casarest/src && git checkout tags/v${CASAREST_VERSION}; fi && \
@@ -92,7 +92,7 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y gi
     cd ${INSTALLDIR}/casarest/build && make install && \
     bash -c "strip ${INSTALLDIR}/casarest/{lib,bin}/* || true" && \
     bash -c "rm -rf ${INSTALLDIR}/casarest/{build,src}" && \
-    sudo apt-get purge -y git cmake g++ gfortran libboost-system-dev libboost-thread-dev libhdf5-dev libcfitsio3-dev wcslib-dev && \
+    sudo apt-get purge -y git cmake g++ gfortran libboost-system-dev libboost-thread-dev libhdf5-dev libcfitsio3-dev wcslib-dev libblas-dev liblapacke-dev && \
     sudo apt-get autoremove -y
 
 #
@@ -149,16 +149,18 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y su
 #   DAL
 # *******************
 #
-RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y git cmake g++ swig python-dev libhdf5-dev && \
-    mkdir ${INSTALLDIR}/DAL && \
-    cd ${INSTALLDIR}/DAL && git clone https://github.com/nextgen-astrodata/DAL.git src && \
-    mkdir ${INSTALLDIR}/DAL/build && cd ${INSTALLDIR}/DAL/build && cmake -DCMAKE_INSTALL_PREFIX=${INSTALLDIR}/DAL ../src && \
-    make -j ${J} && \
-    make install && \
-    bash -c "find ${INSTALLDIR}/DAL/lib -name '*.so' | xargs strip || true" && \
-    bash -c "rm -rf ${INSTALLDIR}/DAL/{src,build}" && \
-    sudo apt-get purge -y git cmake g++ swig python-dev libhdf5-dev && \
-    sudo apt-get autoremove -y
+
+# RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y git cmake g++ swig python-dev libhdf5-dev && \
+#     mkdir ${INSTALLDIR}/DAL && \
+#     cd ${INSTALLDIR}/DAL && git clone https://github.com/nextgen-astrodata/DAL.git src && \
+#     mkdir ${INSTALLDIR}/DAL/build && cd ${INSTALLDIR}/DAL/build && cmake -DCMAKE_INSTALL_PREFIX=${INSTALLDIR}/DAL ../src && \
+#     make -j ${J} && \
+#     make install && \
+#     bash -c "find ${INSTALLDIR}/DAL/lib -name '*.so' | xargs strip || true" && \
+#     bash -c "rm -rf ${INSTALLDIR}/DAL/{src,build}" && \
+#     sudo apt-get purge -y git cmake g++ swig python-dev libhdf5-dev && \
+#     sudo apt-get autoremove -y
+
 
 #
 #**************************
