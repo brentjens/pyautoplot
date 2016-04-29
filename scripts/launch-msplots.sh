@@ -141,17 +141,17 @@ function sigterm_handler() {
 }
 
 
-DATE=`date`
-echo "" | tee -a $LOG
-echo "=======================" | tee -a $LOG
-echo "Date: $DATE"|tee -a $LOG
-echo "$0 $@" | tee -a $LOG
-echo "On machine $HOSTNAME" | tee -a $LOG
 
 
 
 case hostname_fqdn in
     lhn001*)
+        DATE=`date`
+        echo "" | tee -a $LOG
+        echo "=======================" | tee -a $LOG
+        echo "Date: $DATE"|tee -a $LOG
+        echo "$0 $@" | tee -a $LOG
+        echo "On machine $HOSTNAME" | tee -a $LOG
         for sas_id in $@; do
             mkdir -v $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id 2>&1 | tee -a $LOG
         done
@@ -187,6 +187,13 @@ case hostname_fqdn in
 
     
     *cep4*)
+        DATE=`date`
+        ssh lofarsys@cep2.lofar "echo \"\" | tee -a $LOG"
+        ssh lofarsys@cep2.lofar "echo \"=======================\" | tee -a $LOG"
+        ssh lofarsys@cep2.lofar "echo \"Date: $DATE\"|tee -a $LOG"
+        ssh lofarsys@cep2.lofar "echo \"$0 $@\" | tee -a $LOG"
+        ssh lofarsys@cep2.lofar "echo \"On machine $HOSTNAME\" | tee -a $LOG"
+        
         for sas_id in $@; do
             ssh -A lofarsys@lhn001.cep2.lofar "mkdir -v $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id 2>&1 | tee -a $LOG"
         done
@@ -225,7 +232,7 @@ case hostname_fqdn in
     
     *)
         echo "Only thought of CEP2 and CEP4 for now"
-        ;
+        ;;
 esac
 DATE_DONE=`date`
 echo "Done at $DATE_DONE" | tee -a $LOG
