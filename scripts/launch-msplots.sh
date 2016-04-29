@@ -79,7 +79,7 @@ function create_html_remotely_fn() {
     CREATE_HTML=`ssh $REMOTE_HOST which create_html`
     ssh $REMOTE_HOST "echo \"$GLOBAL_ARGS\" | tee -a $LOG"
     if test "$CREATE_HTML" == ""; then
-        echo "Cannot find create_html: no HTML generated" | tee -a $LOG
+        ssh $REMOTEHOST "echo \"Cannot find create_html: no HTML generated\" | tee -a $LOG"
 
     else
         ssh $REMOTE_HOST "echo \"Creating HTML using $CREATE_HTML\" | tee -a $LOG"
@@ -144,7 +144,7 @@ function sigterm_handler() {
 
 
 
-case hostname_fqdn in
+case `hostname_fqdn` in
     lhn001*)
         DATE=`date`
         echo "" | tee -a $LOG
@@ -185,14 +185,14 @@ case hostname_fqdn in
         create_html_fn
         ;;
 
-    
+
     *cep4*)
         DATE=`date`
-        ssh lofarsys@cep2.lofar "echo \"\" | tee -a $LOG"
-        ssh lofarsys@cep2.lofar "echo \"=======================\" | tee -a $LOG"
-        ssh lofarsys@cep2.lofar "echo \"Date: $DATE\"|tee -a $LOG"
-        ssh lofarsys@cep2.lofar "echo \"$0 $@\" | tee -a $LOG"
-        ssh lofarsys@cep2.lofar "echo \"On machine $HOSTNAME\" | tee -a $LOG"
+        ssh lofarsys@lhn001.cep2.lofar "echo \"\" | tee -a $LOG"
+        ssh lofarsys@lhn001.cep2.lofar "echo \"=======================\" | tee -a $LOG"
+        ssh lofarsys@lhn001.cep2.lofar "echo \"Date: $DATE\"|tee -a $LOG"
+        ssh lofarsys@lhn001.cep2.lofar "echo \"$0 $@\" | tee -a $LOG"
+        ssh lofarsys@lhn001.cep2.lofar "echo \"On machine $HOSTNAME\" | tee -a $LOG"
         
         for sas_id in $@; do
             ssh -A lofarsys@lhn001.cep2.lofar "mkdir -v $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id 2>&1 | tee -a $LOG"
