@@ -134,9 +134,15 @@ def main(argv):
             return print_help()
 
     if len(arguments) == 0:
-        raise GetoptError('please supply one or more SAS/MAC IDs; you supplied none.')
-    sas_ids = map(int, arguments)
+        raise GetoptError('please supply one or more SAS/MAC IDs or measurement sets; you supplied none.')
 
+    sas_ids = []
+    data_sets = []
+    for argument in arguments:
+        try:
+            sas_ids.append(int(argument))
+        except ValueError:
+            data_sets.append(argument)
     
     if memory <= 0.0:
         raise GetoptError('%r GB of memory is not enough; consider using 1 GB or more.' % (memory,))
@@ -168,6 +174,13 @@ def main(argv):
                     root=prefix, cmap=cm.gray_r, output_dir = output_directory),
                         msses,
                         n=max_cpus)
+
+    for data_set in data_sets:
+        inspect_ms(data_set,
+                   ms_id=None, # Can be None of output_directory is explicitly set
+                   max_mem_bytes=int(memory*2**30),
+                   root=prefix, cmap=cm.gray_r,
+                   output_dir=output_directory)
     return 0
 
 
