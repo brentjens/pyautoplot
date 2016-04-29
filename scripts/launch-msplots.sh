@@ -74,23 +74,26 @@ function create_html_fn() {
     fi
 }
 
+function create_html_remotely_fn() {
+    REMOTE_HOST=$1
+    CREATE_HTML=`ssh $REMOTE_HOST which create_html`
+    ssh $REMOTE_HOST "echo \"$GLOBAL_ARGS\" | tee -a $LOG"
+    if test "$CREATE_HTML" == ""; then
+        echo "Cannot find create_html: no HTML generated" | tee -a $LOG
 
-function report_global_status(){
-    local sas_id=${1}
-    echo "report_global_status for ${sas_id}"
-    if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/file-sizes.txt ]] ; then
-        echo "  - determining file sizes"
-        cexec locus: "du --apparent-size -sm /data/L${sas_id}/*" > ${INSPECT_ROOT}/${sas_id}/file-sizes.txt
-    fi
-    sleep 2
-    if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.loss ]] ; then
-        echo "  - determining input losses"
-        ssh -A cbt001-10gb01 "tail -100000 log/rtcp-${sas_id}.log|grep loss|sort -k 8"|grep GPUProc > ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.loss
-    fi
-    sleep 2
-    if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.errors ]] ; then
-        echo "  - determining warnings / errors"
-        ssh -A cbt001-10gb01 "egrep 'ERR|WARN|FATAL|runObservation|xception|acktrace|\#(0|1|2|3|4|5|6|7|8|9) |Signalling|Alarm|SIG|feed-back|Result code' log/rtcp-${sas_id}.log"|grep -v Flagging > $INSPECT_ROOT/${sas_id}/rtcp-${sas_id}.errors
+    else
+        ssh $REMOTE_HOST "echo \"Creating HTML using $CREATE_HTML\" | tee -a $LOG"
+        command="$CREATE_HTML $GLOBAL_ARGS"
+        ssh $REMOTE_HOST "echo \"$command\"| tee -a $LOG"
+        result=`ssh $REMOTE_HOST "bash -ilc \"use Lofar; use Pyautoplot; $command\""`
+        exit_status="$?"
+        if test "$exit_status" == "0"; then
+            ssh $REMOTE_HOST "echo \"HTML Created successfully\" | tee -a $LOG"
+        else 
+            ssh $REMOTE_HOST "echo \"Problem creating HTML overview for $GLOBAL_ARGS.\" | tee -a $LOG"
+            ssh $REMOTE_HOST "echo \"Exit status: $exit_status\" | tee -a $LOG"
+            ssh $REMOTE_HOST "echo \"$result\" | tee -a $LOG"
+        fi
     fi
 }
 
@@ -123,6 +126,21 @@ function exit_timeout() {
     exit
 }
 
+
+function sigterm_handler() {
+    for sas_id in $GLOBAL_ARGS; do
+        ssh lofarsys@lhn001.cep2.lofar "bash -ilc \"use Lofar; use Pyautoplot; report_global_status ${sas_id}\""
+        done
+    for sas_id in $GLOBAL_ARGS; do
+        ssh -n -t -x kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
+    done
+    create_html_remotely_fn lofarsys@lhn001.cep2.lofar
+    DATE_DONE=`date`
+    ssh lofarsys@lhn001.cep2.lofar "echo \"Done at $DATE_DONE\" | tee -a $LOG"
+    exit
+}
+
+
 DATE=`date`
 echo "" | tee -a $LOG
 echo "=======================" | tee -a $LOG
@@ -130,43 +148,84 @@ echo "Date: $DATE"|tee -a $LOG
 echo "$0 $@" | tee -a $LOG
 echo "On machine $HOSTNAME" | tee -a $LOG
 
-if test "$HOSTNAME" == "lhn001"; then
 
-    for sas_id in $@; do
-        mkdir -v $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id 2>&1 | tee -a $LOG
-    done
 
-    sleep 45 # to make sure writing of metadata in MSses has a reasonable chance to finish before plots are created.
+case hostname_fqdn in
+    lhn001*)
+        for sas_id in $@; do
+            mkdir -v $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id 2>&1 | tee -a $LOG
+        done
 
-    #Prepare to catch SIGALRM, call exit_timeout
-    trap exit_timeout SIGALRM
+        sleep 45 # to make sure writing of metadata in MSses has a reasonable chance to finish before plots are created.
     
-    cexec locus: "bash -ilc \"use Lofar; use Pyautoplot; $COMMAND_NAME\"" &
-    CEXEC_PID=$!
-    #Sleep in a subprocess, then signal parent with ALRM
-    (sleep $ALARMTIME; kill -ALRM $PARENTPID) &
-    #Record PID of subprocess
-    ALARMPID=$!
-    
-    #Wait for child processes to complete normally
-    wait $CEXEC_PID
+        #Prepare to catch SIGALRM, call exit_timeout
+        trap exit_timeout SIGALRM
+        
+        cexec locus: "bash -ilc \"use Lofar; use Pyautoplot; $COMMAND_NAME\"" &
+        CEXEC_PID=$!
+        #Sleep in a subprocess, then signal parent with ALRM
+        (sleep $ALARMTIME; kill -ALRM $PARENTPID) &
+        #Record PID of subprocess
+        ALARMPID=$!
+        
+        #Wait for child processes to complete normally
+        wait $CEXEC_PID
  
-    #Tidy up the Alarm subprocess
-    kill $ALARMPID > /dev/null 2>&1
+        #Tidy up the Alarm subprocess
+        kill $ALARMPID > /dev/null 2>&1
     
-    for sas_id in $@; do
-        report_global_status ${sas_id}
-    done
+        for sas_id in $@; do
+            report_global_status ${sas_id}
+        done
 
-    for sas_id in $@; do
-        ssh -n -t -x kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
-    done
+        for sas_id in $@; do
+            ssh -n -t -x kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
+        done
     
-    create_html_fn
+        create_html_fn
+        ;;
 
-else
-    cexec1 lce:1-54,64-72 "bash -ilc \"use Lofar; use Pyautoplot; $COMMAND_NAME\"" | tee -a $LOG
-fi
+    
+    *cep4*)
+        for sas_id in $@; do
+            ssh -A lofarsys@lhn001.cep2.lofar "mkdir -v $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id 2>&1 | tee -a $LOG"
+        done
+        sleep 45 # to make sure writing of metadata in MSses has a reasonable chance to finish before plots are created.
 
+        SSH_PIDS=""
+        for sas_id in $@; do
+            project=`sas_id_project $sas_id`
+            data_products_full_path=`find /data/projects/$project/L$sas_id/ -iname "*.MS"`
+
+            for product in $data_products_full_path; do
+                # Submit slurm jobs that start docker containers at cpuxx nodes...
+                ssh -n -tt -x localhost \
+                    srun --exclusive --ntasks=1 --cpus-per-task=1  --job-name="msplots $product" \
+                        docker run --rm -e LUSER={uid} \
+                        -v /data:/data \
+                        -v $HOME/.ssh:/home/lofar/ssh:ro \
+                        --net=host \
+                        pyautoplot:latest \
+                        "/bin/bash -c \"msplots --prefix=/dev/shm/ --output=$sas_id --memory=1.0 $product ; rsync -a /dev/shm/$sas_id/ lofarsys@lhn001.cep2.lofar:$INSPECT_ROOT/$sas_id/\"" &
+                SSH_PIDS="$SSH_PIDS $!"
+            done
+        done
+        wait $SSH_PIDS
+        for sas_id in $@; do
+            ssh lofarsys@lhn001.cep2.lofar "bash -ilc \"use Lofar; use Pyautoplot; report_global_status ${sas_id}\""
+        done
+
+        for sas_id in $@; do
+            ssh -n -t -x kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
+        done
+    
+        create_html_remotely_fn lofarsys@lhn001.cep2.lofar
+        ;;
+
+    
+    *)
+        echo "Only thought of CEP2 and CEP4 for now"
+        ;
+esac
 DATE_DONE=`date`
 echo "Done at $DATE_DONE" | tee -a $LOG
