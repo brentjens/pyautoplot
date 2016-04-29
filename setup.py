@@ -13,5 +13,6 @@ setup(name='pyautoplot',
       scripts=['scripts/msplots', 'scripts/tscount',
                'scripts/launch-msplots.sh',
                'scripts/launch-tscount.sh',
+               'scripts/report_global_status',
                'scripts/create_html'],
      )
