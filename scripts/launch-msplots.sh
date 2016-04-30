@@ -207,13 +207,13 @@ case `hostname_fqdn` in
             for product in $data_products_full_path; do
                 # Submit slurm jobs that start docker containers at cpuxx nodes...
                 ssh -n -tt -x lofarsys@localhost \
-                    srun --exclusive --ntasks=1 --cpus-per-task=1  --job-name=msplots \
+                    srun --exclusive --ntasks=1 --cpus-per-task=1 --jobid=$SLURM_JOB_ID --job-name=msplots \
                         docker run --rm -e LUSER=`id -u` \
                         -v /data:/data \
                         -v /data/home/lofarsys/.ssh:/home/lofar/.ssh:ro \
                         --net=host \
                         pyautoplot:latest \
-                        "/bin/bash -c \"msplots --prefix=/dev/shm/ --output=$sas_id --memory=1.0 $product ; rsync -a /dev/shm/$sas_id/ lofarsys@lhn001.cep2.lofar:$INSPECT_ROOT/$sas_id/\"" &
+                        "'/bin/bash -c \"msplots --prefix=/dev/shm/ --output=$sas_id --memory=1.0 $product ; rsync -a /dev/shm/$sas_id/ lofarsys@lhn001.cep2.lofar:$INSPECT_ROOT/$sas_id/\"'" &
                 SSH_PIDS="$SSH_PIDS $!"
             done
         done
