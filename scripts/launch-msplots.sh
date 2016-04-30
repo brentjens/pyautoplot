@@ -79,7 +79,7 @@ function create_html_remotely_fn() {
     CREATE_HTML=`ssh $REMOTE_HOST which create_html`
     ssh $REMOTE_HOST "echo \"$GLOBAL_ARGS\" | tee -a $LOG"
     if test "$CREATE_HTML" == ""; then
-        ssh $REMOTEHOST "echo \"Cannot find create_html: no HTML generated\" | tee -a $LOG"
+        ssh $REMOTE_HOST "echo \"Cannot find create_html: no HTML generated\" | tee -a $LOG"
 
     else
         ssh $REMOTE_HOST "echo \"Creating HTML using $CREATE_HTML\" | tee -a $LOG"
