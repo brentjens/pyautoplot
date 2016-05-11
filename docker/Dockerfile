@@ -174,7 +174,7 @@ RUN sudo apt-get update -y && \
                           wget git  python-nose python-coverage \
                           python-astropy
 
-RUN A=$C; git clone https://github.com/brentjens/pyautoplot.git ${INSTALLDIR}/pyautoplot && \
+RUN A=$D; git clone https://github.com/brentjens/pyautoplot.git ${INSTALLDIR}/pyautoplot && \
     cd ${INSTALLDIR}/pyautoplot && \
     sudo python setup.py install
     
