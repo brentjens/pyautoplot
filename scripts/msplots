@@ -180,7 +180,7 @@ def main(argv):
                    ms_id=None, # Can be None of output_directory is explicitly set
                    max_mem_bytes=int(memory*2**30),
                    root=prefix, cmap=cm.gray_r,
-                   output_dir=output_directory)
+                   output_dir=output_dir)
     return 0
 
 
