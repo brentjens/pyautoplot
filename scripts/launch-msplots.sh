@@ -79,7 +79,7 @@ function create_html_remotely_fn() {
     CREATE_HTML=`ssh $REMOTE_HOST which create_html`
     ssh $REMOTE_HOST "echo \"$GLOBAL_ARGS\" | tee -a $LOG"
     if test "$CREATE_HTML" == ""; then
-        ssh $REMOTEHOST "echo \"Cannot find create_html: no HTML generated\" | tee -a $LOG"
+        ssh $REMOTE_HOST "echo \"Cannot find create_html: no HTML generated\" | tee -a $LOG"
 
     else
         ssh $REMOTE_HOST "echo \"Creating HTML using $CREATE_HTML\" | tee -a $LOG"
@@ -207,13 +207,13 @@ case `hostname_fqdn` in
             for product in $data_products_full_path; do
                 # Submit slurm jobs that start docker containers at cpuxx nodes...
                 ssh -n -tt -x lofarsys@localhost \
-                    srun --exclusive --ntasks=1 --cpus-per-task=1  --job-name=msplots \
-                        docker run --rm -e LUSER={uid} \
+                    srun --exclusive --ntasks=1 --cpus-per-task=1 --jobid=$SLURM_JOB_ID --job-name=msplots \
+                        docker run --rm -e LUSER=`id -u` \
                         -v /data:/data \
-                        -v $HOME/.ssh:/home/lofar/ssh:ro \
+                        -v /data/home/lofarsys/.ssh:/home/lofar/.ssh:ro \
                         --net=host \
                         pyautoplot:latest \
-                        "/bin/bash -c \"msplots --prefix=/dev/shm/ --output=$sas_id --memory=1.0 $product ; rsync -a /dev/shm/$sas_id/ lofarsys@lhn001.cep2.lofar:$INSPECT_ROOT/$sas_id/\"" &
+                        "'/bin/bash -c \"msplots --prefix=/dev/shm/ --output=$sas_id --memory=1.0 $product ; rsync -a /dev/shm/$sas_id/ lofarsys@lhn001.cep2.lofar:$INSPECT_ROOT/$sas_id/\"'" &
                 SSH_PIDS="$SSH_PIDS $!"
             done
         done

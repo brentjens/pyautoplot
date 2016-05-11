@@ -161,6 +161,29 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y su
 #     sudo apt-get purge -y git cmake g++ swig python-dev libhdf5-dev && \
 #     sudo apt-get autoremove -y
 
+#
+# *******************
+#   LofarStMan
+# *******************
+#
+
+# Tell image build information
+ENV LOFAR_BRANCH_URL=https://svn.astron.nl/LOFAR/trunk \
+    LOFAR_REVISION=HEAD
+
+# Install
+RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y subversion cmake g++ libboost-dev && \
+    mkdir -p ${INSTALLDIR}/lofar/build/gnu_opt && \
+    cd ${INSTALLDIR}/lofar && \
+    svn --non-interactive -q co -r ${LOFAR_REVISION} -N ${LOFAR_BRANCH_URL} src; \
+    svn --non-interactive -q up src/CMake && \
+    cd ${INSTALLDIR}/lofar/build/gnu_opt && cmake -DBUILD_PACKAGES=LofarStMan -DCMAKE_INSTALL_PREFIX=${INSTALLDIR}/lofar/ -DCASACORE_ROOT_DIR=${INSTALLDIR}/casacore/ -DUSE_LOG4CPLUS=OFF -DUSE_OPENMP=True ${INSTALLDIR}/lofar/src/ && \
+    cd ${INSTALLDIR}/lofar/build/gnu_opt && make -j ${J} && \
+    cd ${INSTALLDIR}/lofar/build/gnu_opt && make install && \
+    bash -c "strip ${INSTALLDIR}/lofar/{bin,sbin,lib64}/* || true" && \
+    bash -c "rm -rf ${INSTALLDIR}/lofar/{build,src}" && \
+    sudo apt-get purge -y subversion cmake g++ libboost-dev && \
+    sudo apt-get autoremove -y
 
 #
 #**************************
