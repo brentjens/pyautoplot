@@ -278,7 +278,7 @@ def force_mkdir(path_name):
     >>> force_mkdir('/my-own-nice-little-corner/')
     Traceback (most recent call last):
     ...
-    OSError: [Errno 13] Permission denied: '/my-own-nice-little-corner/'
+    PermissionError: [Errno 13] Permission denied: '/my-own-nice-little-corner/'
 
     '''
     logging.debug('force_mkdir(path_name = %r)', path_name)

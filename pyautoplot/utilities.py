@@ -1,6 +1,6 @@
 import os,sys
 from numpy import isnan, concatenate, arange
-import ma
+import numpy.ma as ma
 import logging
 
 def is_list(obj):
@@ -25,7 +25,7 @@ def set_nan_zero(data_array):
 
 
 def printnow (s):
-    print s
+    print(s)
     sys.stdout.flush()
     pass
 

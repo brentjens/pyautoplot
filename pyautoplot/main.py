@@ -24,8 +24,8 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.backend_bases import FigureCanvasBase
 
+import numpy.ma as ma
 try:
-    import pyautoplot.ma      as ma
     import pyautoplot.forkmap as forkmap
     import pyautoplot.uvplane as uvplane
     from pyautoplot.tableformatter import *
@@ -33,7 +33,6 @@ try:
     from pyautoplot.utilities import *
     from pyautoplot.lofaroffline import *
 except:
-    import ma      as ma
     import forkmap as forkmap
     import uvplane as uvplane
     from tableformatter import *

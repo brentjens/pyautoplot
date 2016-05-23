@@ -1,5 +1,5 @@
 import unittest
-import testcase
+import test.testcase as testcase
 from pyautoplot.lofaroffline import *
 
 class LofarOfflineTest(testcase.TestCase):

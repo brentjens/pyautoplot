@@ -5,7 +5,11 @@ forkmap -- Forking map(), uses all processors by default.
 Connelly Barnes 2008, public domain.  Based on forkmap by Kirk Strauser, rewritten and optimized.  Version 1.0.2.
 """
 
-import os, mmap, struct, cPickle
+import os, mmap, struct
+try:
+  import cPickle
+except ImportError:
+  import pickle as cPickle
 import ctypes, ctypes.util
 import time, traceback
 
@@ -75,7 +79,7 @@ def map(f, *a, **kw):
             obj = builtin_map(f, L[i*len(L)//n:(i+1)*len(L)//n])
           else:
             obj = [f(*x) for x in L[i*len(L)//n:(i+1)*len(L)//n]]
-        except Exception, obj:
+        except Exception as obj:
           pass
         writeobj(pipes[i][1], obj)
       except:
@@ -102,7 +106,7 @@ def map(f, *a, **kw):
   return ans
 
 def bench():
-  print 'Benchmark:\n'
+  print('Benchmark:\n')
   def timefunc(F):
     start = time.time()
     F()
@@ -116,16 +120,16 @@ def bench():
   def g2():
     return map(lambda x: x**2, range(10**6))
   import timeit
-  print 'Expensive operation, 10**3 items:'
-  print 'map         (1 processor): ', timefunc(f1), 's'
-  print 'forkmap.map (%d processors):' % nproc, timefunc(g1), 's'
-  print
-  print 'Cheap operation, 10**6 items:'
-  print 'map         (1 processor): ', timefunc(f2), 's'
-  print 'forkmap.map (%d processors):' % nproc, timefunc(g2), 's'
+  print('Expensive operation, 10**3 items:')
+  print('map         (1 processor): ', timefunc(f1), 's')
+  print('forkmap.map (%d processors):' % nproc, timefunc(g1), 's')
+  print()
+  print('Cheap operation, 10**6 items:')
+  print('map         (1 processor): ', timefunc(f2), 's')
+  print('forkmap.map (%d processors):' % nproc, timefunc(g2), 's')
 
 def test():
-  print 'Testing:'
+  print('Testing:')
   assert [x**2 for x in range(10**4)] == map(lambda x: x**2, range(10**4))
   assert [x**2 for x in range(10**4)] == map(lambda x: x**2, range(10**4), n=10)
   assert [x**2 for x in range(10**4)] == map(lambda x: x**2, range(10**4), n=1)
@@ -145,7 +149,7 @@ def test():
     e = None
     try:
       func()
-    except Exception, e:
+    except Exception as e:
       pass
     if not isinstance(e, exc):
       raise ValueError('function did not raise specified error')
@@ -155,7 +159,7 @@ def test():
   check_raises(lambda: map(f, [1, 0, 0], n=3), KeyError)
   check_raises(lambda: map(f, [0, 1, 0], n=3), KeyError)
   check_raises(lambda: map(f, [0, 0, 1], n=3), KeyError)
-  print 'forkmap.map: OK'
+  print('forkmap.map: OK')
 
 if __name__ == '__main__':
   test()

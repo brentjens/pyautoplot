@@ -6,7 +6,7 @@ def make_sequence_assertion(assertion_function, **kwargs):
         for r,e in zip(result,expected):
             try:
                 assertion_function(self, r,e,**kwargs)
-            except AssertionError, er:
+            except AssertionError as er:
                 er.args = ('%s != %s.\n  %s' % \
                                (result, expected, er.args[0]),)
                 raise er
@@ -21,7 +21,7 @@ class TestCase(unittest.TestCase):
     def assertLessThan(self, result, limit, **kwargs):
         try:
             self.assertTrue(result < limit, **kwargs)
-        except AssertionError, er:
+        except AssertionError as er:
             
             er.args = ('%s !< %s.\n' % (result, limit),)
             raise er

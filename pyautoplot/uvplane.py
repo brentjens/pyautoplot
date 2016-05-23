@@ -178,8 +178,8 @@ def plot_uvplane(image, width_pixels=None, **kwargs):
     uvplane = fftshift(fftn(fftshift(image,[0,1])),[0,1])
     gc.collect()
     uvplane_shape = uvplane.shape
-    print 'image shape    : '+str(uvplane_shape)
-    print 'amplitude_range: '+str(abs(uvplane).min())+'--'+str(abs(uvplane).max())
+    print('image shape    : '+str(uvplane_shape))
+    print('amplitude_range: '+str(abs(uvplane).min())+'--'+str(abs(uvplane).max()))
     if width_pixels:
         uvplane_cropped = uvplane[(uvplane_shape[0]/2-width_pixels/2):(uvplane_shape[0]/2+width_pixels/2),
                                                  (uvplane_shape[1]/2-width_pixels/2):(uvplane_shape[1]/2+width_pixels/2)]

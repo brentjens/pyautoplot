@@ -6,9 +6,9 @@ TESTOUTPUT=test-output
 rm -rf $TESTOUTPUT
 mkdir $TESTOUTPUT
 
-python2 make_cluster_dirs.py
+python make_cluster_dirs.py
 
-#NOSETESTS=`which nosetests`
+NOSETESTS=`which nosetests`
 
 if [[ ! -f "$NOSETESTS" ]] ; then
     NOSETESTS=`which nosetests2`
