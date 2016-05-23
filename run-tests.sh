@@ -13,6 +13,8 @@ NOSETESTS=`which nosetests`
 if [[ ! -f "$NOSETESTS" ]] ; then
     NOSETESTS=`which nosetests2`
 fi
+
+PYLINT=`which pylint`
 if [[ ! -f "$PYLINT" ]] ; then
     PYLINT=`which pylint2`
 fi
