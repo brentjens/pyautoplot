@@ -13,14 +13,14 @@ ENV INSTALLDIR=/opt
 # environment
 #
 ENV DEBIAN_FRONTEND=noninteractive \
-    PYTHON_VERSION=2.7
+    PYTHON_VERSION=3.5
 
 #
 # versions
 #
-ENV CASACORE_VERSION=2.0.3 \
+ENV CASACORE_VERSION=2.1.0 \
     CASAREST_VERSION=1.4.1 \
-    PYTHON_CASACORE_VERSION=2.0.1 \
+    PYTHON_CASACORE_VERSION=2.1.2 \
     BOOST_VERSION=1.58
 
 #
@@ -38,8 +38,8 @@ ENV J=8
 #
 #RUN sed -i 's/archive.ubuntu.com/osmirror.rug.nl/' /etc/apt/sources.list 
 RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y sudo rsync ssh python2.7 libpython2.7 && \
-    apt-get install -y libblas3 liblapacke python-numpy libcfitsio-bin libcfitsio-dev libwcs5 libfftw3-bin libhdf5-10 libboost-python${BOOST_VERSION}.0
+RUN apt-get install -y sudo rsync ssh python3 libpython3.5-dev && \
+    apt-get install -y libblas3 liblapacke python3-numpy libcfitsio-bin libcfitsio-dev libwcs5 libfftw3-bin libhdf5-10 libboost-python${BOOST_VERSION}.0
 
 #
 # setup-account
@@ -70,7 +70,7 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y wg
     if [ "${CASACORE_VERSION}" != "latest" ]; then cd ${INSTALLDIR}/casacore/src && git checkout tags/v${CASACORE_VERSION}; fi && \
     cd ${INSTALLDIR}/casacore/data && wget --retry-connrefused ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar && \
     cd ${INSTALLDIR}/casacore/data && tar xf WSRT_Measures.ztar  && rm -f WSRT_Measures.ztar && \
-    cd ${INSTALLDIR}/casacore/build && cmake -DCMAKE_INSTALL_PREFIX=${INSTALLDIR}/casacore/ -DDATA_DIR=${INSTALLDIR}/casacore/data -DBUILD_PYTHON=True -DUSE_OPENMP=True -DUSE_FFTW3=TRUE ../src/ && \
+    cd ${INSTALLDIR}/casacore/build && cmake -DCMAKE_INSTALL_PREFIX=${INSTALLDIR}/casacore/ -DDATA_DIR=${INSTALLDIR}/casacore/data -DBUILD_PYTHON=False -DBUILD_PYTHON3=True -DPYTHON3_LIBRARY=/usr/lib/x86_64-linux-gnu/libpython${PYTHON_VERSION}m.so -DPYTHON3_INCLUDE_DIR=/usr/include/python${PYTHON_VERSION}  -DUSE_OPENMP=True -DUSE_FFTW3=TRUE ../src/ && \
     cd ${INSTALLDIR}/casacore/build && make -j ${J} && \
     cd ${INSTALLDIR}/casacore/build && make install && \
     bash -c "strip ${INSTALLDIR}/casacore/{lib,bin}/* || true" && \
@@ -100,14 +100,14 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y gi
 #   Pyrap
 # *******************
 #
-RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y git make g++ python-setuptools libboost-python-dev libcfitsio3-dev wcslib-dev && \
+RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y git make g++ python3-setuptools libboost-python-dev libcfitsio3-dev wcslib-dev && \
     mkdir ${INSTALLDIR}/python-casacore && \
     cd ${INSTALLDIR}/python-casacore && git clone https://github.com/casacore/python-casacore && \
     if [ "$PYTHON_CASACORE_VERSION" != "latest" ]; then cd ${INSTALLDIR}/python-casacore/python-casacore && git checkout tags/v${PYTHON_CASACORE_VERSION}; fi && \
-    cd ${INSTALLDIR}/python-casacore/python-casacore && ./setup.py build_ext -I${INSTALLDIR}/casacore/include/ -L${INSTALLDIR}/casacore/lib/ && \
+    cd ${INSTALLDIR}/python-casacore/python-casacore && python3 ./setup.py build_ext -I${INSTALLDIR}/casacore/include/ -L${INSTALLDIR}/casacore/lib/ && \
     mkdir -p ${INSTALLDIR}/python-casacore/lib/python${PYTHON_VERSION}/site-packages/ && \
     mkdir -p ${INSTALLDIR}/python-casacore/lib64/python${PYTHON_VERSION}/site-packages/ && \
-    export PYTHONPATH=${INSTALLDIR}/python-casacore/lib/python${PYTHON_VERSION}/site-packages:${INSTALLDIR}/python-casacore/lib64/python${PYTHON_VERSION}/site-packages:$PYTHONPATH && cd ${INSTALLDIR}/python-casacore/python-casacore && ./setup.py install --prefix=${INSTALLDIR}/python-casacore/ && \
+    export PYTHONPATH=${INSTALLDIR}/python-casacore/lib/python${PYTHON_VERSION}/site-packages:${INSTALLDIR}/python-casacore/lib64/python${PYTHON_VERSION}/site-packages:$PYTHONPATH && cd ${INSTALLDIR}/python-casacore/python-casacore && python3 ./setup.py install --prefix=${INSTALLDIR}/python-casacore/ && \
     bash -c "find ${INSTALLDIR}/python-casacore/lib -name '*.so' | xargs strip || true" && \
     bash -c "rm -rf ${INSTALLDIR}/python-casacore/python-casacore" && \
     sudo apt-get purge -y git make g++ python-setuptools libboost-python-dev libcfitsio3-dev wcslib-dev && \
@@ -193,13 +193,13 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y su
 
 RUN sudo apt-get update -y && \
     sudo apt-get upgrade -y && \
-    sudo apt-get install -y python-numpy python-matplotlib python-scipy python-setuptools \
-                          wget git  python-nose python-coverage \
-                          python-astropy
+    sudo apt-get install -y python3-numpy python3-matplotlib python3-scipy python3-setuptools \
+                          wget git  python3-nose python3-coverage \
+                          python3-astropy
 
 RUN A=$D; git clone https://github.com/brentjens/pyautoplot.git ${INSTALLDIR}/pyautoplot && \
-    cd ${INSTALLDIR}/pyautoplot && \
-    sudo python setup.py install
+    cd ${INSTALLDIR}/pyautoplot && git checkout python3 && \
+    sudo python3 setup.py install
     
 
 
