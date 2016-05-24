@@ -7,7 +7,7 @@
 source ${INSTALLDIR}/qpid/.profile
 
 # python-casacore
-export PYTHONPATH=${PYTHONPATH}:${INSTALLDIR}/python-casacore/lib/python2.7/site-packages
+export PYTHONPATH=${PYTHONPATH}:${INSTALLDIR}/python-casacore/lib/python3.5/site-packages
 
 # casacore
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${INSTALLDIR}/casacore/lib
