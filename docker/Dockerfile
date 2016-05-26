@@ -119,17 +119,6 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y gi
 # *******************
 #
 
-# Allow auto-checkout from lofar repo. We create ~/.subversion/servers in-line to prevent Docker cache invalidation
-RUN mkdir /home/${USER}/.subversion
-RUN echo '\
-[groups] \n\
-astron = svn.astron.nl \n\
-\n\
-[astron] \n\
-store-passwords = yes \n\
-store-plaintext-passwords = yes \n\
-' > /home/${USER}/.subversion/servers
-
 # Run-time dependencies
 # QPID daemon legacy store would require: libaio1 libdb5.1++
 RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y sasl2-bin libuuid1 libnss3 libnspr4 xqilla libboost-program-options${BOOST_VERSION}.0 libboost-filesystem${BOOST_VERSION}.0
@@ -138,7 +127,7 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y sa
 # QPID daemon legacy store would require: libaio-dev libdb5.1++-dev
 RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y subversion swig ruby ruby-dev python-dev libsasl2-dev pkg-config cmake libtool uuid-dev libxerces-c-dev libnss3-dev libnspr4-dev help2man fakeroot build-essential debhelper libsslcommon2-dev libxqilla-dev python-setuptools libboost-program-options${BOOST_VERSION}-dev libboost-filesystem${BOOST_VERSION}-dev && \
     mkdir /opt/qpid && \
-    svn --non-interactive -q --username lofar-guest --password lofar-guest co https://svn.astron.nl/LOFAR/branches/RA-Task8887/LCS/MessageBus/qpid/ /opt/qpid; \
+    svn --non-interactive -q co https://svn.astron.nl/LOFAR/trunk/LCS/MessageBus/qpid/ /opt/qpid; \
     /opt/qpid/local/sbin/build_qpid && \
     bash -c "strip /opt/qpid/{bin,lib}/* || true" && \
     bash -c "rm -rf ~/sources" && \
