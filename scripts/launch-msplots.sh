@@ -85,7 +85,7 @@ function create_html_remotely_fn() {
         ssh $REMOTE_HOST "echo \"Creating HTML using $CREATE_HTML\" | tee -a $LOG"
         command="$CREATE_HTML $GLOBAL_ARGS"
         ssh $REMOTE_HOST "echo \"$command\"| tee -a $LOG"
-        result=`ssh $REMOTE_HOST "bash -ilc \"use Lofar; use Pyautoplot; $command\""`
+        result=`ssh -n -tt -x $REMOTE_HOST "bash -ilc \"use Lofar; use Pyautoplot; $command\""`
         exit_status="$?"
         if test "$exit_status" == "0"; then
             ssh $REMOTE_HOST "echo \"HTML Created successfully\" | tee -a $LOG"
