@@ -181,7 +181,7 @@ RUN apt-get update -y && \
                           wget git  python-nose python-coverage \
                           python-astropy
 
-RUN A=$C; git clone https://github.com/brentjens/pyautoplot.git ${INSTALLDIR}/pyautoplot && \
+RUN A=$C; git clone https://github.com/jjdmol/pyautoplot.git ${INSTALLDIR}/pyautoplot && \
     cd ${INSTALLDIR}/pyautoplot && \
     python setup.py install
     
@@ -191,7 +191,8 @@ RUN A=$C; git clone https://github.com/brentjens/pyautoplot.git ${INSTALLDIR}/py
 #
 # entry
 #
-COPY ["bashrc", "bashrc.d", "${INSTALLDIR}/"]
+COPY ["bashrc",    "${INSTALLDIR}/"]
+COPY ["bashrc.d",  "${INSTALLDIR}/bashrc.d/"]
 COPY ["chuser.sh", "/usr/local/bin"]
 ENTRYPOINT ["/usr/local/bin/chuser.sh"]
 
