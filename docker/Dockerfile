@@ -38,32 +38,28 @@ ENV J=8
 #
 #RUN sed -i 's/archive.ubuntu.com/osmirror.rug.nl/' /etc/apt/sources.list 
 RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y sudo rsync ssh python2.7 libpython2.7 && \
+RUN apt-get install -y rsync ssh python2.7 libpython2.7 && \
     apt-get install -y libblas3 liblapacke python-numpy libcfitsio-bin libcfitsio-dev libwcs5 libfftw3-bin libhdf5-10 libboost-python${BOOST_VERSION}.0
 
+
 #
-# setup-account
+# open security holes (allow smooth user switching, allow sudo)
 #
-RUN (getent group sudo &>/dev/null || groupadd sudo) && \
-    echo "useradd -m ${USERADD_FLAGS} ${USER}" && \
-    useradd -m -u ${UID} ${USER} && \
-    usermod -a -G sudo ${USER} && \
-    echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
-    sed -i 's/requiretty/!requiretty/g' /etc/sudoers
+RUN echo 'ALL ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers && \
+    sed -i 's/requiretty/!requiretty/g' /etc/sudoers && \
+    chmod a+rw /etc/group /etc/passwd
 
 #
 # setup install dir
 #
-RUN mkdir -p ${INSTALLDIR} && chown ${USER}.${USER} ${INSTALLDIR}
-
-USER ${USER}
+RUN mkdir -p ${INSTALLDIR}
 
 #
 # *******************
 #   Casacore
 # *******************
 #
-RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y wget git cmake g++ gfortran flex bison libblas-dev liblapacke-dev libfftw3-dev libhdf5-dev libboost-python-dev libcfitsio3-dev wcslib-dev && \
+RUN apt-get update && apt-get install -y wget git cmake g++ gfortran flex bison libblas-dev liblapacke-dev libfftw3-dev libhdf5-dev libboost-python-dev libcfitsio3-dev wcslib-dev && \
     mkdir -p ${INSTALLDIR}/casacore/build && \
     mkdir -p ${INSTALLDIR}/casacore/data && \
     cd ${INSTALLDIR}/casacore && git clone https://github.com/casacore/casacore.git src && \
@@ -75,15 +71,15 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y wg
     cd ${INSTALLDIR}/casacore/build && make install && \
     bash -c "strip ${INSTALLDIR}/casacore/{lib,bin}/* || true" && \
     bash -c "rm -rf ${INSTALLDIR}/casacore/{build,src}" && \
-    sudo apt-get purge -y wget git cmake g++ gfortran flex bison libblas-dev liblapacke-dev libfftw3-dev libhdf5-dev libboost-python-dev libcfitsio3-dev wcslib-dev && \
-    sudo apt-get autoremove -y
+    apt-get purge -y wget git cmake g++ gfortran flex bison libblas-dev liblapacke-dev libfftw3-dev libhdf5-dev libboost-python-dev libcfitsio3-dev wcslib-dev && \
+    apt-get autoremove -y
 
 #
 # *******************
 #   Casarest
 # *******************
 #
-RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y git cmake g++ gfortran libboost-system-dev libboost-thread-dev libhdf5-dev libcfitsio3-dev wcslib-dev libblas-dev liblapacke-dev && \
+RUN apt-get update && apt-get install -y git cmake g++ gfortran libboost-system-dev libboost-thread-dev libhdf5-dev libcfitsio3-dev wcslib-dev libblas-dev liblapacke-dev && \
     mkdir -p ${INSTALLDIR}/casarest/build && \
     cd ${INSTALLDIR}/casarest && git clone https://github.com/casacore/casarest.git src && \
     if [ "${CASAREST_VERSION}" != "latest" ]; then cd ${INSTALLDIR}/casarest/src && git checkout tags/v${CASAREST_VERSION}; fi && \
@@ -92,15 +88,15 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y gi
     cd ${INSTALLDIR}/casarest/build && make install && \
     bash -c "strip ${INSTALLDIR}/casarest/{lib,bin}/* || true" && \
     bash -c "rm -rf ${INSTALLDIR}/casarest/{build,src}" && \
-    sudo apt-get purge -y git cmake g++ gfortran libboost-system-dev libboost-thread-dev libhdf5-dev libcfitsio3-dev wcslib-dev libblas-dev liblapacke-dev && \
-    sudo apt-get autoremove -y
+    apt-get purge -y git cmake g++ gfortran libboost-system-dev libboost-thread-dev libhdf5-dev libcfitsio3-dev wcslib-dev libblas-dev liblapacke-dev && \
+    apt-get autoremove -y
 
 #
 # *******************
 #   Pyrap
 # *******************
 #
-RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y git make g++ python-setuptools libboost-python-dev libcfitsio3-dev wcslib-dev && \
+RUN apt-get update && apt-get install -y git make g++ python-setuptools libboost-python-dev libcfitsio3-dev wcslib-dev && \
     mkdir ${INSTALLDIR}/python-casacore && \
     cd ${INSTALLDIR}/python-casacore && git clone https://github.com/casacore/python-casacore && \
     if [ "$PYTHON_CASACORE_VERSION" != "latest" ]; then cd ${INSTALLDIR}/python-casacore/python-casacore && git checkout tags/v${PYTHON_CASACORE_VERSION}; fi && \
@@ -110,8 +106,8 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y gi
     export PYTHONPATH=${INSTALLDIR}/python-casacore/lib/python${PYTHON_VERSION}/site-packages:${INSTALLDIR}/python-casacore/lib64/python${PYTHON_VERSION}/site-packages:$PYTHONPATH && cd ${INSTALLDIR}/python-casacore/python-casacore && ./setup.py install --prefix=${INSTALLDIR}/python-casacore/ && \
     bash -c "find ${INSTALLDIR}/python-casacore/lib -name '*.so' | xargs strip || true" && \
     bash -c "rm -rf ${INSTALLDIR}/python-casacore/python-casacore" && \
-    sudo apt-get purge -y git make g++ python-setuptools libboost-python-dev libcfitsio3-dev wcslib-dev && \
-    sudo apt-get autoremove -y
+    apt-get purge -y git make g++ python-setuptools libboost-python-dev libcfitsio3-dev wcslib-dev && \
+    apt-get autoremove -y
 
 #
 # *******************
@@ -119,38 +115,27 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y gi
 # *******************
 #
 
-# Allow auto-checkout from lofar repo. We create ~/.subversion/servers in-line to prevent Docker cache invalidation
-RUN mkdir /home/${USER}/.subversion
-RUN echo '\
-[groups] \n\
-astron = svn.astron.nl \n\
-\n\
-[astron] \n\
-store-passwords = yes \n\
-store-plaintext-passwords = yes \n\
-' > /home/${USER}/.subversion/servers
-
 # Run-time dependencies
 # QPID daemon legacy store would require: libaio1 libdb5.1++
-RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y sasl2-bin libuuid1 libnss3 libnspr4 xqilla libboost-program-options${BOOST_VERSION}.0 libboost-filesystem${BOOST_VERSION}.0
+RUN apt-get update && apt-get install -y sasl2-bin libuuid1 libnss3 libnspr4 xqilla libboost-program-options${BOOST_VERSION}.0 libboost-filesystem${BOOST_VERSION}.0
 
 # Install
 # QPID daemon legacy store would require: libaio-dev libdb5.1++-dev
-RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y subversion swig ruby ruby-dev python-dev libsasl2-dev pkg-config cmake libtool uuid-dev libxerces-c-dev libnss3-dev libnspr4-dev help2man fakeroot build-essential debhelper libsslcommon2-dev libxqilla-dev python-setuptools libboost-program-options${BOOST_VERSION}-dev libboost-filesystem${BOOST_VERSION}-dev && \
+RUN apt-get update && apt-get install -y subversion swig ruby ruby-dev python-dev libsasl2-dev pkg-config cmake libtool uuid-dev libxerces-c-dev libnss3-dev libnspr4-dev help2man fakeroot build-essential debhelper libsslcommon2-dev libxqilla-dev python-setuptools libboost-program-options${BOOST_VERSION}-dev libboost-filesystem${BOOST_VERSION}-dev && \
     mkdir /opt/qpid && \
-    svn --non-interactive -q --username lofar-guest --password lofar-guest co https://svn.astron.nl/LOFAR/branches/RA-Task8887/LCS/MessageBus/qpid/ /opt/qpid; \
+    svn --non-interactive -q co https://svn.astron.nl/LOFAR/trunk/LCS/MessageBus/qpid/ /opt/qpid; \
     /opt/qpid/local/sbin/build_qpid && \
     bash -c "strip /opt/qpid/{bin,lib}/* || true" && \
     bash -c "rm -rf ~/sources" && \
-    sudo apt-get purge -y subversion swig ruby ruby-dev python-dev libsasl2-dev pkg-config cmake libtool uuid-dev libxerces-c-dev libnss3-dev libnspr4-dev help2man fakeroot build-essential debhelper libsslcommon2-dev libxqilla-dev python-setuptools libboost-program-options${BOOST_VERSION}-dev libboost-filesystem${BOOST_VERSION}-dev && \
-    sudo apt-get autoremove -y
+    apt-get purge -y subversion swig ruby ruby-dev python-dev libsasl2-dev pkg-config cmake libtool uuid-dev libxerces-c-dev libnss3-dev libnspr4-dev help2man fakeroot build-essential debhelper libsslcommon2-dev libxqilla-dev python-setuptools libboost-program-options${BOOST_VERSION}-dev libboost-filesystem${BOOST_VERSION}-dev && \
+    apt-get autoremove -y
 #
 # *******************
 #   DAL
 # *******************
 #
 
-# RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y git cmake g++ swig python-dev libhdf5-dev && \
+# RUN apt-get update &&&& apt-get install -y git cmake g++ swig python-dev libhdf5-dev && \
 #     mkdir ${INSTALLDIR}/DAL && \
 #     cd ${INSTALLDIR}/DAL && git clone https://github.com/nextgen-astrodata/DAL.git src && \
 #     mkdir ${INSTALLDIR}/DAL/build && cd ${INSTALLDIR}/DAL/build && cmake -DCMAKE_INSTALL_PREFIX=${INSTALLDIR}/DAL ../src && \
@@ -158,8 +143,8 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y su
 #     make install && \
 #     bash -c "find ${INSTALLDIR}/DAL/lib -name '*.so' | xargs strip || true" && \
 #     bash -c "rm -rf ${INSTALLDIR}/DAL/{src,build}" && \
-#     sudo apt-get purge -y git cmake g++ swig python-dev libhdf5-dev && \
-#     sudo apt-get autoremove -y
+#     apt-get purge -y git cmake g++ swig python-dev libhdf5-dev && \
+#     apt-get autoremove -y
 
 #
 # *******************
@@ -172,7 +157,7 @@ ENV LOFAR_BRANCH_URL=https://svn.astron.nl/LOFAR/trunk \
     LOFAR_REVISION=HEAD
 
 # Install
-RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y subversion cmake g++ libboost-dev && \
+RUN apt-get update && apt-get install -y subversion cmake g++ libboost-dev && \
     mkdir -p ${INSTALLDIR}/lofar/build/gnu_opt && \
     cd ${INSTALLDIR}/lofar && \
     svn --non-interactive -q co -r ${LOFAR_REVISION} -N ${LOFAR_BRANCH_URL} src; \
@@ -182,8 +167,8 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y su
     cd ${INSTALLDIR}/lofar/build/gnu_opt && make install && \
     bash -c "strip ${INSTALLDIR}/lofar/{bin,sbin,lib64}/* || true" && \
     bash -c "rm -rf ${INSTALLDIR}/lofar/{build,src}" && \
-    sudo apt-get purge -y subversion cmake g++ libboost-dev && \
-    sudo apt-get autoremove -y
+    apt-get purge -y subversion cmake g++ libboost-dev && \
+    apt-get autoremove -y
 
 #
 #**************************
@@ -191,29 +176,23 @@ RUN sudo apt-get update && sudo apt-get upgrade -y && sudo apt-get install -y su
 #**************************
 #
 
-RUN sudo apt-get update -y && \
-    sudo apt-get upgrade -y && \
-    sudo apt-get install -y python-numpy python-matplotlib python-scipy python-setuptools \
+RUN apt-get update -y && \
+    apt-get install -y python-numpy python-matplotlib python-scipy python-setuptools \
                           wget git  python-nose python-coverage \
                           python-astropy
 
 RUN A=$D; git clone https://github.com/brentjens/pyautoplot.git ${INSTALLDIR}/pyautoplot && \
     cd ${INSTALLDIR}/pyautoplot && \
-    sudo python setup.py install
+    python setup.py install
     
 
 
 
-
-#
-# config
-#
-COPY bashrc /home/${USER}/.bashrc
-
 #
 # entry
 #
-COPY chuser.sh /usr/local/bin/chuser.sh
-WORKDIR /home/${USER}
-ENTRYPOINT ["sudo","-E","/usr/local/bin/chuser.sh"]
+COPY ["bashrc",    "${INSTALLDIR}/"]
+COPY ["bashrc.d",  "${INSTALLDIR}/bashrc.d/"]
+COPY ["chuser.sh", "/usr/local/bin"]
+ENTRYPOINT ["/usr/local/bin/chuser.sh"]
 
