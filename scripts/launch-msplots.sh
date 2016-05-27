@@ -118,7 +118,7 @@ function exit_timeout() {
         report_global_status ${sas_id}
         done
     for sas_id in $GLOBAL_ARGS; do
-        ssh -n -t -x kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
+        ssh -n -tt -x kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
     done
     create_html_fn
     DATE_DONE=`date`
@@ -129,10 +129,10 @@ function exit_timeout() {
 
 function sigterm_handler() {
     for sas_id in $GLOBAL_ARGS; do
-        ssh lofarsys@lhn001.cep2.lofar "bash -ilc \"use Lofar; use Pyautoplot; report_global_status ${sas_id}\""
+        ssh -n -tt -x lofarsys@lhn001.cep2.lofar "bash -ilc \"use Lofar; use Pyautoplot; report_global_status ${sas_id}\""
         done
     for sas_id in $GLOBAL_ARGS; do
-        ssh -n -t -x kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
+        ssh -n -tt -x kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
     done
     create_html_remotely_fn lofarsys@lhn001.cep2.lofar
     DATE_DONE=`date`
@@ -179,7 +179,7 @@ case `hostname_fqdn` in
         done
 
         for sas_id in $@; do
-            ssh -n -t -x kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
+            ssh -n -tt -x kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
         done
     
         create_html_fn
@@ -195,7 +195,7 @@ case `hostname_fqdn` in
         ssh lofarsys@lhn001.cep2.lofar "echo \"On machine $HOSTNAME\" | tee -a $LOG"
         
         for sas_id in $@; do
-            ssh -A lofarsys@lhn001.cep2.lofar "mkdir -v $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id 2>&1 | tee -a $LOG"
+            ssh lofarsys@lhn001.cep2.lofar "mkdir -v $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id 2>&1 | tee -a $LOG"
         done
         sleep 45 # to make sure writing of metadata in MSses has a reasonable chance to finish before plots are created.
 
@@ -219,11 +219,11 @@ case `hostname_fqdn` in
         done
         wait $SSH_PIDS
         for sas_id in $@; do
-            ssh lofarsys@lhn001.cep2.lofar "bash -ilc \"use Lofar; use Pyautoplot; report_global_status ${sas_id}\""
+            ssh -n -tt -x lofarsys@lhn001.cep2.lofar "bash -ilc \"use Lofar; use Pyautoplot; report_global_status ${sas_id}\""
         done
 
         for sas_id in $@; do
-            ssh -n -t -x kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
+            ssh -n -tt -x kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
         done
     
         create_html_remotely_fn lofarsys@lhn001.cep2.lofar
