@@ -213,7 +213,7 @@ case `hostname_fqdn` in
                         -v $HOME/.ssh:$HOME/.ssh:ro \
                         --net=host \
                         pyautoplot:latest \
-                        "'/bin/bash -c \"msplots --prefix=/dev/shm/ --output=$sas_id --memory=1.0 $product ; rsync -a /dev/shm/$sas_id/ lofarsys@lhn001.cep2.lofar:$INSPECT_ROOT/$sas_id/\"'" &
+                        '/bin/bash -c \"msplots --prefix=/dev/shm/ --output=$sas_id --memory=1.0 $product ; rsync -a /dev/shm/$sas_id/ lofarsys@lhn001.cep2.lofar:$INSPECT_ROOT/$sas_id/\"' &
                 SSH_PIDS="$SSH_PIDS $!"
             done
         done
