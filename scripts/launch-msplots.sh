@@ -118,7 +118,7 @@ function exit_timeout() {
         report_global_status ${sas_id}
         done
     for sas_id in $GLOBAL_ARGS; do
-        ssh -n -tt -x kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
+        ssh -n -x lofarsys@kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
     done
     create_html_fn
     DATE_DONE=`date`
@@ -132,7 +132,7 @@ function sigterm_handler() {
         ssh -n -tt -x lofarsys@lhn001.cep2.lofar "bash -ilc \"use Lofar; use Pyautoplot; report_global_status ${sas_id}\""
         done
     for sas_id in $GLOBAL_ARGS; do
-        ssh -n -tt -x kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
+        ssh -n -x lofarsys@kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
     done
     create_html_remotely_fn lofarsys@lhn001.cep2.lofar
     DATE_DONE=`date`
@@ -179,7 +179,7 @@ case `hostname_fqdn` in
         done
 
         for sas_id in $@; do
-            ssh -n -tt -x kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
+            ssh -n -x lofarsys@kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
         done
     
         create_html_fn
@@ -223,7 +223,7 @@ case `hostname_fqdn` in
         done
 
         for sas_id in $@; do
-            ssh -n -tt -x lofarsys@kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
+            ssh -n -x lofarsys@kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
         done
     
         create_html_remotely_fn lofarsys@lhn001.cep2.lofar
