@@ -216,11 +216,20 @@ case `hostname_fqdn` in
                         '/bin/bash -c \\"msplots --prefix=/dev/shm/ --output='$sas_id' --memory=1.0 '$product' ; rsync -a /dev/shm/'$sas_id'/ lofarsys@lhn001.cep2.lofar:'$INSPECT_ROOT'/'$sas_id'/\\"' &
                 SSH_PIDS="$SSH_PIDS $!"
             done
+            ssh -n -tt -x lofarsys@localhost \
+                srun --exclusive --ntasks=1 --cpus-per-task=1 \
+                --jobid=$SLURM_JOB_ID \
+                --job-name=report_global_status_${sas_id} \
+                docker run --rm -u `id -u` -e USER=$USER -e HOME=$HOME \
+                -v /data:/data \
+                -v $HOME/.ssh:$HOME/.ssh:ro \
+                --net=host \
+                pyautoplot:latest \
+                '/bin/bash -c \\"report_global_status '$sas_id'; rsync -a /dev/shm/'$sas_id'/ lofarsys@lhn001.cep2.lofar:'$INSPECT_ROOT'/'$sas_id'/\\"' &
+                SSH_PIDS="$SSH_PIDS $!"
+            
         done
         wait $SSH_PIDS
-        for sas_id in $@; do
-            ssh -n -tt -x lofarsys@lhn001.cep2.lofar "bash -ilc \"use Lofar; use Pyautoplot; report_global_status ${sas_id}\""
-        done
 
         for sas_id in $@; do
             ssh -n -x lofarsys@kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
