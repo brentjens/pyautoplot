@@ -117,18 +117,19 @@ RUN apt-get update && apt-get install -y git make g++ python3-setuptools libboos
 
 # Run-time dependencies
 # QPID daemon legacy store would require: libaio1 libdb5.1++
-RUN apt-get update && apt-get install -y sasl2-bin libuuid1 libnss3 libnspr4 xqilla libboost-program-options${BOOST_VERSION}.0 libboost-filesystem${BOOST_VERSION}.0
+##RUN apt-get update && apt-get install -y sasl2-bin libuuid1 libnss3 libnspr4 xqilla libboost-program-options${BOOST_VERSION}.0 libboost-filesystem${BOOST_VERSION}.0
 
 # Install
 # QPID daemon legacy store would require: libaio-dev libdb5.1++-dev
-RUN apt-get update && apt-get install -y subversion swig ruby ruby-dev python-dev libsasl2-dev pkg-config cmake libtool uuid-dev libxerces-c-dev libnss3-dev libnspr4-dev help2man fakeroot build-essential debhelper libsslcommon2-dev libxqilla-dev python-setuptools libboost-program-options${BOOST_VERSION}-dev libboost-filesystem${BOOST_VERSION}-dev && \
-    mkdir /opt/qpid && \
-    svn --non-interactive -q co https://svn.astron.nl/LOFAR/trunk/LCS/MessageBus/qpid/ /opt/qpid; \
-    /opt/qpid/local/sbin/build_qpid && \
-    bash -c "strip /opt/qpid/{bin,lib}/* || true" && \
-    bash -c "rm -rf ~/sources" && \
-    apt-get purge -y subversion swig ruby ruby-dev python-dev libsasl2-dev pkg-config cmake libtool uuid-dev libxerces-c-dev libnss3-dev libnspr4-dev help2man fakeroot build-essential debhelper libsslcommon2-dev libxqilla-dev python-setuptools libboost-program-options${BOOST_VERSION}-dev libboost-filesystem${BOOST_VERSION}-dev && \
-    apt-get autoremove -y
+##RUN apt-get update && apt-get install -y subversion swig ruby ruby-dev python-dev libsasl2-dev pkg-config cmake libtool uuid-dev libxerces-c-dev libnss3-dev libnspr4-dev help2man fakeroot build-essential debhelper libsslcommon2-dev libxqilla-dev python-setuptools libboost-program-options${BOOST_VERSION}-dev libboost-filesystem${BOOST_VERSION}-dev && \
+##    mkdir /opt/qpid && \
+##    svn --non-interactive -q co https://svn.astron.nl/LOFAR/trunk/LCS/MessageBus/qpid/ /opt/qpid; \
+##    /opt/qpid/local/sbin/build_qpid && \
+##    bash -c "strip /opt/qpid/{bin,lib}/* || true" && \
+##    bash -c "rm -rf ~/sources" && \
+##    apt-get purge -y subversion swig ruby ruby-dev python-dev libsasl2-dev pkg-config cmake libtool uuid-dev libxerces-c-dev libnss3-dev libnspr4-dev help2man fakeroot build-essential debhelper libsslcommon2-dev libxqilla-dev python-setuptools libboost-program-options${BOOST_VERSION}-dev libboost-filesystem${BOOST_VERSION}-dev && \
+##    apt-get autoremove -y
+
 #
 # *******************
 #   DAL
@@ -181,10 +182,9 @@ RUN apt-get update -y && \
                           wget git  python3-nose python3-coverage \
                           python3-astropy
 
-RUN B=$D; git clone https://github.com/brentjens/pyautoplot.git ${INSTALLDIR}/pyautoplot && \
+RUN A=$B; git clone https://github.com/brentjens/pyautoplot.git ${INSTALLDIR}/pyautoplot && \
     cd ${INSTALLDIR}/pyautoplot && git checkout python3 && \
     python3 setup.py install
-
 
 
 #
