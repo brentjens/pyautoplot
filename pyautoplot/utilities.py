@@ -41,7 +41,7 @@ def map_casa_table(function, casa_table, column_name='DATA', flag_name='FLAG', c
     selection = selection.selectrows(arange(0, nrows, rowincr))
     nrows = selection.nrows()
     lastset = nrows % chunksize
-    complete_chunks = nrows / chunksize
+    complete_chunks = int(nrows / chunksize)
     results = []
     for chunk in range(complete_chunks):
         if max_chunks:
