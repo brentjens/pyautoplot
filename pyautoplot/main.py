@@ -24,6 +24,8 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.backend_bases import FigureCanvasBase
 
+from functools import reduce
+
 try:
     import pyautoplot.ma      as ma
     import pyautoplot.forkmap as forkmap
