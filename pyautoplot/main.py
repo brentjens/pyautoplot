@@ -25,6 +25,8 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg
 from matplotlib.backend_bases import FigureCanvasBase
 
 import numpy.ma as ma
+from functools import reduce
+
 try:
     import pyautoplot.forkmap as forkmap
     import pyautoplot.uvplane as uvplane
@@ -271,7 +273,7 @@ class MeasurementSetSummary:
         if nrow is not None:
             nrows = min(nrow, nrows)
         lastset = nrows % chunksize
-        complete_chunks = nrows / chunksize
+        complete_chunks = nrows // chunksize
         results = []
         for chunk in range(complete_chunks):
             print('%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows))
@@ -293,7 +295,7 @@ class MeasurementSetSummary:
         selection = selection.selectrows(arange(0,nrows, rowincr))
         nrows = selection.nrows()
         lastset = nrows % chunksize
-        complete_chunks = nrows / chunksize
+        complete_chunks = nrows // chunksize
         results = []
         for chunk in range(complete_chunks):
             print('%d -- %d / %d' % (chunk*chunksize+1, (chunk+1)*chunksize, nrows))
@@ -382,7 +384,7 @@ def delay_fringe_rate(tf_plane,padding=1):
         ValueError('*tf_plane* contains NaN values. Please sanitize it before plotting using, e.g. tf_plane[isnan(tf_plane)] == 0.0, or pyautoplot.utilities.set_nan_zero(tf_plane)')
     nt,nf = tf_plane.shape
     padded_plane=zeros((nt,padding*nf),dtype=complex64)
-    padded_plane[:,(padding/2):(padding/2+nf)] = tf_plane.data*logical_not(tf_plane.mask)
+    padded_plane[:,(padding//2):(padding//2+nf)] = tf_plane.data*logical_not(tf_plane.mask)
     return fftshift(ifft2(padded_plane))
 
 
@@ -458,9 +460,9 @@ def plot_baseline(ms_summary, baseline, plot_flags=True, padding=1, amax_factor=
             ylabel('')
             pass
         duration=ny*ms_summary.integration_times[0]
-        imshow(abs(d)[ny/2-height/2:ny/2+height/2,nx/2-width/2:nx/2+width/2],
+        imshow(abs(d)[ny//2-height//2:ny//2+height//2,nx//2-width//2:nx//2+width//2],
                interpolation='nearest',
-               extent=(-(width/2) -0.5, -(width/2) + width-0.5, (-(height/2) -0.5)*1000/duration, (-(height/2) + height-0.5)*1000/duration),
+               extent=(-(width//2) -0.5, -(width//2) + width-0.5, (-(height//2) -0.5)*1000/duration, (-(height//2) + height-0.5)*1000/duration),
                vmin=0.0,vmax=amax,
                aspect='auto',
                origin='lower',
@@ -484,7 +486,7 @@ def fringe_rate_spectra(ms_summary, baseline):
 
 
 def vis_movie(file_prefix, timeseries, titles, maxamps, chunksize=60):
-    full_chunks=len(timeseries[0])/chunksize
+    full_chunks=len(timeseries[0])//chunksize
     rest=len(timeseries[0]) % chunksize
     figure(figsize=(6*len(titles),6),dpi=80)
     
@@ -699,13 +701,13 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30), first_timeslot=0, max_time
         return int((mjd-ms.times[0])/ms.integration_times[0] +0.5)
     num_timeslots = timeslot(ms.times[-1])+1
     integration_time = array(ms.integration_times).mean()
-    num_bl        = num_ant*(num_ant+1)/2
+    num_bl        = num_ant*(num_ant+1)//2
     num_chan      = ms.tables['spectral_windows']['NUM_CHAN'][0]
     bandwidth     = ms.tables['spectral_windows']['TOTAL_BANDWIDTH'][0]
     num_pol       = 4
     bytes_per_vis = 8
     fudge_factor  = 8
-    max_mem_timeslots = max_mem_bytes/(bytes_per_vis*num_pol*num_chan*num_bl*fudge_factor)
+    max_mem_timeslots = max_mem_bytes//(bytes_per_vis*num_pol*num_chan*num_bl*fudge_factor)
     if max_timeslots is None:
         max_ts = max_mem_timeslots
     else:
@@ -713,13 +715,13 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30), first_timeslot=0, max_time
         pass
     
 
-    num_ts = min(max_ts, max(0,num_timeslots-first_timeslot))
+    num_ts = int64(min(max_ts, max(0,num_timeslots-first_timeslot)))
     data_shape  = (num_ant, num_ant, num_pol, num_ts, num_chan)
     data = ma.array(zeros(data_shape, dtype=complex64),
                     mask=zeros(data_shape, dtype=bool))
 
     ms_table = tables.table(ms.msname)
-    nrows = min(ms_table.nrows(), num_bl*num_ts)
+    nrows = int64(min(ms_table.nrows(), num_bl*num_ts))
     rows      = ms_table[0:nrows]
     xx,xy,yx,yy = 0,1,2,3
     printnow('reading data')
@@ -768,8 +770,8 @@ def collect_stats_ms(msname, max_mem_bytes=4*(2**30), first_timeslot=0, max_time
                     max_abs       = abs_delay_rate.max()
                     peak[ant1,ant2,pol] = max_abs
                     rate_idx,delay_idx=where_true(abs_delay_rate == max_abs)
-                    peak_delay[ant1,ant2,pol] = (delay_idx-num_chan/2)/bandwidth
-                    peak_rate[ant1,ant2,pol] = (rate_idx-num_ts/2)/(integration_time*num_ts)
+                    peak_delay[ant1,ant2,pol] = (delay_idx-num_chan//2)/bandwidth
+                    peak_rate[ant1,ant2,pol] = (rate_idx-num_ts//2)/(integration_time*num_ts)
                     pass
                 pass
             gc.collect()
@@ -877,7 +879,7 @@ def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('
     # write_plot('Rate', lambda x:log10(abs(x)), vmin=-4, vmax=0.0, cmap=cmap)
 
     results_name=os.path.join(output_dir,msname.split('/')[-1][:-3]+'-data.pickle')
-    pickle.dump(results, open(results_name, mode='w'), protocol=pickle.HIGHEST_PROTOCOL)
+    pickle.dump(results, open(results_name, mode='wb'), protocol=pickle.HIGHEST_PROTOCOL)
 
     ms = MeasurementSetSummary(msname)
     time_slots, vis_cube = collect_timeseries_ms(ms, num_points=240)
@@ -886,7 +888,7 @@ def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('
                      'RS307HBA', 'RS307LBA', 'RS508LBA', 'RS508HBA']
     plot_stations = list(set(good_stations).intersection(set(ant_names)))
     if len(plot_stations) == 0:
-        plot_stations = unique([ant_names[0], ant_names[len(ant_names)/2], ant_names[-1]])
+        plot_stations = unique([ant_names[0], ant_names[len(ant_names)//2], ant_names[-1]])
     
     for station in plot_stations:
         filename = os.path.join(output_dir,msname.split('/')[-1][:-3]+'-timeseries-'+station.lower()+extension)
