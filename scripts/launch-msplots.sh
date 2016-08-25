@@ -208,7 +208,9 @@ case `hostname_fqdn` in
                 # Submit slurm jobs that start docker containers at cpuxx nodes...
                 ssh -n -tt -x lofarsys@localhost \
                     srun --exclusive --ntasks=1 --cpus-per-task=1 --jobid=$SLURM_JOB_ID --job-name=msplots \
-                        docker run --rm -u `id -u` -e USER=$USER -e HOME=$HOME \
+                    docker-run-slurm.sh --rm -u `id -u` \
+                        -e USER=$USER -e HOME=$HOME \
+                        -e PATH="$PATH:/data/bin/" \
                         -v /data:/data \
                         -v $HOME/.ssh:$HOME/.ssh:ro \
                         --net=host \
@@ -220,7 +222,9 @@ case `hostname_fqdn` in
                 srun --exclusive --ntasks=1 --cpus-per-task=1 \
                 --jobid=$SLURM_JOB_ID \
                 --job-name=report_global_status_${sas_id} \
-                docker run --rm -u `id -u` -e USER=$USER -e HOME=$HOME \
+                docker-run-slurm.sh --rm -u `id -u` \
+                -e USER=$USER -e HOME=$HOME \
+                -e PATH="$PATH:/data/bin/" \
                 -v /data:/data \
                 -v $HOME/.ssh:$HOME/.ssh:ro \
                 --net=host \
