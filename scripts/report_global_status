@@ -56,6 +56,10 @@ case `hostname_fqdn` in
             du -b --apparent-size -sm /data/projects/${project_id}/L${sas_id}/*/* > ${INSPECT_ROOT}/${sas_id}/file-sizes.txt
         fi
         sleep 2
+        if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/f0seqnr-sizes.txt ]] ; then
+            echo "  - determining f0seqnr sizes"
+            du -b --apparent-size /data/projects/${project_id}/L${sas_id}/uv/*/table.f0seqnr > ${INSPECT_ROOT}/${sas_id}/f0seqnr-sizes.txt
+        fi
         if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.loss ]] ; then
             echo "  - determining input losses"
             ssh -A cbm001 "tail -100000 log/rtcp-${sas_id}.log|grep loss|sort -k 8"|grep GPUProc > ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.loss

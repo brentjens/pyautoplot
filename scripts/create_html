@@ -124,10 +124,21 @@ def create_html_main(argv):
             file_sizes_txt = os.path.join(obs_plot_root, 'file-sizes.txt')
             if os.path.exists(file_sizes_txt):
                 file_sizes_dict = parse_file_sizes(file_sizes_txt)
-                file_size_data  = file_size_analysis(parset, file_sizes_dict)
+                file_size_data  = file_size_analysis(parset, file_sizes_dict)                
+            f0seqnr_size_data = None
+            f0seqnr_sizes_txt = os.path.join(obs_plot_root, 'f0seqnr-sizes.txt')
+            if os.path.exists(f0seqnr_sizes_txt):
+                def extract_filename(in_dict):
+                    result = {}
+                    for k,v in in_dict.iteritems():
+                        result[k] = os.path.basename(os.path.dirname(v))
+                
+                f0seqnr_sizes_dict = extract_filename(parse_file_sizes(f0seqnr_sizes_txt))
+                f0seqnr_size_data = f0seqnr_size_analysis(parset, f0seqnr_sizes_dict)
 
             observation_html(parset,
                              file_size_data,
+                             f0seqnr_size_data,
                              obs_plot_root = obs_plot_root,
                              html_root     = options.html_root)
         except IOError:
@@ -415,7 +426,7 @@ def plot_paths_per_sap_subband(plot_file_names):
 
 
 
-def observation_html(parset, file_size_data, obs_plot_root, html_root):
+def observation_html(parset, file_size_data, f0seqnr_size_data, obs_plot_root, html_root):
     r'''
     '''
     logging.info('Creating HTML for observation %s', parset['sas_id'])
@@ -481,8 +492,8 @@ def observation_html(parset, file_size_data, obs_plot_root, html_root):
                 '<h3>Odd size data:</h3><table>'+
                 '<tr>' +
                 '</tr><tr>'.join(
-                    ['<td>%s</td><td>:</td><td>%d MB</td>' %
-                     (name, size)
+                    ['<td>%s</td><td>:</td><td>%d MB</td><td>(</td><td>%0.1f</td><td>)</td>' %
+                     (name, size, f0seqnr_size_data.get(name, -1)))
                      for (name, size) in sorted(
                              file_size_data['odd_sized_data_sets'])]) +
                 '</tr></table>')
@@ -693,7 +704,7 @@ def parset_summary(sas_id, parset_name):
               'band_filter'  : '',
               'subband_list' : [],
               'subband_freqs_hz': [],
-              'subband_width': 0.0,
+              'subband_width': 0.0  ,
               '200_subband_width': 0.0,
               '160_subband_width': 0.0,
               'file_name'    : None,
@@ -705,7 +716,10 @@ def parset_summary(sas_id, parset_name):
               'coherent_stokes_products': [],
               'coherent_stokes_locations': [],
               'incoherent_stokes_products': [],
-              'incoherent_stokes_locations': []
+              'incoherent_stokes_locations': [],
+              'block_size'   : 0,
+              'nr_integrations_per_block' : 0,
+              'nr_blocks_per_integration' : 0
               }
 
 
@@ -780,6 +794,12 @@ def parset_summary(sas_id, parset_name):
                     name.strip().split(':')[0]
                     for name in  value(line).strip('[] ').split(',')
                     if name.strip() != '' and name.strip().split(':')[0] != '']
+            elif 'Cobalt.blockSize' in line:
+                parset['block_size'] = value(line) 
+            elif 'Cobalt.Correlator.nrIntegrationsPerBlock' in line:
+                parset['nr_integrations_per_block'] = value(line)
+            elif 'Cobalt.Correlator.nrBlocksPerIntegration' in line:
+                parset['nr_blocks_per_integration'] = value(line)                  
             else:
                 pass
     if parset['clock_mhz'] == 160:
@@ -794,14 +814,27 @@ def parset_summary(sas_id, parset_name):
         parset['subband_width']*1000.0,
         parset['band_filter'],
         parset['subband_list'])
+
+    # Determine number of integration periods (for later use in output loss figure calculation)
+    start_time =                    datetime.strptime(parset['start_time'], ('%Y-%m-%d %H:%M:%S.%f' if '.' in parset['start_time'] else '%Y-%m-%d %H:%M:%S'))
+    stop_time =                     datetime.strptime(parset['stop_time'], ('%Y-%m-%d %H:%M:%S.%f' if '.' in parset['stop_time'] else '%Y-%m-%d %H:%M:%S'))
+    duration =                      abs(datetime.timedelta(stop_time, start_time))
+    subband_bandwidth_hz =          (1e6 * parset['clock_mhz'] / 1024)
+    block_size =                    parset['block_size']
+    nr_integrations_per_block =     parset['nr_integrations_per_block']
+    nr_blocks_per_integration =     parset['nr_blocks_per_integration']
+    
+    parset['nr_integration_periods'] = floor(duration * subband_bandwidth_hz/block_size) * nr_integrations_per_block / nr_blocks_per_integration
+    
     return parset
 
 
 
 def parse_file_sizes(file_name):
     r'''
-    Parse the file-sizes.txt file normally residing at
-    /globaldata/inspect/<sas_id>/file-sizes.txt.
+    Parse the file-sizes.txt or f0seqnr-sizes.txt file normally residing at
+    /globaldata/inspect/<sas_id>/file-sizes.txt
+    /globaldata/inspect/<sas_id>/f0seqnr-sizes.txt
 
     **Parameters**
 
@@ -839,16 +872,14 @@ def parse_file_sizes(file_name):
         if len(line) == 3 and 'locus' in line[1]:
             locus_node = line[1]
         elif len(line) == 2:
-            data_size_mb = int(line[0])
+            data_size = int(line[0])
             full_path    = line[1]
             file_name    = os.path.basename(full_path)
-            results[file_name] = (locus_node, full_path, data_size_mb)
+            results[file_name] = (locus_node, full_path, data_size)
         else:
             logging.warning('parse_file_sizes(): incomprehensible line %r',
                             line)
     return results
-
-
 
 
 
@@ -914,6 +945,21 @@ def file_size_analysis(parset, file_sizes_dict):
             'odd_sized_data_sets': odd_sized_data_sets,
             'percentage_complete': percentage_complete}
 
+
+
+
+def f0seqnr_size_analysis(parset, f0seqnr_sizes_dict):
+    r'''
+    Analyze the f0seqnr integration periods (actual size) agains the number of integration periods (expected size) as 
+    listed in the parset.
+    '''
+    
+    results = {}
+    for data_product_folder, nr_integration_periods_in_file in f0seqnr_sizes_dict.iteritems():
+        # Calculate completeness
+        result[data_product_folder] = 100*nr_integration_periods_in_file / parset['nr_integration_periods']
+        
+    return result
 
 
 
@@ -988,16 +1034,23 @@ def station_beamlet_statistics_plots_html(parset, rel_plot_files):
         'overview_rows': '\n'.join(overview_rows)}
 
 
-def observation_table_row(parset, file_sizes_dict, html_root,
+def observation_table_row(parset, file_sizes_dict, f0seqnr_sizes_dict, html_root,
                           ascii_table=False):
     r'''
     '''
     percentage_complete = -1
     if file_sizes_dict is not None:
         percentage_complete = file_sizes_dict['percentage_complete']
+    
+    # Newly proposed (and more correct) way of calculating output loss figure
+    percentage_complete_2016 = -1
+    if f0seqnr_sizes_dict is not None:
+        percentage_complete_2016 = sum(f0seqnr_sizes_dict.values()) / len(f0seqnr_sizes_dict)
+        
     format_dict = parset.copy()
     format_dict['nr_subbands']         = len(parset['subband_list'])
     format_dict['percentage_complete'] = int(floor(percentage_complete))
+    format_dict['percentage_complete_2016'] = int(floor(percentage_complete_2016))
 
     if os.path.exists(html_root+'/'+parset['sas_id']+'/Stations/station_beamlets.html'):
         format_dict['station_beamlet_link'] = '<a href="'+parset['sas_id']+'/Stations/station_beamlets.html">BST</a>'
@@ -1012,6 +1065,7 @@ def observation_table_row(parset, file_sizes_dict, html_root,
         <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(station_beamlet_link)s&nbsp;&nbsp;&nbsp;</td>
         <td align="right"><a href="%(sas_id)s/index.html">%(percentage_complete)d%%</a></td>
+        <td align="right"><a href="%(sas_id)s/index.html">%(percentage_complete_2016)d%%</a></td>
         <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(clock_mhz)d&nbsp;&nbsp;&nbsp;</td>     <td>%(nr_subbands)s&nbsp;&nbsp;&nbsp;</td>
@@ -1032,7 +1086,7 @@ def observation_table_row(parset, file_sizes_dict, html_root,
 ''' % format_dict
 
     if ascii_table:
-        html = '''%(sas_prefix)s%(sas_id)s  %(campaign_name)8s  %(target)19s   %(percentage_complete)d%% %(antenna_set)16s  %(band_filter)11s  %(start_time)s -- %(stop_time)s''' % format_dict
+        html = '''%(sas_prefix)s%(sas_id)s  %(campaign_name)8s  %(target)19s   %(percentage_complete)d%% %(percentage_complete_2016)d%% %(antenna_set)16s  %(band_filter)11s  %(start_time)s -- %(stop_time)s''' % format_dict
 
     return html
 
@@ -1071,7 +1125,8 @@ def main_index_html(plot_root, html_root):
     parsets = sorted(unsorted_parsets,
                      key     = lambda parset: parset['start_time'],
                      reverse = True)
-    file_sizes = []
+    file_sizes_array = []
+    f0seqnr_sizes_array = []
     for parset in parsets:
         obs_plot_root = os.path.join(plot_root, parset['sas_id'])
         if parset['file_name']:
@@ -1098,13 +1153,24 @@ def main_index_html(plot_root, html_root):
         if os.path.exists(file_sizes_txt):
             file_sizes_dict = parse_file_sizes(file_sizes_txt)
             file_size_data  = file_size_analysis(parset, file_sizes_dict)
-        file_sizes.append(file_size_data)
-
+        file_sizes_array.append(file_size_data)
+        
+        f0seqnr_size_data = None
+        f0seqnr_sizes_txt = os.path.join(obs_plot_root, 'f0seqnr-sizes.txt')
+        if os.path.exists(f0seqnr_sizes_txt):
+            def extract_filename(in_dict):
+                result = {}
+                for k,v in in_dict.iteritems():
+                    result[k] = os.path.basename(os.path.dirname(v))
+            
+            f0seqnr_sizes_dict = extract_filename(parse_file_sizes(f0seqnr_sizes_txt))
+            f0seqnr_size_data = f0seqnr_size_analysis(parset, f0seqnr_sizes_dict)
+        f0seqnr_sizes_array.append(f0seqnr_size_data)
 
     open(index_txt_name, 'w').write('\n'.join(
             [observation_table_row(parset, file_size,
                                    html_root, ascii_table=True)
-             for parset, file_size in zip(parsets, file_sizes)
+             for parset, file_size in zip(parsets, file_sizes_array)
              if parset['start_time'].strip() != '']))
 
     open(index_name, 'w').write('''
@@ -1117,7 +1183,7 @@ def main_index_html(plot_root, html_root):
         <h1>LOFAR inspection plots</h1>
         <p><i>Last modified: %s UTC</i>&nbsp;&nbsp;<a href="%s">Full list</a>&nbsp;&nbsp;<a href="%s">Ascii table</a></p>
         <table>
-        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>DynSpec</th> <th>Compl</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subb</th> <th>Parset</th></tr>
+        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>DynSpec</th> <th>Compl</th> <th>Compl2016</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subb</th> <th>Parset</th></tr>
         %s
         </table>
     </body>
@@ -1125,8 +1191,8 @@ def main_index_html(plot_root, html_root):
 ''' % ( time.asctime(time.gmtime()),
         os.path.basename(long_index_name),
         os.path.basename(index_txt_name),
-        '\n'.join([observation_table_row(parset, file_size, html_root)
-                   for parset, file_size in zip(parsets, file_sizes)
+        '\n'.join([observation_table_row(parset, file_size, f0seqnr_sizes, html_root)
+                   for parset, file_size, f0seqnr_sizes in zip(parsets, file_sizes_array, f0seqnr_sizes_array)
                    if parset['start_time'].strip() != '' and datetime.datetime.strptime(parset['start_time'], '%Y-%m-%d %H:%M:%S') > beginning_of_short_index]
                   )))
 
@@ -1140,15 +1206,15 @@ def main_index_html(plot_root, html_root):
         <h1>LOFAR inspection plots</h1>
         <p><i>Last modified: %s UTC</i>&nbsp;&nbsp;<a href="%s">Short index</a><p>
         <table>
-        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>DynSpec</th> <th>Compl</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subb</th> <th>Parset</th></tr>
+        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>DynSpec</th> <th>Compl</th> <th>Compl2016</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subb</th> <th>Parset</th></tr>
         %s
         </table>
     </body>
 </html>
 ''' % ( time.asctime(time.gmtime()),
         os.path.basename(index_name),
-        '\n'.join([observation_table_row(parset, file_size, html_root)
-                   for parset, file_size in zip(parsets, file_sizes)]
+        '\n'.join([observation_table_row(parset, file_size, f0seqnr_sizes, html_root)
+                   for parset, file_size, f0seqnr_sizes in zip(parsets, file_sizes_array, f0seqnr_sizes_array)]
                   )))
 
 
