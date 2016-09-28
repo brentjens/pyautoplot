@@ -183,7 +183,7 @@ RUN apt-get update -y && \
                           python3-astropy
 
 RUN A=$E; git clone https://github.com/brentjens/pyautoplot.git ${INSTALLDIR}/pyautoplot && \
-    cd ${INSTALLDIR}/pyautoplot && git checkout python3 && \
+    cd ${INSTALLDIR}/pyautoplot && \
     python3 setup.py install
 
 
