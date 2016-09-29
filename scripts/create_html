@@ -127,14 +127,8 @@ def create_html_main(argv):
                 file_size_data  = file_size_analysis(parset, file_sizes_dict)                
             f0seqnr_size_data = None
             f0seqnr_sizes_txt = os.path.join(obs_plot_root, 'f0seqnr-sizes.txt')
-            if os.path.exists(f0seqnr_sizes_txt):
-                def extract_filename(in_dict):
-                    result = {}
-                    for k,v in in_dict.items():
-                        result[k] = os.path.basename(os.path.dirname(v))
-                    return result
-                
-                f0seqnr_sizes_dict = extract_filename(parse_file_sizes(f0seqnr_sizes_txt))
+            if os.path.exists(f0seqnr_sizes_txt):                
+                f0seqnr_sizes_dict = parse_file_sizes(f0seqnr_sizes_txt, os.path.dirname)
                 f0seqnr_size_data = f0seqnr_size_analysis(parset, f0seqnr_sizes_dict)
 
             observation_html(parset,
