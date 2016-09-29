@@ -83,7 +83,7 @@ function create_html_remotely_fn() {
     ssh $REMOTE_HOST "echo \"Creating HTML using $CREATE_HTML\" | tee -a $LOG"
     ssh $REMOTE_HOST "echo \"$command\"| tee -a $LOG"
     # Submit slurm jobs that start docker containers at cpuxx nodes...
-    ssh -n -tt -x lofarsys@head01.cep4 \
+    ssh -n -tt -x lofarsys@head01.control.cep4 \
         docker-run-slurm.sh --rm -u `id -u` \
         -e USER=$USER -e HOME=$HOME \
         -v /data:/data \
@@ -133,14 +133,14 @@ function exit_timeout() {
 
 function sigterm_handler() {
     for sas_id in $GLOBAL_ARGS; do
-        ssh -n -tt -x lofarsys@head01.cep4.lofar "bash -ilc \"use Lofar; use Pyautoplot; report_global_status ${sas_id}\""
+        ssh -n -tt -x lofarsys@head01.control.cep4.lofar "bash -ilc \"use Lofar; use Pyautoplot; report_global_status ${sas_id}\""
         done
     for sas_id in $GLOBAL_ARGS; do
         ssh -n -x lofarsys@kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
     done
-    create_html_remotely_fn lofarsys@head01.cep4.lofar
+    create_html_remotely_fn lofarsys@head01.control.cep4.lofar
     DATE_DONE=`date`
-    ssh lofarsys@head01.cep4.lofar "echo \"Done at $DATE_DONE\" | tee -a $LOG"
+    ssh lofarsys@head01.control.cep4.lofar "echo \"Done at $DATE_DONE\" | tee -a $LOG"
     exit
 }
 
@@ -192,14 +192,14 @@ case `hostname_fqdn` in
 
     *cep4*)
         DATE=`date`
-        ssh lofarsys@head01.cep4.lofar "echo \"\" | tee -a $LOG"
-        ssh lofarsys@head01.cep4.lofar "echo \"=======================\" | tee -a $LOG"
-        ssh lofarsys@head01.cep4.lofar "echo \"Date: $DATE\"|tee -a $LOG"
-        ssh lofarsys@head01.cep4.lofar "echo \"$0 $@\" | tee -a $LOG"
-        ssh lofarsys@head01.cep4.lofar "echo \"On machine $HOSTNAME\" | tee -a $LOG"
+        ssh lofarsys@head01.control.cep4.lofar "echo \"\" | tee -a $LOG"
+        ssh lofarsys@head01.control.cep4.lofar "echo \"=======================\" | tee -a $LOG"
+        ssh lofarsys@head01.control.cep4.lofar "echo \"Date: $DATE\"|tee -a $LOG"
+        ssh lofarsys@head01.control.cep4.lofar "echo \"$0 $@\" | tee -a $LOG"
+        ssh lofarsys@head01.control.cep4.lofar "echo \"On machine $HOSTNAME\" | tee -a $LOG"
         
         for sas_id in $@; do
-            ssh lofarsys@head01.cep4.lofar "mkdir -v $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id 2>&1 | tee -a $LOG"
+            ssh lofarsys@head01.control.cep4.lofar "mkdir -v $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id 2>&1 | tee -a $LOG"
         done
         sleep 45 # to make sure writing of metadata in MSses has a reasonable chance to finish before plots are created.
 
@@ -218,7 +218,7 @@ case `hostname_fqdn` in
                         -v $HOME/.ssh:$HOME/.ssh:ro \
                         --net=host \
                         pyautoplot:latest \
-                        '/bin/bash -c \\"msplots --prefix=/dev/shm/ --output='$sas_id' --memory=1.0 '$product' ; rsync -a /dev/shm/'$sas_id'/ lofarsys@head01.cep4.lofar:'$INSPECT_ROOT'/'$sas_id'/\\"' &
+                        '/bin/bash -c \\"msplots --prefix=/dev/shm/ --output='$sas_id' --memory=1.0 '$product' ; rsync -a /dev/shm/'$sas_id'/ lofarsys@head01.control.cep4.lofar:'$INSPECT_ROOT'/'$sas_id'/\\"' &
                 SSH_PIDS="$SSH_PIDS $!"
             done
             ssh -n -tt -x lofarsys@localhost \
@@ -231,7 +231,7 @@ case `hostname_fqdn` in
                 -v $HOME/.ssh:$HOME/.ssh:ro \
                 --net=host \
                 pyautoplot:latest \
-                '/bin/bash -c \\"report_global_status '$sas_id'; rsync -a /dev/shm/'$sas_id'/ lofarsys@head01.cep4.lofar:'$INSPECT_ROOT'/'$sas_id'/\\"' &
+                '/bin/bash -c \\"report_global_status '$sas_id'; rsync -a /dev/shm/'$sas_id'/ lofarsys@head01.control.cep4.lofar:'$INSPECT_ROOT'/'$sas_id'/\\"' &
                 SSH_PIDS="$SSH_PIDS $!"
             
         done
@@ -241,7 +241,7 @@ case `hostname_fqdn` in
             ssh -n -x lofarsys@kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
         done
     
-        create_html_remotely_fn lofarsys@head01.cep4.lofar
+        create_html_remotely_fn lofarsys@head01.control.cep4.lofar
         ;;
 
     
