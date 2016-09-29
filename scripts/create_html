@@ -861,6 +861,7 @@ def parse_file_sizes(file_name):
     lines = [line.strip().split() for line in open(file_name).readlines()
              if ('No such file or directory' not in line and
                  '************'  not in line and
+                 'ssh_exchange_identification' not in line and
                  'Timeout, server not' not in line and
                  'connect to host' not in line and
                  'request failed' not in line and
