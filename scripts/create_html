@@ -780,7 +780,7 @@ def parset_summary(sas_id, parset_name):
                     name.strip()
                     for name in  value(line).strip('[] ').split(',')
                     if name.strip() != '']
-            elif 'Observation.DataProducts.Output_IncoherentStokes.locations' in line:
+            elif 'Observation.DataProducts.Output_IncoherentStokes.locations' in line:  
                 parset['beamformer_locations'] += [
                     name.strip().split(':')[0]
                     for name in  value(line).strip('[] ').split(',')
@@ -807,7 +807,7 @@ def parset_summary(sas_id, parset_name):
         # Determine number of integration periods (for later use in output loss figure calculation)
         start_time =                    datetime.datetime.strptime(parset['start_time'], ('%Y-%m-%d %H:%M:%S.%f' if '.' in parset['start_time'] else '%Y-%m-%d %H:%M:%S'))
         stop_time =                     datetime.datetime.strptime(parset['stop_time'], ('%Y-%m-%d %H:%M:%S.%f' if '.' in parset['stop_time'] else '%Y-%m-%d %H:%M:%S'))
-        duration =                      abs(datetime.timedelta(stop_time, start_time))
+        duration =                      abs(datetime.datetime.timedelta(stop_time, start_time))
         subband_bandwidth_hz =          (1e6 * parset['clock_mhz'] / 1024)
         block_size =                    parset['block_size']
         nr_integrations_per_block =     parset['nr_integrations_per_block']
