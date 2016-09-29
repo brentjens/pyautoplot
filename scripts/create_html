@@ -132,6 +132,7 @@ def create_html_main(argv):
                     result = {}
                     for k,v in in_dict.items():
                         result[k] = os.path.basename(os.path.dirname(v))
+                    return result
                 
                 f0seqnr_sizes_dict = extract_filename(parse_file_sizes(f0seqnr_sizes_txt))
                 f0seqnr_size_data = f0seqnr_size_analysis(parset, f0seqnr_sizes_dict)
@@ -832,7 +833,7 @@ def parset_summary(sas_id, parset_name):
 
 
 
-def parse_file_sizes(file_name):
+def parse_file_sizes(file_name, path_mod_func=lambda x: x):
     r'''
     Parse the file-sizes.txt or f0seqnr-sizes.txt file normally residing at
     /globaldata/inspect/<sas_id>/file-sizes.txt
@@ -876,7 +877,7 @@ def parse_file_sizes(file_name):
             locus_node = line[1]
         elif len(line) == 2:
             data_size = int(line[0])
-            full_path    = line[1]
+            full_path    = path_mod_func(line[1])
             file_name    = os.path.basename(full_path)
             results[file_name] = (locus_node, full_path, data_size)
         else:
@@ -1161,12 +1162,7 @@ def main_index_html(plot_root, html_root):
         f0seqnr_size_data = None
         f0seqnr_sizes_txt = os.path.join(obs_plot_root, 'f0seqnr-sizes.txt')
         if os.path.exists(f0seqnr_sizes_txt):
-            def extract_filename(in_dict):
-                result = {}
-                for k,v in in_dict.items():
-                    result[k] = os.path.basename(os.path.dirname(v))
-            
-            f0seqnr_sizes_dict = extract_filename(parse_file_sizes(f0seqnr_sizes_txt))
+            f0seqnr_sizes_dict = parse_file_sizes(f0seqnr_sizes_txt, os.path.dirname)
             f0seqnr_size_data = f0seqnr_size_analysis(parset, f0seqnr_sizes_dict)
         f0seqnr_sizes_array.append(f0seqnr_size_data)
 
