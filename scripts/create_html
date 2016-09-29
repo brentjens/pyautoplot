@@ -130,7 +130,7 @@ def create_html_main(argv):
             if os.path.exists(f0seqnr_sizes_txt):
                 def extract_filename(in_dict):
                     result = {}
-                    for k,v in in_dict.iteritems():
+                    for k,v in in_dict.items():
                         result[k] = os.path.basename(os.path.dirname(v))
                 
                 f0seqnr_sizes_dict = extract_filename(parse_file_sizes(f0seqnr_sizes_txt))
@@ -891,10 +891,10 @@ def file_size_analysis(parset, file_sizes_dict):
     Analyze the file sizes agains the expected files as listed in the parset.
     '''
     ms_sizes  = array([value[2]
-                       for keyword, value in file_sizes_dict.iteritems()
+                       for keyword, value in file_sizes_dict.items()
                        if '.MS'  in keyword])
     raw_sizes = array([value[2]
-                       for keyword, value in file_sizes_dict.iteritems()
+                       for keyword, value in file_sizes_dict.items()
                        if '.raw' in keyword])
 
     max_ms_size_mb = 0
@@ -958,7 +958,7 @@ def f0seqnr_size_analysis(parset, f0seqnr_sizes_dict):
     '''
     
     results = {}
-    for data_product_folder, nr_integration_periods_in_file in f0seqnr_sizes_dict.iteritems():
+    for data_product_folder, nr_integration_periods_in_file in f0seqnr_sizes_dict.items():
         # Calculate completeness
         result[data_product_folder] = 100*nr_integration_periods_in_file / parset['nr_integration_periods']
         
@@ -1163,7 +1163,7 @@ def main_index_html(plot_root, html_root):
         if os.path.exists(f0seqnr_sizes_txt):
             def extract_filename(in_dict):
                 result = {}
-                for k,v in in_dict.iteritems():
+                for k,v in in_dict.items():
                     result[k] = os.path.basename(os.path.dirname(v))
             
             f0seqnr_sizes_dict = extract_filename(parse_file_sizes(f0seqnr_sizes_txt))
