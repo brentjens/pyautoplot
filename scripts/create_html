@@ -807,13 +807,13 @@ def parset_summary(sas_id, parset_name):
         # Determine number of integration periods (for later use in output loss figure calculation)
         start_time =                    datetime.datetime.strptime(parset['start_time'], ('%Y-%m-%d %H:%M:%S.%f' if '.' in parset['start_time'] else '%Y-%m-%d %H:%M:%S'))
         stop_time =                     datetime.datetime.strptime(parset['stop_time'], ('%Y-%m-%d %H:%M:%S.%f' if '.' in parset['stop_time'] else '%Y-%m-%d %H:%M:%S'))
-        duration =                      abs(datetime.datetime.timedelta(stop_time, start_time))
+        duration_seconds =              (stop_time, start_time).total_seconds()
         subband_bandwidth_hz =          (1e6 * parset['clock_mhz'] / 1024)
         block_size =                    parset['block_size']
         nr_integrations_per_block =     parset['nr_integrations_per_block']
         nr_blocks_per_integration =     parset['nr_blocks_per_integration']
         
-        parset['nr_integration_periods'] = floor(duration * subband_bandwidth_hz/block_size) * nr_integrations_per_block / nr_blocks_per_integration
+        parset['nr_integration_periods'] = floor(duration_seconds * subband_bandwidth_hz/block_size) * nr_integrations_per_block / nr_blocks_per_integration
                 
     if parset['clock_mhz'] == 160:
         parset['subband_width'] = parset['160_subband_width']
@@ -1045,14 +1045,14 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_sizes_dict, html_root
         percentage_complete = file_sizes_dict['percentage_complete']
     
     # Newly proposed (and more correct) way of calculating output loss figure
-    percentage_complete_2016 = -1
+    percentage_complete_f0seqnr = -1
     if f0seqnr_sizes_dict is not None:
-        percentage_complete_2016 = sum(f0seqnr_sizes_dict.values()) / len(f0seqnr_sizes_dict)
+        percentage_complete_f0seqnr = floor(sum(f0seqnr_sizes_dict.values()) / len(f0seqnr_sizes_dict))
         
     format_dict = parset.copy()
     format_dict['nr_subbands']         = len(parset['subband_list'])
     format_dict['percentage_complete'] = int(floor(percentage_complete))
-    format_dict['percentage_complete_2016'] = int(floor(percentage_complete_2016))
+    format_dict['percentage_complete_f0seqnr'] = int(floor(percentage_complete_f0seqnr))
 
     if os.path.exists(html_root+'/'+parset['sas_id']+'/Stations/station_beamlets.html'):
         format_dict['station_beamlet_link'] = '<a href="'+parset['sas_id']+'/Stations/station_beamlets.html">BST</a>'
@@ -1067,7 +1067,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_sizes_dict, html_root
         <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(station_beamlet_link)s&nbsp;&nbsp;&nbsp;</td>
         <td align="right"><a href="%(sas_id)s/index.html">%(percentage_complete)d%%</a></td>
-        <td align="right"><a href="%(sas_id)s/index.html">%(percentage_complete_2016)d%%</a></td>
+        <td align="right"><a href="%(sas_id)s/index.html">%(percentage_complete_f0seqnr)d%%</a></td>
         <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(clock_mhz)d&nbsp;&nbsp;&nbsp;</td>     <td>%(nr_subbands)s&nbsp;&nbsp;&nbsp;</td>
@@ -1088,7 +1088,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_sizes_dict, html_root
 ''' % format_dict
 
     if ascii_table:
-        html = '''%(sas_prefix)s%(sas_id)s  %(campaign_name)8s  %(target)19s   %(percentage_complete)d%% %(percentage_complete_2016)d%% %(antenna_set)16s  %(band_filter)11s  %(start_time)s -- %(stop_time)s''' % format_dict
+        html = '''%(sas_prefix)s%(sas_id)s  %(campaign_name)8s  %(target)19s   %(percentage_complete)d%% %(percentage_complete_f0seqnr)d%% %(antenna_set)16s  %(band_filter)11s  %(start_time)s -- %(stop_time)s''' % format_dict
 
     return html
 
@@ -1185,7 +1185,7 @@ def main_index_html(plot_root, html_root):
         <h1>LOFAR inspection plots</h1>
         <p><i>Last modified: %s UTC</i>&nbsp;&nbsp;<a href="%s">Full list</a>&nbsp;&nbsp;<a href="%s">Ascii table</a></p>
         <table>
-        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>DynSpec</th> <th>Compl</th> <th>Compl2016</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subb</th> <th>Parset</th></tr>
+        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>DynSpec</th> <th title="Original completeness calculation (based on file sizes)">Compl</th> <th title="Novel completeness calculation (based on f0seqnr sizes)">Compl*</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subb</th> <th>Parset</th></tr>
         %s
         </table>
     </body>
@@ -1208,7 +1208,7 @@ def main_index_html(plot_root, html_root):
         <h1>LOFAR inspection plots</h1>
         <p><i>Last modified: %s UTC</i>&nbsp;&nbsp;<a href="%s">Short index</a><p>
         <table>
-        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>DynSpec</th> <th>Compl</th> <th>Compl2016</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subb</th> <th>Parset</th></tr>
+        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>DynSpec</th> <th title="Original completeness calculation (based on file sizes)">Compl</th> <th title=""Novel completeness calculation (based on f0seqnr sizes)"">Compl*</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subb</th> <th>Parset</th></tr>
         %s
         </table>
     </body>
