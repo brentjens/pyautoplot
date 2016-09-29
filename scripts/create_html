@@ -953,10 +953,9 @@ def f0seqnr_size_analysis(parset, f0seqnr_sizes_dict):
     '''
     
     results = {}
-    for data_product_folder, nr_integration_periods_in_file in f0seqnr_sizes_dict.items():
+    for data_product_folder, (locus_node, full_path, nr_integration_periods_in_file) in f0seqnr_sizes_dict.items():
         # Calculate completeness
         result[data_product_folder] = 100*nr_integration_periods_in_file / parset['nr_integration_periods']
-        
     return result
 
 
