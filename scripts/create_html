@@ -838,7 +838,7 @@ def parset_summary(sas_id, parset_name):
                 pass
                 
         # Determine number of integration periods (for later use in output loss figure calculation)
-        start_time = stop_time = now()
+        start_time = stop_time = datetime.datetime.now()
         try:
             start_time =                datetime.datetime.strptime(parset['start_time'], ('%Y-%m-%d %H:%M:%S.%f' if '.' in parset['start_time'] else '%Y-%m-%d %H:%M:%S'))
         except:
