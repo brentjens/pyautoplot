@@ -669,11 +669,18 @@ def find_parset(in_sas_id):
     '''
     
     # Note: parsets of different types (L, T, rtcp-) are all accepted
-    search_path = [os.path.join('/globalhome', user, subdir,
+   
+    search_path = [os.path.join('/globaldata', 'inspect', str(in_sas_id),
                                 prefix+str(in_sas_id)+'.parset')
                    for prefix in ['L', 'T', 'rtcp-']
-                   for subdir in ['log', str(in_sas_id)]
-                   for user in ['lofarsystem', 'lofartest', 'inspect']]
+    for path in search_path:
+        if os.path.exists(path):
+            return path
+    
+    search_path = [os.path.join('/globalhome', user, 'log',
+                                prefix+str(in_sas_id)+'.parset')
+                   for prefix in ['L', 'T', 'rtcp-']
+                   for user in ['lofarsystem', 'lofartest']]
     for path in search_path:
         if os.path.exists(path):
             return path
