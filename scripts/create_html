@@ -1065,8 +1065,7 @@ def station_beamlet_statistics_plots_html(parset, rel_plot_files):
         'overview_rows': '\n'.join(overview_rows)}
 
 
-def observation_table_row(parset, file_sizes_dict, f0seqnr_sizes_dict, html_root,
-                          ascii_table=False):
+def observation_table_row(parset, file_sizes_dict, f0seqnr_sizes_dict, html_root, ascii_table=False):
     r'''
     '''
     percentage_complete = -1
@@ -1194,9 +1193,8 @@ def main_index_html(plot_root, html_root):
         f0seqnr_sizes_array.append(f0seqnr_size_data)
 
     open(index_txt_name, 'w').write('\n'.join(
-            [observation_table_row(parset, file_size,
-                                   html_root, ascii_table=True)
-             for parset, file_size in zip(parsets, file_sizes_array)
+            [observation_table_row(parset, file_size, f0seqnr_size, html_root, ascii_table=True)
+             for parset, file_size, f0seqnr_size in zip(parsets, file_sizes_array, f0seqnr_sizes_array)
              if parset['start_time'].strip() != '']))
 
     open(index_name, 'w').write('''
@@ -1217,8 +1215,8 @@ def main_index_html(plot_root, html_root):
 ''' % ( time.asctime(time.gmtime()),
         os.path.basename(long_index_name),
         os.path.basename(index_txt_name),
-        '\n'.join([observation_table_row(parset, file_size, f0seqnr_sizes, html_root)
-                   for parset, file_size, f0seqnr_sizes in zip(parsets, file_sizes_array, f0seqnr_sizes_array)
+        '\n'.join([observation_table_row(parset, file_size, f0seqnr_size, html_root)
+                   for parset, file_size, f0seqnr_size in zip(parsets, file_sizes_array, f0seqnr_sizes_array)
                    if parset['start_time'].strip() != '' and datetime.datetime.strptime(parset['start_time'], '%Y-%m-%d %H:%M:%S') > beginning_of_short_index]
                   )))
 
@@ -1239,8 +1237,8 @@ def main_index_html(plot_root, html_root):
 </html>
 ''' % ( time.asctime(time.gmtime()),
         os.path.basename(index_name),
-        '\n'.join([observation_table_row(parset, file_size, f0seqnr_sizes, html_root)
-                   for parset, file_size, f0seqnr_sizes in zip(parsets, file_sizes_array, f0seqnr_sizes_array)]
+        '\n'.join([observation_table_row(parset, file_size, f0seqnr_size, html_root)
+                   for parset, file_size, f0seqnr_size in zip(parsets, file_sizes_array, f0seqnr_sizes_array)]
                   )))
 
 
