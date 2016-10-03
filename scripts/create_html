@@ -658,7 +658,7 @@ def subband_frequencies(subband_width, band_filter, subband_numbers):
 
 
 
-def find_parset(sas_id):
+def find_parset(in_sas_id):
     r'''
     Look for a parset. If it found the parset, it returns the
     path. Otherwise, it issues a warning and returns None.
@@ -668,17 +668,18 @@ def find_parset(sas_id):
     "cbm001:/localhome/lofarsystem/parsets/rtcp-123456.parset"
     '''
     
-    # Search for a parset in the observation plot root first:
-    path = os.path.join(options.plot_root, parset['sas_id'], 'rtcp-' + str(sas_id) + '.parset')
+    # Search for a parset in the default observation plot root (/globaldata/inspect/) first,
+    # as for CEP4 it is copied there
+    path = os.path.join('/globaldata/inspect', str(in_sas_id), 'rtcp-' + str(in_sas_id) + '.parset')
     if os.path.exists(path):
-        logging.info('Parset for SAS ID %r found in %s', sas_id, path)
+        logging.info('Parset for SAS ID %r found in %s', in_sas_id, path)
         return path
     else: 
-        logging.info('Parset for SAS ID %r not found in %s', sas_id, path)
+        logging.info('Parset for SAS ID %r not found in %s', in_sas_id, path)
     
     # Nothing found
     search_path = [os.path.join('/globalhome', user, 'log',
-                                prefix+str(sas_id)+'.parset')
+                                prefix+str(in_sas_id)+'.parset')
                    for prefix in ['L', 'T']
                    for user in ['lofarsystem', 'lofartest']]
     for path in search_path:
@@ -688,7 +689,7 @@ def find_parset(sas_id):
     # Nothing found yet, check if on Cobalt
     try:
         expected_fname = os.path.join('/localhome/lofarsystem/parsets/',
-                                      'rtcp-%d.parset' % sas_id)
+                                      'rtcp-%d.parset' % in_sas_id)
         fname = subprocess.check_output(['ssh', 'cbm001', 'ls',
                                          '%s' % expected_fname])
         if fname.strip() == expected_fname.encode().strip():
@@ -696,7 +697,7 @@ def find_parset(sas_id):
     except:
         pass
         
-    logging.warning('Cannot find parset for SAS ID %d', sas_id)
+    logging.warning('Cannot find parset for SAS ID %d', in_sas_id)
     return None
 
 
