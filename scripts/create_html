@@ -668,20 +668,12 @@ def find_parset(in_sas_id):
     "cbm001:/localhome/lofarsystem/parsets/rtcp-123456.parset"
     '''
     
-    # Search for a parset in the default observation plot root (/globaldata/inspect/) first,
-    # as for CEP4 it is copied there
-    path = os.path.join('/globaldata/inspect', str(in_sas_id), 'rtcp-' + str(in_sas_id) + '.parset')
-    if os.path.exists(path):
-        logging.info('Parset for SAS ID %r found in %s', in_sas_id, path)
-        return path
-    else: 
-        logging.info('Parset for SAS ID %r not found in %s', in_sas_id, path)
-    
-    # Nothing found
-    search_path = [os.path.join('/globalhome', user, 'log',
+    # Note: parsets of different types (L, T, rtcp-) are all accepted
+    search_path = [os.path.join('/globalhome', user, subdir,
                                 prefix+str(in_sas_id)+'.parset')
-                   for prefix in ['L', 'T']
-                   for user in ['lofarsystem', 'lofartest']]
+                   for prefix in ['L', 'T', 'rtcp-']
+                   for subdir in ['log', str(in_sas_id)]
+                   for user in ['lofarsystem', 'lofartest', 'inspect']]
     for path in search_path:
         if os.path.exists(path):
             return path
