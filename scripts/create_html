@@ -672,7 +672,7 @@ def find_parset(in_sas_id):
    
     search_path = [os.path.join('/globaldata', 'inspect', str(in_sas_id),
                                 prefix+str(in_sas_id)+'.parset')
-                   for prefix in ['L', 'T', 'rtcp-']
+                   for prefix in ['L', 'T', 'rtcp-']]
     for path in search_path:
         if os.path.exists(path):
             return path
