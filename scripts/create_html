@@ -803,12 +803,12 @@ def parset_summary(sas_id, parset_name):
         start_time = stop_time = now()
         try:
             start_time =                datetime.datetime.strptime(parset['start_time'], ('%Y-%m-%d %H:%M:%S.%f' if '.' in parset['start_time'] else '%Y-%m-%d %H:%M:%S'))
-        Except ValueError:
+        except ValueError:
             logging.warning('SAS %r: Datetime format unsupported: parset[\'start_time\'] = %s' % parset['sas_id'], parset['start_time'])
             
         try:
             stop_time =                 datetime.datetime.strptime(parset['stop_time'], ('%Y-%m-%d %H:%M:%S.%f' if '.' in parset['stop_time'] else '%Y-%m-%d %H:%M:%S'))
-        Except ValueError:
+        except ValueError:
             logging.warning('SAS %r: Datetime format unsupported: parset[\'stop_time\'] = %s' % parset['sas_id'], parset['stop_time'])
         
         duration_seconds =              (stop_time, start_time).total_seconds()
