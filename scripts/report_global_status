@@ -69,6 +69,10 @@ case `hostname_fqdn` in
             echo "  - determining warnings / errors"
             ssh -A cbm001 "egrep 'ERR|WARN|FATAL|runObservation|xception|acktrace|\#(0|1|2|3|4|5|6|7|8|9) |Signalling|Alarm|SIG|feed-back|Result code' log/rtcp-${sas_id}.log"|grep -v Flagging > $INSPECT_ROOT/${sas_id}/rtcp-${sas_id}.errors
         fi
+        if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset ]] ; then
+            echo "   - obtaining rtcp-${sas_id}.parset"
+            scp cbm001:/localhome/lofarsystem/parsets/rtcp-${sas_id}.parset ${INSPECT_ROOT}/${sas_id}/
+        fi
         ;;
 esac
               
