@@ -390,7 +390,7 @@ def relative_plot_paths(obs_plot_root, current_directory):
     r'''
     '''
     
-    logging.debug('obs_plot_root: %s', obs_plot_root)
+    logging.info('obs_plot_root: %s. Current directory: %s', obs_plot_root, current_directory)
     
     patterns        = [os.path.join(obs_plot_root, extension)
                        for extension in ['*.png', '*.jpg']]
