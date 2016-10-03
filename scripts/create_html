@@ -804,18 +804,24 @@ def parset_summary(sas_id, parset_name):
         try:
             start_time =                datetime.datetime.strptime(parset['start_time'], ('%Y-%m-%d %H:%M:%S.%f' if '.' in parset['start_time'] else '%Y-%m-%d %H:%M:%S'))
         except ValueError:
-            logging.warning('SAS %r: Datetime format unsupported: parset[\'start_time\'] = %s' % parset['sas_id'], parset['start_time'])
-            
+            logging.warning('SAS %r: Datetime format unsupported: parset[\'start_time\'] = %s' % parset['sas_id'], parset['start_time'])            
         try:
             stop_time =                 datetime.datetime.strptime(parset['stop_time'], ('%Y-%m-%d %H:%M:%S.%f' if '.' in parset['stop_time'] else '%Y-%m-%d %H:%M:%S'))
         except ValueError:
-            logging.warning('SAS %r: Datetime format unsupported: parset[\'stop_time\'] = %s' % parset['sas_id'], parset['stop_time'])
-        
+            logging.warning('SAS %r: Datetime format unsupported: parset[\'stop_time\'] = %s' % parset['sas_id'], parset['stop_time'])        
         duration_seconds =              (stop_time, start_time).total_seconds()
+        
         subband_bandwidth_hz =          (1e6 * parset['clock_mhz'] / 1024)
         block_size =                    parset['block_size']
         nr_integrations_per_block =     parset['nr_integrations_per_block']
         nr_blocks_per_integration =     parset['nr_blocks_per_integration']
+        
+        if nr_blocks_per_integration == 0:
+            logging.warning('SAS %r: nr_blocks_per_integration == 0' % parset['sas_id'])
+        elif block_size == 0:
+            logging.warning('SAS %r: block_size == 0' % parset['sas_id'])
+        else:
+            parset['nr_integration_periods'] = floor(duration_seconds * subband_bandwidth_hz/block_size) * nr_integrations_per_block / nr_blocks_per_integration
                 
     if parset['clock_mhz'] == 160:
         parset['subband_width'] = parset['160_subband_width']
@@ -829,14 +835,6 @@ def parset_summary(sas_id, parset_name):
         parset['subband_width']*1000.0,
         parset['band_filter'],
         parset['subband_list'])
-    
-    if nr_blocks_per_integration == 0:
-        logging.warning('SAS %r: nr_blocks_per_integration == 0' % parset['sas_id'])
-        return parset
-    if block_size == 0:
-        logging.warning('SAS %r: block_size == 0' % parset['sas_id'])
-        return parset
-    parset['nr_integration_periods'] = floor(duration_seconds * subband_bandwidth_hz/block_size) * nr_integrations_per_block / nr_blocks_per_integration
     
     return parset
 
