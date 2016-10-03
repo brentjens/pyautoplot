@@ -389,6 +389,9 @@ def subband_html(parset, sb_name, rel_plot_files):
 def relative_plot_paths(obs_plot_root, current_directory):
     r'''
     '''
+    
+    logging.debug('obs_plot_root: %s', obs_plot_root)
+    
     patterns        = [os.path.join(obs_plot_root, extension)
                        for extension in ['*.png', '*.jpg']]
     rel_plot_files = []
