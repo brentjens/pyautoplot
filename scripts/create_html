@@ -1091,7 +1091,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_sizes_dict, html_root
         percentage_complete = file_sizes_dict['percentage_complete']
     
     # Newly proposed (and more correct) way of calculating output loss figure
-    percentage_complete_f0seqnr = None
+    percentage_complete_f0seqnr = -1
     if f0seqnr_sizes_dict is not None and len(f0seqnr_sizes_dict) > 0:
         percentage_complete_f0seqnr = floor(sum(f0seqnr_sizes_dict.values()) / len(f0seqnr_sizes_dict))
         logging.debug('SAS ID: %s. Total f0seqnr-size: %r. Nr of sizes: %r', parset['sas_id'], sum(f0seqnr_sizes_dict.values()), len(f0seqnr_sizes_dict))
@@ -1099,12 +1099,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_sizes_dict, html_root
     format_dict = parset.copy()
     format_dict['nr_subbands']         = len(parset['subband_list'])
     format_dict['percentage_complete'] = int(floor(percentage_complete))
-    
-    # There's no f0seqnr percentage for all SAS ID's so take care of representation right away    
-    if percentage_complete_f0seqnr == None:
-        format_dict['percentage_complete_f0seqnr'] = '-'
-    else:
-        format_dict['percentage_complete_f0seqnr'] = str(int(floor(percentage_complete_f0seqnr))) + '%'    
+    format_dict['percentage_complete_f0seqnr'] = int(percentage_complete_f0seqnr)
 
     if os.path.exists(html_root+'/'+parset['sas_id']+'/Stations/station_beamlets.html'):
         format_dict['station_beamlet_link'] = '<a href="'+parset['sas_id']+'/Stations/station_beamlets.html">BST</a>'
@@ -1119,7 +1114,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_sizes_dict, html_root
         <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(station_beamlet_link)s&nbsp;&nbsp;&nbsp;</td>
         <td align="right"><a href="%(sas_id)s/index.html">%(percentage_complete)d%%</a></td>
-        <td align="right"><a href="%(sas_id)s/index.html">%(percentage_complete_f0seqnr)s%</a></td>
+        <td align="right"><a href="%(sas_id)s/index.html">%(percentage_complete_f0seqnr)d%%</a></td>
         <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(clock_mhz)d&nbsp;&nbsp;&nbsp;</td>     <td>%(nr_subbands)s&nbsp;&nbsp;&nbsp;</td>
@@ -1140,7 +1135,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_sizes_dict, html_root
 ''' % format_dict
 
     if ascii_table:
-        html = '''%(sas_prefix)s%(sas_id)s  %(campaign_name)8s  %(target)19s   %(percentage_complete)d%% %(percentage_complete_f0seqnr)s% %(antenna_set)16s  %(band_filter)11s  %(start_time)s -- %(stop_time)s''' % format_dict
+        html = '''%(sas_prefix)s%(sas_id)s  %(campaign_name)8s  %(target)19s   %(percentage_complete)d%% %(percentage_complete_f0seqnr)d%% %(antenna_set)16s  %(band_filter)11s  %(start_time)s -- %(stop_time)s''' % format_dict
 
     return html
 
