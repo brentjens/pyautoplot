@@ -829,11 +829,11 @@ def parset_summary(sas_id, parset_name):
                     for name in  value(line).strip('[] ').split(',')
                     if name.strip() != '' and name.strip().split(':')[0] != '']
             elif 'Cobalt.blockSize' in line:
-                parset['block_size'] = value(line) 
+                parset['block_size'] = int(value(line))
             elif 'Cobalt.Correlator.nrIntegrationsPerBlock' in line:
-                parset['nr_integrations_per_block'] = value(line)
+                parset['nr_integrations_per_block'] = int(value(line))
             elif 'Cobalt.Correlator.nrBlocksPerIntegration' in line:
-                parset['nr_blocks_per_integration'] = value(line)                  
+                parset['nr_blocks_per_integration'] = int(value(line))
             else:
                 pass
                 
@@ -859,7 +859,7 @@ def parset_summary(sas_id, parset_name):
         elif block_size == 0:
             logging.warning('SAS %r: block_size == 0' % parset['sas_id'])
         else:
-            parset['nr_integration_periods'] = floor(duration_seconds * subband_bandwidth_hz/block_size) * nr_integrations_per_block / nr_blocks_per_integration
+            parset['nr_integration_periods'] = floor(duration_seconds * subband_bandwidth_hz / block_size) * nr_integrations_per_block / nr_blocks_per_integration
                 
     if parset['clock_mhz'] == 160:
         parset['subband_width'] = parset['160_subband_width']
