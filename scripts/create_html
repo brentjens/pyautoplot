@@ -128,13 +128,11 @@ def create_html_main(argv):
             if os.path.exists(file_sizes_txt):
                 file_sizes_dict = parse_file_sizes(file_sizes_txt)
                 file_size_data  = file_size_analysis(parset, file_sizes_dict)
-                logging.debug('SAS ID: %s. file_size_data content:\n%s', parset['sas_id'], vars(file_size_data))
             f0seqnr_size_data = None
             f0seqnr_sizes_txt = os.path.join(obs_plot_root, 'f0seqnr-sizes.txt')
             if os.path.exists(f0seqnr_sizes_txt):                
                 f0seqnr_sizes_dict = parse_file_sizes(f0seqnr_sizes_txt, os.path.dirname)
                 f0seqnr_size_data = f0seqnr_size_analysis(parset, f0seqnr_sizes_dict)
-                logging.debug('SAS ID: %s. f0seqnr_size_data content:\n%s', parset['sas_id'], vars(f0seqnr_size_data))
 
             observation_html(parset,
                              file_size_data,
