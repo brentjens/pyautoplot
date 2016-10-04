@@ -147,7 +147,7 @@ def create_html_main(argv):
     main_index_html(plot_root = options.plot_root,
                     html_root = options.html_root)
     for start_num in [4,5,6,7,8,9]:
-        os.system("pushd /globaldata/inspect/; for sas in `find . -maxdepth 1  -mindepth 1 -iname \"%d*\" -ctime +21|sed -e 's/\.\///g'|sort`; do echo $sas ;rm -rf $sas HTML/$sas; done;popd " % start_num)
+        os.system("cd /globaldata/inspect/; for sas in `find . -maxdepth 1  -mindepth 1 -iname \"%d*\" -ctime +21|sed -e 's/\.\///g'|sort`; do echo $sas ;rm -rf $sas HTML/$sas; done; " % start_num)
     return 0
 
 
