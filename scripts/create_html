@@ -1100,10 +1100,11 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_sizes_dict, html_root
     format_dict['nr_subbands']         = len(parset['subband_list'])
     format_dict['percentage_complete'] = int(floor(percentage_complete))
     
-    # There's no f0seqnr percentage for all SAS ID's so take care of representation right away
-    format_dict['percentage_complete_f0seqnr'] = str(int(floor(percentage_complete_f0seqnr))) + '%'    
+    # There's no f0seqnr percentage for all SAS ID's so take care of representation right away    
     if percentage_complete_f0seqnr == None:
-        format_dict['percentage_complete_f0seqnr'] = '-'        
+        format_dict['percentage_complete_f0seqnr'] = '-'
+    else:
+        format_dict['percentage_complete_f0seqnr'] = str(int(floor(percentage_complete_f0seqnr))) + '%'    
 
     if os.path.exists(html_root+'/'+parset['sas_id']+'/Stations/station_beamlets.html'):
         format_dict['station_beamlet_link'] = '<a href="'+parset['sas_id']+'/Stations/station_beamlets.html">BST</a>'
