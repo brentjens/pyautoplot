@@ -1091,7 +1091,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_sizes_dict, html_root
         percentage_complete = file_sizes_dict['percentage_complete']
     
     # Newly proposed (and more correct) way of calculating output loss figure
-    percentage_complete_f0seqnr = -1
+    percentage_complete_f0seqnr = None
     if f0seqnr_sizes_dict is not None and len(f0seqnr_sizes_dict) > 0:
         percentage_complete_f0seqnr = floor(sum(f0seqnr_sizes_dict.values()) / len(f0seqnr_sizes_dict))
         logging.debug('SAS ID: %s. Total f0seqnr-size: %r. Nr of sizes: %r', parset['sas_id'], sum(f0seqnr_sizes_dict.values()), len(f0seqnr_sizes_dict))
@@ -1099,7 +1099,11 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_sizes_dict, html_root
     format_dict = parset.copy()
     format_dict['nr_subbands']         = len(parset['subband_list'])
     format_dict['percentage_complete'] = int(floor(percentage_complete))
-    format_dict['percentage_complete_f0seqnr'] = int(floor(percentage_complete_f0seqnr)) == -1 ? '-' : str(int(floor(percentage_complete_f0seqnr))) + '%'
+    
+    # There's no f0seqnr percentage for all SAS ID's so take care of representation right away
+    format_dict['percentage_complete_f0seqnr'] = str(int(floor(percentage_complete_f0seqnr))) + '%'    
+    if percentage_complete_f0seqnr == None:
+        format_dict['percentage_complete_f0seqnr'] = '-'        
 
     if os.path.exists(html_root+'/'+parset['sas_id']+'/Stations/station_beamlets.html'):
         format_dict['station_beamlet_link'] = '<a href="'+parset['sas_id']+'/Stations/station_beamlets.html">BST</a>'
