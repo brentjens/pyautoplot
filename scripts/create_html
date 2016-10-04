@@ -1096,7 +1096,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_sizes_dict, html_root
     
     # Newly proposed (and more correct) way of calculating output loss figure
     percentage_complete_f0seqnr = -1
-    if f0seqnr_sizes_dict is not None:
+    if f0seqnr_sizes_dict is not None and len(f0seqnr_sizes_dict) > 0:
         percentage_complete_f0seqnr = floor(sum(f0seqnr_sizes_dict.values()) / len(f0seqnr_sizes_dict))
         
     format_dict = parset.copy()
