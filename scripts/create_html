@@ -115,6 +115,7 @@ def create_html_main(argv):
             obs_plot_root = os.path.join(options.plot_root, parset['sas_id'])
 
             if parset['file_name'] and os.path.exists(parset['file_name']):
+                logging.debug('SAS ID: %s. Copying parset from %s to %s', parset['sas_id'], parset['file_name'], obs_plot_root)
                 shutil.copy2(parset['file_name'], obs_plot_root)
                 new_parset_name = os.path.join(
                     obs_plot_root,
@@ -124,12 +125,14 @@ def create_html_main(argv):
             file_sizes_txt = os.path.join(obs_plot_root, 'file-sizes.txt')
             if os.path.exists(file_sizes_txt):
                 file_sizes_dict = parse_file_sizes(file_sizes_txt)
-                file_size_data  = file_size_analysis(parset, file_sizes_dict)                
+                file_size_data  = file_size_analysis(parset, file_sizes_dict)
+                logging.debug('SAS ID: %s. file_size_data content:\n%s', parset['sas_id'], vars(file_size_data))
             f0seqnr_size_data = None
             f0seqnr_sizes_txt = os.path.join(obs_plot_root, 'f0seqnr-sizes.txt')
             if os.path.exists(f0seqnr_sizes_txt):                
                 f0seqnr_sizes_dict = parse_file_sizes(f0seqnr_sizes_txt, os.path.dirname)
                 f0seqnr_size_data = f0seqnr_size_analysis(parset, f0seqnr_sizes_dict)
+                logging.debug('SAS ID: %s. f0seqnr_size_data content:\n%s', parset['sas_id'], vars(f0seqnr_size_data))
 
             observation_html(parset,
                              file_size_data,
@@ -137,7 +140,7 @@ def create_html_main(argv):
                              obs_plot_root = obs_plot_root,
                              html_root     = options.html_root)
         except IOError:
-            logging.error(str(sys.exc_info()[1]))
+            logging.error('SAS ID: %s. IOError: %', parset['sas_id'], str(sys.exc_info()[1]))
 
         if num % 20 == 0:
             main_index_html(plot_root = options.plot_root,
