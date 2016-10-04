@@ -61,7 +61,7 @@ def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
 
 
 if __name__ == '__main__':
-    initialize_logging('INFO')
+    initialize_logging('DEBUG')
 
 try:
     import matplotlib
