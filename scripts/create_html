@@ -1005,7 +1005,9 @@ def f0seqnr_size_analysis(parset, f0seqnr_sizes_dict):
 
     for data_product_folder, (locus_node, full_path, nr_integration_periods_in_file) in f0seqnr_sizes_dict.items():
         # Calculate completeness        
-        result[data_product_folder] = 100*nr_integration_periods_in_file / parset['nr_integration_periods']
+        result[data_product_folder] = 100*nr_integration_periods_in_file / (4*parset['nr_integration_periods'])
+        
+        logging.debug('SAS ID: %s. size/expected_size: %r/%r', parset['sas_id'], nr_integration_periods_in_file, parset['nr_integration_periods'])
     return result
 
 
@@ -1223,7 +1225,7 @@ def main_index_html(plot_root, html_root):
         <h1>LOFAR inspection plots</h1>
         <p><i>Last modified: %s UTC</i>&nbsp;&nbsp;<a href="%s">Full list</a>&nbsp;&nbsp;<a href="%s">Ascii table</a></p>
         <table>
-        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>DynSpec</th> <th title="Original completeness calculation (based on file sizes)">Compl</th> <th title="Novel completeness calculation (based on f0seqnr sizes)">Compl*</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subb</th> <th>Parset</th></tr>
+        <tr><th>SAS ID</th> <th>Campaign</th> <th>Target</th> <th>DynSpec</th> <th title="Original completeness calculation (based on file sizes)">Compl</th> <th title="Alternative completeness calculation (based on f0seqnr sizes)">Compl*</th> <th>AntennaSet</th> <th>Band</th> <th>Start</th> <th>End</th> <th>Clock</th> <th>Subb</th> <th>Parset</th></tr>
         %s
         </table>
     </body>
