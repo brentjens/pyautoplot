@@ -395,15 +395,7 @@ def relative_plot_paths(obs_plot_root, current_directory):
     rel_plot_files = []
     for pattern in patterns:
         rel_plot_files += [os.path.relpath(full_path, current_directory)
-
-                           for full_path in glob.glob(pattern)]
-    
-    debug_str = ''
-    for rel_filepath in rel_plot_files:
-        debug_str += rel_filepath + '\n'
-        
-    logging.info('Relative plot paths are:\n%s', debug_str)
-    
+                           for full_path in glob.glob(pattern)]    
                                
     return rel_plot_files
 
@@ -668,8 +660,7 @@ def find_parset(in_sas_id):
     "cbm001:/localhome/lofarsystem/parsets/rtcp-123456.parset"
     '''
     
-    # Note: parsets of different types (L, T, rtcp-) are all accepted
-   
+    # Note: parsets with different naming formats (L, T, rtcp-) are all accepted
     search_path = [os.path.join('/globaldata', 'inspect', str(in_sas_id),
                                 prefix+str(in_sas_id)+'.parset')
                    for prefix in ['L', 'T', 'rtcp-']]
