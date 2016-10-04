@@ -112,15 +112,17 @@ def create_html_main(argv):
     for num, parset in enumerate(sorted(parsets)[::-1]):
         logging.debug('Processing SAS ID: %s', parset['sas_id'])
         try:
-            obs_plot_root = os.path.join(options.plot_root, parset['sas_id'])
-
+            obs_plot_root = os.path.join(options.plot_root, parset['sas_id'])            
             if parset['file_name'] and os.path.exists(parset['file_name']):
-                logging.debug('SAS ID: %s. Copying parset from %s to %s', parset['sas_id'], parset['file_name'], obs_plot_root)
-                shutil.copy2(parset['file_name'], obs_plot_root)
-                new_parset_name = os.path.join(
-                    obs_plot_root,
-                    os.path.basename(parset['file_name']))
-                parset['file_name'] = new_parset_name
+                intended_parset_path = os.path.join(obs_plot_root, os.path.basename(parset['file_name']))
+    
+                # Make sure parset is available in the intended location            
+                if not os.path.samefile(intended_parset_path, parset['file_name']):
+                    try:                    
+                        shutil.copy2(parset['file_name'], obs_plot_root)    
+                        parset['file_name'] = intended_parset_name
+                    except:
+                        logging.error('SAS ID: %s. Copying parset from %s to %s failed', parset['sas_id'], parset['file_name'], obs_plot_root)
             file_size_data = None
             file_sizes_txt = os.path.join(obs_plot_root, 'file-sizes.txt')
             if os.path.exists(file_sizes_txt):
