@@ -493,7 +493,7 @@ def observation_html(parset, file_size_data, f0seqnr_completeness_data, obs_plot
                 '<tr>' +
                 '</tr><tr>'.join(
                     ['<td>%s</td><td>:</td><td>%d MB</td><td>(</td><td>%0.1f</td><td>)</td>' %
-                     (name, size, f0seqnr_completeness_data[1].get(name, -1))
+                     (name, size, f0seqnr_completeness_data.get(name, -1))
                      for (name, size) in sorted(
                              file_size_data['odd_sized_data_sets'])]) +
                 '</tr></table>')
@@ -1001,23 +1001,16 @@ def f0seqnr_size_analysis(parset, f0seqnr_sizes_dict):
         logging.warning('SAS %r: parset[\'nr_integration_periods\'] == 0' % parset['sas_id'])
         return None
 
-    individual_completeness_dict = {}    
+    completeness_dict = {}    
     total_nr_integration_periods_in_file = 0
     for data_product_folder, (locus_node, full_path, nr_integration_periods_in_file) in f0seqnr_sizes_dict.items():
         # Calculate individual completeness        
         completeness = (100*nr_integration_periods_in_file/4) / parset['nr_integration_periods']
         if completeness > 100:
             logging.warning('SAS %r: f0seqnr completeness > 100: %0.1f (%f/%d)' % (parset['sas_id'], completeness, nr_integration_periods_in_file, parset['nr_integration_periods']))
-        individual_completeness_dict[data_product_folder] = completeness
-        
-        # Keep track of overall completeness
-        total_nr_integration_periods_in_file += nr_integration_periods_in_file
+        completeness_dict[data_product_folder] = completeness
     
-    overall_completeness = (100*total_nr_integration_periods_in_file/4) / parset['nr_integration_periods']
-    if overall_completeness > 100:
-        logging.warning('SAS %r: f0seqnr overall completeness > 100: %0.1f (%f/%d)' % (parset['sas_id'], overall_completeness, total_nr_integration_periods_in_file, parset['nr_integration_periods']))
-    
-    return (overall_completeness, individual_completeness_dict)
+    return completeness_dict
 
 
 
@@ -1092,7 +1085,7 @@ def station_beamlet_statistics_plots_html(parset, rel_plot_files):
         'overview_rows': '\n'.join(overview_rows)}
 
 
-def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_tuple, html_root, ascii_table=False):
+def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_dict, html_root, ascii_table=False):
     r'''
     '''
     percentage_complete = -1
@@ -1101,13 +1094,13 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_tuple, h
     
     # Newly proposed (and more correct) way of calculating output loss figure
     percentage_complete_f0seqnr = -1
-    if f0seqnr_completeness_tuple is not None and f0seqnr_completeness_tuple[0] > 0:
-        percentage_complete_f0seqnr = f0seqnr_completeness_tuple[0]
+    if f0seqnr_completeness_dict is not None and len(f0seqnr_completeness_dict) > 0:
+        percentage_complete_f0seqnr = round(sum(f0seqnr_completeness_dict.values())/len(f0seqnr_completeness_dict))
         
     format_dict = parset.copy()
     format_dict['nr_subbands']         = len(parset['subband_list'])
     format_dict['percentage_complete'] = int(floor(percentage_complete))
-    format_dict['percentage_complete_f0seqnr'] = int(floor(percentage_complete_f0seqnr))
+    format_dict['percentage_complete_f0seqnr'] = percentage_complete_f0seqnr
 
     if os.path.exists(html_root+'/'+parset['sas_id']+'/Stations/station_beamlets.html'):
         format_dict['station_beamlet_link'] = '<a href="'+parset['sas_id']+'/Stations/station_beamlets.html">BST</a>'
