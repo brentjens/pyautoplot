@@ -1005,11 +1005,17 @@ def f0seqnr_size_analysis(parset, f0seqnr_sizes_dict):
     total_nr_integration_periods_in_file = 0
     for data_product_folder, (locus_node, full_path, nr_integration_periods_in_file) in f0seqnr_sizes_dict.items():
         # Calculate individual completeness        
-        individual_completeness_dict[data_product_folder] = (100*nr_integration_periods_in_file/4) / parset['nr_integration_periods']
+        completeness = (100*nr_integration_periods_in_file/4) / parset['nr_integration_periods']
+        if completeness > 100:
+            logging.warning('SAS %r: f0seqnr completeness > 100: %0.1f' % parset['sas_id'], completeness)
+        individual_completeness_dict[data_product_folder] = completeness
+        
         # Keep track of overall completeness
         total_nr_integration_periods_in_file += nr_integration_periods_in_file
     
     overall_completeness = (100*total_nr_integration_periods_in_file/4) / parset['nr_integration_periods']
+    if overall_completeness > 100:
+            logging.warning('SAS %r: f0seqnr overall-completeness > 100: %0.1f' % parset['sas_id'], overall_completeness)
     
     return (overall_completeness, individual_completeness_dict)
 
