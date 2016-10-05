@@ -1101,7 +1101,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_tuple, h
     format_dict = parset.copy()
     format_dict['nr_subbands']         = len(parset['subband_list'])
     format_dict['percentage_complete'] = int(floor(percentage_complete))
-    format_dict['percentage_complete_f0seqnr'] = int(percentage_complete_f0seqnr)
+    format_dict['percentage_complete_f0seqnr'] = int(floor(percentage_complete_f0seqnr))
 
     if os.path.exists(html_root+'/'+parset['sas_id']+'/Stations/station_beamlets.html'):
         format_dict['station_beamlet_link'] = '<a href="'+parset['sas_id']+'/Stations/station_beamlets.html">BST</a>'
