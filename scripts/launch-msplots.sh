@@ -221,6 +221,11 @@ case `hostname_fqdn` in
                         '/bin/bash -c \\"msplots --prefix=/dev/shm/ --output='$sas_id' --memory=1.0 '$product' ; rsync -a /dev/shm/'$sas_id'/ lofarsys@head01.control.cep4.lofar:'$INSPECT_ROOT'/'$sas_id'/\\"' &
                 SSH_PIDS="$SSH_PIDS $!"
             done
+        done
+        wait $SSH_PIDS
+        
+        SSH_PIDS=""
+        for sas_id in $@; do
             ssh -n -tt -x lofarsys@localhost \
                 srun --exclusive --ntasks=1 --cpus-per-task=1 \
                 --jobid=$SLURM_JOB_ID \
