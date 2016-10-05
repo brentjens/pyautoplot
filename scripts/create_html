@@ -61,7 +61,7 @@ def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
 
 
 if __name__ == '__main__':
-    initialize_logging('DEBUG')
+    initialize_logging('INFO')
 
 try:
     import matplotlib
@@ -1094,7 +1094,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_sizes_dict, html_root
     percentage_complete_f0seqnr = -1
     if f0seqnr_sizes_dict is not None and len(f0seqnr_sizes_dict) > 0:
         percentage_complete_f0seqnr = floor(sum(f0seqnr_sizes_dict.values()) / len(f0seqnr_sizes_dict))
-        logging.debug('SAS ID: %s. Total f0seqnr-size: %r. Nr of sizes: %r', parset['sas_id'], sum(f0seqnr_sizes_dict.values()), len(f0seqnr_sizes_dict))
+        logging.info('SAS ID: %s. Total f0seqnr-size: %r. Nr of sizes: %r', parset['sas_id'], sum(f0seqnr_sizes_dict.values()), len(f0seqnr_sizes_dict))
         
     format_dict = parset.copy()
     format_dict['nr_subbands']         = len(parset['subband_list'])
