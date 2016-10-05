@@ -83,7 +83,7 @@ function create_html_remotely_fn() {
     ssh $REMOTE_HOST "echo \"Creating HTML using $CREATE_HTML\" | tee -a $LOG"
     ssh $REMOTE_HOST "echo \"$command\"| tee -a $LOG"
     # Submit slurm jobs that start docker containers at cpuxx nodes...
-    ssh -n -tt -x lofarsys@head01.control.cep4 \
+    ssh -n -tt -x lofarsys@head01.cep4.control.lofar \
         docker-run-slurm.sh --rm -u `id -u` \
         -e USER=$USER -e HOME=$HOME \
         -v /data:/data \
@@ -133,14 +133,14 @@ function exit_timeout() {
 
 function sigterm_handler() {
     for sas_id in $GLOBAL_ARGS; do
-        ssh -n -tt -x lofarsys@head01.control.cep4.lofar "bash -ilc \"use Lofar; use Pyautoplot; report_global_status ${sas_id}\""
+        ssh -n -tt -x lofarsys@head01.cep4.control.lofar "bash -ilc \"use Lofar; use Pyautoplot; report_global_status ${sas_id}\""
         done
     for sas_id in $GLOBAL_ARGS; do
         ssh -n -x lofarsys@kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
     done
-    create_html_remotely_fn lofarsys@head01.control.cep4.lofar
+    create_html_remotely_fn lofarsys@head01.cep4.control.lofar
     DATE_DONE=`date`
-    ssh lofarsys@head01.control.cep4.lofar "echo \"Done at $DATE_DONE\" | tee -a $LOG"
+    ssh lofarsys@head01.cep4.control.lofar "echo \"Done at $DATE_DONE\" | tee -a $LOG"
     exit
 }
 
