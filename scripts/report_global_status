@@ -48,7 +48,7 @@ case `hostname_fqdn` in
 
 
     *)
-        INSPECT_ROOT=/globaldata/inspect
+        INSPECT_ROOT=/dev/shm
         echo "report_global_status for ${sas_id}"
         mkdir -p ${INSPECT_ROOT}/${sas_id}
         if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/file-sizes.txt ]] ; then
