@@ -211,7 +211,7 @@ case `hostname_fqdn` in
             for product in $data_products_full_path; do
                 # Submit slurm jobs that start docker containers at cpuxx nodes...
                 ssh -n -tt -x lofarsys@localhost \
-                    srun --exclusive --ntasks=1 --cpus-per-task=1 --jobid=$SLURM_JOB_ID --job-name=msplots \
+                    srun --exclusive --ntasks=1 --cpus-per-task=1 --jobid=$SLURM_JOB_ID --job-name="msplots-`basename $product`" \
                     docker-run-slurm.sh --rm -u `id -u` \
                         -e USER=$USER -e HOME=$HOME \
                         -v /data:/data \
