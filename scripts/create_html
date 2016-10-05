@@ -123,20 +123,20 @@ def create_html_main(argv):
                         parset['file_name'] = intended_parset_name
                     except:
                         logging.error('SAS ID: %s. Copying parset from %s to %s failed', parset['sas_id'], parset['file_name'], obs_plot_root)
-            file_size_data = None
+            file_size_data = {}
             file_sizes_txt = os.path.join(obs_plot_root, 'file-sizes.txt')
             if os.path.exists(file_sizes_txt):
                 file_sizes_dict = parse_file_sizes(file_sizes_txt)
                 file_size_data  = file_size_analysis(parset, file_sizes_dict)
-            f0seqnr_completeness_data = None
+            f0seqnr_completeness_dict = {}
             f0seqnr_sizes_txt = os.path.join(obs_plot_root, 'f0seqnr-sizes.txt')
             if os.path.exists(f0seqnr_sizes_txt):                
                 f0seqnr_sizes_dict = parse_file_sizes(f0seqnr_sizes_txt, os.path.dirname)
-                f0seqnr_completeness_data = f0seqnr_size_analysis(parset, f0seqnr_sizes_dict)
+                f0seqnr_completeness_dict = f0seqnr_size_analysis(parset, f0seqnr_sizes_dict)
 
             observation_html(parset,
                              file_size_data,
-                             f0seqnr_completeness_data,
+                             f0seqnr_completeness_dict,
                              obs_plot_root = obs_plot_root,
                              html_root     = options.html_root)
         except IOError:
@@ -426,7 +426,7 @@ def plot_paths_per_sap_subband(plot_file_names):
 
 
 
-def observation_html(parset, file_size_data, f0seqnr_completeness_data, obs_plot_root, html_root):
+def observation_html(parset, file_size_data, f0seqnr_completeness_dict, obs_plot_root, html_root):
     r'''
     '''
     logging.info('Creating HTML for observation %s', parset['sas_id'])
@@ -493,7 +493,7 @@ def observation_html(parset, file_size_data, f0seqnr_completeness_data, obs_plot
                 '<tr>' +
                 '</tr><tr>'.join(
                     ['<td>%s</td><td>:</td><td>%d MB</td><td>(</td><td>%0.1f</td><td>)</td>' %
-                     (name, size, f0seqnr_completeness_data.get(name, -1))
+                     (name, size, f0seqnr_completeness_dict.get(name, -1))
                      for (name, size) in sorted(
                              file_size_data['odd_sized_data_sets'])]) +
                 '</tr></table>')
@@ -1205,16 +1205,16 @@ def main_index_html(plot_root, html_root):
             file_size_data  = file_size_analysis(parset, file_sizes_dict)
         file_sizes_array.append(file_size_data)
         
-        f0seqnr_completeness_data = None
+        f0seqnr_completeness_dict = None
         f0seqnr_sizes_txt = os.path.join(obs_plot_root, 'f0seqnr-sizes.txt')
         if os.path.exists(f0seqnr_sizes_txt):
             f0seqnr_sizes_dict = parse_file_sizes(f0seqnr_sizes_txt, os.path.dirname)
-            f0seqnr_completeness_data = f0seqnr_size_analysis(parset, f0seqnr_sizes_dict)
-        f0seqnr_completeness_array.append(f0seqnr_completeness_data)
+            f0seqnr_completeness_dict = f0seqnr_size_analysis(parset, f0seqnr_sizes_dict)
+        f0seqnr_completeness_array.append(f0seqnr_completeness_dict)
 
     open(index_txt_name, 'w').write('\n'.join(
-            [observation_table_row(parset, file_size, f0seqnr_completeness, html_root, ascii_table=True)
-             for parset, file_size, f0seqnr_completeness in zip(parsets, file_sizes_array, f0seqnr_completeness_array)
+            [observation_table_row(parset, file_size, f0seqnr_completeness_dict, html_root, ascii_table=True)
+             for parset, file_size, f0seqnr_completeness_dict in zip(parsets, file_sizes_array, f0seqnr_completeness_array)
              if parset['start_time'].strip() != '']))
 
     open(index_name, 'w').write('''
@@ -1235,8 +1235,8 @@ def main_index_html(plot_root, html_root):
 ''' % ( time.asctime(time.gmtime()),
         os.path.basename(long_index_name),
         os.path.basename(index_txt_name),
-        '\n'.join([observation_table_row(parset, file_size, f0seqnr_completeness, html_root)
-                   for parset, file_size, f0seqnr_completeness in zip(parsets, file_sizes_array, f0seqnr_completeness_array)
+        '\n'.join([observation_table_row(parset, file_size, f0seqnr_completeness_dict, html_root)
+                   for parset, file_size, f0seqnr_completeness_dict in zip(parsets, file_sizes_array, f0seqnr_completeness_array)
                    if parset['start_time'].strip() != '' and datetime.datetime.strptime(parset['start_time'], '%Y-%m-%d %H:%M:%S') > beginning_of_short_index]
                   )))
 
@@ -1257,8 +1257,8 @@ def main_index_html(plot_root, html_root):
 </html>
 ''' % ( time.asctime(time.gmtime()),
         os.path.basename(index_name),
-        '\n'.join([observation_table_row(parset, file_size, f0seqnr_completeness, html_root)
-                   for parset, file_size, f0seqnr_completeness in zip(parsets, file_sizes_array, f0seqnr_completeness_array)]
+        '\n'.join([observation_table_row(parset, file_size, f0seqnr_completeness_dict, html_root)
+                   for parset, file_size, f0seqnr_completeness_dict in zip(parsets, file_sizes_array, f0seqnr_completeness_array)]
                   )))
 
 
