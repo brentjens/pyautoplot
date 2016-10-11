@@ -8,12 +8,19 @@
 # alternative pyautoplot build tag may be placed in TAG
 
 
+# For testing of the inspection plots on the production system without interfering with the existing script one can 
+# insert TESTLINE in the relevant filenames, e.g. index[TESTLINE].html. Ultimately, TESTLINE could be auto-filled 
+# depending on the TAG environment variable (if it exists and doesn't say 'latest'). For normal use, leave TESTLINE an
+# empty string (""). Note that TESTLINE doesn't necessarily propagate to programs/scripts called from within this one.
+TESTLINE = "-test"
+# TESTLINE = ""
+
 # PYAUTOPLOT_TAG={$TAG:=latest}
 PYAUTOPLOT_TAG={$TAG:=completeness}
 HOSTNAME=`hostname`
 PATH="$PATH:/opt/cep/pyautoplot/bin"
 INSPECT_ROOT=/globaldata/inspect
-LOG=$INSPECT_ROOT/launch-msplots.log
+LOG=$INSPECT_ROOT/launch-msplots$TESTLINE.log
 
 
 #Time to wait for stuck processes before killing them

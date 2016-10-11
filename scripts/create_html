@@ -10,9 +10,14 @@ from numpy import array, floor
 
 
 # For testing of the inspection plots on the production system without interfering with the existing script one can 
-# alter the INDEX_HTML_FILENAME
-INDEX_HTML_FILENAME = "index-completeness.html"
-#INDEX_HTML_FILENAME = "index.html"
+# insert TESTLINE in the relevant filenames, e.g. index[TESTLINE].html. Ultimately, TESTLINE could be auto-filled 
+# depending on the TAG environment variable (if it exists and doesn't say 'latest'). For normal use, leave TESTLINE an
+# empty string (""). Note that TESTLINE doesn't necessarily propagate to programs/scripts called from within this one.
+TESTLINE = "-test"
+# TESTLINE = ""
+
+INDEX_HTML_FILENAME = "index"+TESTLINE+".html"
+CREATE_HTML_LOG_FILENAME = "create_html"+TESTLINE+".log"
 
 
 def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
@@ -48,7 +53,7 @@ def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
 
     log_format     = ('create_html@' + socket.gethostname() +
                       ' %(asctime)s %(levelname)8s - %(message)s')
-    log_file_name  = os.path.join(log_dir, 'create_html.log')
+    log_file_name  = os.path.join(log_dir, CREATE_HTML_LOG_FILENAME)
 
     logger       = logging.root
     for handler in logger.handlers:
