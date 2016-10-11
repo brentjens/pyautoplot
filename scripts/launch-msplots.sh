@@ -203,6 +203,7 @@ case `hostname_fqdn` in
         done
         sleep 45 # to make sure writing of metadata in MSses has a reasonable chance to finish before plots are created.
 
+
         SSH_PIDS=""
         for sas_id in $@; do
             project=`sas_id_project $sas_id`
@@ -221,26 +222,28 @@ case `hostname_fqdn` in
                         '/bin/bash -c \\"msplots --prefix=/dev/shm/ --output='$sas_id' --memory=1.0 '$product' ; rsync -a /dev/shm/'$sas_id'/ lofarsys@head01.cep4.control.lofar:'$INSPECT_ROOT'/'$sas_id'/\\"' &
                 SSH_PIDS="$SSH_PIDS $!"
             done
-        done
-        wait $SSH_PIDS
-        
-        SSH_PIDS=""
-        for sas_id in $@; do
-            ssh -n -tt -x lofarsys@localhost \
-                srun --exclusive --ntasks=1 --cpus-per-task=1 \
-                --jobid=$SLURM_JOB_ID \
-                --job-name=report_global_status_${sas_id} \
-                docker-run-slurm.sh --rm -u `id -u` \
-                -e USER=$USER -e HOME=$HOME \
-                -v /data:/data \
-                -v $HOME/.ssh:$HOME/.ssh:ro \
-                --net=host \
-                pyautoplot:latest \
-                '/bin/bash -c \\"report_global_status '$sas_id'; rsync -a /dev/shm/'$sas_id'/ lofarsys@head01.cep4.control.lofar:'$INSPECT_ROOT'/'$sas_id'/\\"' &
-                SSH_PIDS="$SSH_PIDS $!"
             
-        done
-        wait $SSH_PIDS
+            # Wait for PIDs to terminate, before launching the next command(s)
+            wait $SSH_PIDS
+
+            SSH_PIDS=""
+            for sas_id in $@; do
+                ssh -n -tt -x lofarsys@localhost \
+                    srun --exclusive --ntasks=1 --cpus-per-task=1 \
+                    --jobid=$SLURM_JOB_ID \
+                    --job-name=report_global_status_${sas_id} \
+                    docker-run-slurm.sh --rm -u `id -u` \
+                    -e USER=$USER -e HOME=$HOME \
+                    -v /data:/data \
+                    -v $HOME/.ssh:$HOME/.ssh:ro \
+                    --net=host \
+                    pyautoplot:latest \
+                    '/bin/bash -c \\"report_global_status '$sas_id'; rsync -a /dev/shm/'$sas_id'/ lofarsys@head01.cep4.control.lofar:'$INSPECT_ROOT'/'$sas_id'/\\"' &
+                    SSH_PIDS="$SSH_PIDS $!"
+                
+            done
+            wait $SSH_PIDS
+        done        
 
         for sas_id in $@; do
             ssh -n -x lofarsys@kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
