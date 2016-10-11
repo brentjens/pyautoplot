@@ -1005,7 +1005,10 @@ def f0seqnr_size_analysis(parset, f0seqnr_sizes_dict):
     if parset['nr_integration_periods'] == 0:
         logging.warning('SAS %r: parset[\'nr_integration_periods\'] == 0' % parset['sas_id'])
         return None
-
+    
+    # Construct a correlator-location dict for node lookup later
+    correlator_location_dict = dict(zip(parset['correlator_products'], parset['correlator_locations']))
+    
     completeness_dict = {}    
     total_nr_integration_periods_in_file = 0
     for data_product_folder, (locus_node, full_path, nr_integration_periods_in_file) in f0seqnr_sizes_dict.items():
@@ -1014,9 +1017,7 @@ def f0seqnr_size_analysis(parset, f0seqnr_sizes_dict):
         if completeness > 100:
             logging.warning('SAS %r: f0seqnr completeness > 100: %0.1f (%f/%d)' % (parset['sas_id'], completeness, nr_integration_periods_in_file, parset['nr_integration_periods']))
         
-        # TODO: verify if all elements in parset['correlator_locations'] can be expected to always hold the same value.
-        # If not, the elements in the array should be matched against the corresponding data_product_folder
-        node_and_name = '%s:%s' % (parset['correlator_locations'][0], data_product_folder)
+        node_and_name = '%s:%s' % (correlator_location_dict[data_product_folder], data_product_folder)
         completeness_dict[node_and_name] = completeness
     
     return completeness_dict
