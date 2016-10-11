@@ -4,8 +4,12 @@
 # directly to the msplots instances.
 # cexec1 is used because it allows us to address each lce node by the same
 # number as in its name. The script assumes that msplots is in the PATH
-# and that the pyautoplot module is in the PYTHONPATH.
+# and that the pyautoplot module is in the PYTHONPATH. Optionally an 
+# alternative pyautoplot build tag may be placed in TAG
 
+
+# PYAUTOPLOT_TAG={$TAG:=latest}
+PYAUTOPLOT_TAG={$TAG:=completeness}
 HOSTNAME=`hostname`
 PATH="$PATH:/opt/cep/pyautoplot/bin"
 INSPECT_ROOT=/globaldata/inspect
@@ -88,7 +92,7 @@ function create_html_remotely_fn() {
         -e USER=$USER -e HOME=$HOME \
         -v /data:/data \
         -v /globaldata/inspect:/globaldata/inspect \
-        pyautoplot:latest \
+        pyautoplot:$PYAUTOPLOT_TAG \
          "$command" 
     SSH_EXITCODE=$?
     if test "$SSH_EXITCODE" == "0"; then
@@ -145,9 +149,6 @@ function sigterm_handler() {
 }
 
 
-
-
-
 case `hostname_fqdn` in
     lhn001*)
         DATE=`date`
@@ -156,6 +157,7 @@ case `hostname_fqdn` in
         echo "Date: $DATE"|tee -a $LOG
         echo "$0 $@" | tee -a $LOG
         echo "On machine $HOSTNAME" | tee -a $LOG
+        echo "Using pyautoplot:$PYAUTOPLOT_TAG" | tee -a $LOG
         for sas_id in $@; do
             mkdir -v $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id 2>&1 | tee -a $LOG
         done
@@ -197,6 +199,7 @@ case `hostname_fqdn` in
         ssh lofarsys@head01.cep4.control.lofar "echo \"Date: $DATE\"|tee -a $LOG"
         ssh lofarsys@head01.cep4.control.lofar "echo \"$0 $@\" | tee -a $LOG"
         ssh lofarsys@head01.cep4.control.lofar "echo \"On machine $HOSTNAME\" | tee -a $LOG"
+        ssh lofarsys@head01.cep4.control.lofar "echo \"Using pyautoplot:$PYAUTOPLOT_TAG\" | tee -a $LOG"
         
         for sas_id in $@; do
             ssh lofarsys@head01.cep4.control.lofar "mkdir -v $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id 2>&1 | tee -a $LOG"
@@ -218,7 +221,7 @@ case `hostname_fqdn` in
                         -v /data:/data \
                         -v $HOME/.ssh:$HOME/.ssh:ro \
                         --net=host \
-                        pyautoplot:latest \
+                        pyautoplot:$PYAUTOPLOT_TAG \
                         '/bin/bash -c \\"msplots --prefix=/dev/shm/ --output='$sas_id' --memory=1.0 '$product' ; rsync -a /dev/shm/'$sas_id'/ lofarsys@head01.cep4.control.lofar:'$INSPECT_ROOT'/'$sas_id'/\\"' &
                 SSH_PIDS="$SSH_PIDS $!"
             done
@@ -237,7 +240,7 @@ case `hostname_fqdn` in
                     -v /data:/data \
                     -v $HOME/.ssh:$HOME/.ssh:ro \
                     --net=host \
-                    pyautoplot:latest \
+                    pyautoplot:$PYAUTOPLOT_TAG \
                     '/bin/bash -c \\"report_global_status '$sas_id'; rsync -a /dev/shm/'$sas_id'/ lofarsys@head01.cep4.control.lofar:'$INSPECT_ROOT'/'$sas_id'/\\"' &
                     SSH_PIDS="$SSH_PIDS $!"
                 
