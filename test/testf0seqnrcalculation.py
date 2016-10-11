@@ -66,12 +66,12 @@ def test_main(in_sas_id, in_parset_path, in_file_sizes_path, in_f0seqnr_sizes_pa
     print("\nIncomplete datasets according to f0seqnr method (completeness_value < 100):")
     for data_product_folder, completeness_value in completeness_dict.items():
         if completeness_value < 100:
-            print("Dataset: ", data_product_folder, " Completeness: %0.2f" % completeness_value, "%")
+            print("Dataset: ", data_product_folder, " Completeness: %0.1f%%" % completeness_value)
             
     print("\nIncomplete datasets based on relative (%rMB) file size:" % highest_file_size_mb)
     for data_product_folder, (_, _, file_size_in_mb) in file_sizes_dict.items():  
         if file_size_in_mb < highest_file_size_mb:
-            print("Dataset: ", data_product_folder, " Size: ", file_size_in_mb, "MB ")
+            print("Dataset: ", data_product_folder, " Size: ", file_size_in_mb, "MB ", "(%0.1f%%)" % (100*file_size_in_mb/highest_file_size_mb))
             
             
     print('\n'.join(['%s: %dMB (%0.f%%)' % (name, size, completeness_dict.get(name, -1)) for (name, size) in sorted(analysed_file_sizes_dict['odd_sized_data_sets'])]))
