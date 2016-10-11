@@ -9,6 +9,12 @@ import datetime
 from numpy import array, floor
 
 
+# For testing of the inspection plots on the production system without interfering with the existing script one can 
+# alter the INDEX_HTML_FILENAME
+INDEX_HTML_FILENAME = "index-completeness.html"
+#INDEX_HTML_FILENAME = "index.html"
+
+
 def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
     r'''
     Initialize the Python logging system. The log file will be written
@@ -358,7 +364,7 @@ def subband_html(parset, sb_name, rel_plot_files):
 
         <p>
           <ul>
-            <li><a href="../index.html">Subbands</a> <a href="../../index.html">Projects</a></li>
+            <li><a href="../%(index_filename)s">Subbands</a> <a href="../../%(index_filename)s">Projects</a></li>
             <li><a href="http://www.lofar.org/wiki/doku.php?id=operator:system_validation_observations#lofar_inspection_page">What do I see here?</a></li>
           </ul>
         </p>
@@ -379,12 +385,13 @@ def subband_html(parset, sb_name, rel_plot_files):
 </html>'''
 
     return html_template % {
-        'title'        : parset['sas_id']+' '+sb_name,
-        'overview_rows': '\n'.join(overview_rows),
-        'flagged_std'  : flagged_std,
-        'flagged_mean' : flagged_mean,
-        'flags'        : flags,
-        'zeros'        : zeros}
+        'index_filename'    : INDEX_HTML_FILENAME,
+        'title'             : parset['sas_id']+' '+sb_name,
+        'overview_rows'     : '\n'.join(overview_rows),
+        'flagged_std'       : flagged_std,
+        'flagged_mean'      : flagged_mean,
+        'flags'             : flags,
+        'zeros'             : zeros}
 
 
 
@@ -527,7 +534,7 @@ def observation_html(parset, file_size_data, f0seqnr_completeness_dict, obs_plot
         open(file_name, 'w').write(
             subband_html(parset, sb_name, sb_plots[sb_name]))
 
-    observation_index_name = os.path.join(obs_html_root, 'index.html')
+    observation_index_name = os.path.join(obs_html_root, INDEX_HTML_FILENAME)
 
     subband_list     = parset['subband_list']
     olap_subbands    = [int(sap_sb.split('_')[1][-3:]) for sap_sb in sb_list]
@@ -560,7 +567,7 @@ def observation_html(parset, file_size_data, f0seqnr_completeness_dict, obs_plot
     <body>
     <h1>%(sas_prefix)s%(sas_id)s</h1>
     <p><ul>
-        <li><a href="../index.html">Projects</a></li>
+        <li><a href="../%(index_filename)s">Projects</a></li>
     </ul></p>
 
     %(cobalt_error_log)s
@@ -578,7 +585,8 @@ def observation_html(parset, file_size_data, f0seqnr_completeness_dict, obs_plot
     </table>
     </body>
 </html>
-''' % {'sas_prefix'    : parset['sas_prefix'],
+''' % {'index_filename'    : INDEX_HTML_FILENAME,
+       'sas_prefix'    : parset['sas_prefix'],
        'sas_id'        : parset['sas_id'],
        'file_size_info': file_size_html,
        'input_loss'    : input_loss_html,
@@ -1088,7 +1096,7 @@ def station_beamlet_statistics_plots_html(parset, rel_plot_files):
         <h1>%(title)s</h1>        
         <p>
           <ul>
-            <li><a href="../index.html">Observation</a> <a href="../../index.html">Projects</a></li>
+            <li><a href="../%(index_filename)s">Observation</a> <a href="../../%(index_filename)s">Projects</a></li>
             <li><a href="http://www.lofar.org/wiki/doku.php?id=operator:system_validation_observations#lofar_beamlet_statistics">What do I see here?</a></li>
           </ul>
         </p>
@@ -1101,6 +1109,7 @@ def station_beamlet_statistics_plots_html(parset, rel_plot_files):
 </html>'''
 
     return html_template % {
+        'index_filename'    : INDEX_HTML_FILENAME,
         'title'        : parset['sas_id'],
         'overview_rows': '\n'.join(overview_rows)}
         
@@ -1123,6 +1132,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_dict, ht
         percentage_complete_f0seqnr = -1        
         
     format_dict = parset.copy()
+    format_dict['index_filename']      = INDEX_HTML_FILENAME
     format_dict['nr_subbands']         = len(parset['subband_list'])
     format_dict['percentage_complete'] = int(floor(percentage_complete))
     format_dict['percentage_complete_f0seqnr'] = percentage_complete_f0seqnr
@@ -1136,11 +1146,11 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_dict, ht
         format_dict['parset_relpath'] = os.path.relpath(
             parset['file_name'], html_root)
         html = '''
-    <tr><th><a href="%(sas_id)s/index.html">%(sas_prefix)s%(sas_id)s</a>&nbsp;&nbsp;&nbsp;</th>
+    <tr><th><a href="%(sas_id)s/%(index_filename)s">%(sas_prefix)s%(sas_id)s</a>&nbsp;&nbsp;&nbsp;</th>
         <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(station_beamlet_link)s&nbsp;&nbsp;&nbsp;</td>
-        <td align="right"><a href="%(sas_id)s/index.html">%(percentage_complete)d%%</a></td>
-        <td align="right"><a href="%(sas_id)s/index.html" title="A value of \'-1\' indicates value not available">%(percentage_complete_f0seqnr)d%%</a></td>
+        <td align="right"><a href="%(sas_id)s/%(index_filename)s">%(percentage_complete)d%%</a></td>
+        <td align="right"><a href="%(sas_id)s/%(index_filename)s" title="A value of \'-1\' indicates value not available">%(percentage_complete_f0seqnr)d%%</a></td>
         <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(clock_mhz)d&nbsp;&nbsp;&nbsp;</td>     <td>%(nr_subbands)s&nbsp;&nbsp;&nbsp;</td>
@@ -1150,7 +1160,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_dict, ht
 
     else:
         html = '''
-    <tr><th><a href="%(sas_id)s/index.html">%(sas_prefix)s%(sas_id)s</a>&nbsp;&nbsp;&nbsp;</th>
+    <tr><th><a href="%(sas_id)s/%(index_filename)s">%(sas_prefix)s%(sas_id)s</a>&nbsp;&nbsp;&nbsp;</th>
         <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
         <td align="right">????</td>
         <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
@@ -1173,9 +1183,9 @@ def main_index_html(plot_root, html_root):
     logging.debug('main_index_html(plot_root = %r, html_root = %r)',
                   plot_root, html_root)
 
-    index_name      = os.path.join(html_root, 'index.html')
-    index_txt_name  = os.path.join(html_root, 'index.txt')
-    long_index_name = os.path.join(html_root, 'fullindex.html')
+    index_name      = os.path.join(html_root, INDEX_HTML_FILENAME)
+    index_txt_name  = os.path.join(html_root, INDEX_HTML_FILENAME)
+    long_index_name = os.path.join(html_root, 'full'+INDEX_HTML_FILENAME)
     beginning_of_short_index = datetime.datetime.now() - datetime.timedelta(7)
 
     plot_sas_id_pattern5 = os.path.join(plot_root, '[0123456789]'*5)
