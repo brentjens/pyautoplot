@@ -8,6 +8,7 @@ import time
 import datetime
 from numpy import array, floor
 
+
 def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
     r'''
     Initialize the Python logging system. The log file will be written
@@ -995,6 +996,10 @@ def f0seqnr_size_analysis(parset, f0seqnr_sizes_dict):
     r'''
     Analyze the f0seqnr integration periods (actual size) agains the number of integration periods (expected size) as 
     listed in the parset.
+    
+    Note:   the file_size_analysis() function above uses a 1% percentage value threshold before flagging a dataset  as
+            odd-sized, while this function doesn't. As a result datasets with a completeness of 99.99% and higher will
+            not show up in the file_size_analysis()['odd_sized_data_set']...
     '''
 
     if parset['nr_integration_periods'] == 0:
@@ -1008,7 +1013,11 @@ def f0seqnr_size_analysis(parset, f0seqnr_sizes_dict):
         completeness = (100*nr_integration_periods_in_file/4) / parset['nr_integration_periods']
         if completeness > 100:
             logging.warning('SAS %r: f0seqnr completeness > 100: %0.1f (%f/%d)' % (parset['sas_id'], completeness, nr_integration_periods_in_file, parset['nr_integration_periods']))
-        completeness_dict[data_product_folder] = completeness
+        
+        # TODO: verify if all elements in parset['correlator_locations'] can be expected to always hold the same value.
+        # If not, the elements in the array should be matched against the corresponding data_product_folder
+        node_and_name = '%s:%s' % (parset['correlator_locations'][0], data_product_folder)
+        completeness_dict[node_and_name] = completeness
     
     return completeness_dict
 
@@ -1083,6 +1092,10 @@ def station_beamlet_statistics_plots_html(parset, rel_plot_files):
     return html_template % {
         'title'        : parset['sas_id'],
         'overview_rows': '\n'.join(overview_rows)}
+        
+        
+def calculate_average(in_values=None):
+    return round(sum(in_values)/len(in_values))
 
 
 def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_dict, html_root, ascii_table=False):
@@ -1092,10 +1105,11 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_dict, ht
     if file_sizes_dict is not None:
         percentage_complete = file_sizes_dict['percentage_complete']
     
-    # Newly proposed (and more correct) way of calculating output loss figure
-    percentage_complete_f0seqnr = -1
-    if f0seqnr_completeness_dict is not None and len(f0seqnr_completeness_dict) > 0:
-        percentage_complete_f0seqnr = round(sum(f0seqnr_completeness_dict.values())/len(f0seqnr_completeness_dict))
+    # Newly proposed (and more truthful) way of calculating output loss figure
+    try:
+        percentage_complete_f0seqnr = calculate_average(f0seqnr_completeness_dict.values())
+    except:
+        percentage_complete_f0seqnr = -1        
         
     format_dict = parset.copy()
     format_dict['nr_subbands']         = len(parset['subband_list'])
