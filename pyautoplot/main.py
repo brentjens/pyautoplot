@@ -904,7 +904,7 @@ def inspect_ms(msname, ms_id, max_mem_bytes=4*(2**30), root=os.path.expanduser('
 def collect_timeseries_ms(ms, num_points=240, subband=0, column_name='DATA'):
     mstab      = tables.table(ms.msname)
     num_ant    = len(ms.tables['antennae'])
-    rowincr    = max(1, floor(len(ms.times)/num_points))
+    rowincr    = int(max(1, floor(len(ms.times)/num_points)))
     time_slots = ms.times[0::rowincr]
     query_text = 'TIME in '+repr(list(time_slots))+' && DATA_DESC_ID == '+str(subband)
 
