@@ -1185,7 +1185,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_dict, ht
     
     # Alternative (more truthful) way of calculating output loss figure
     mean = stdev = variance = n_odd_sized_data = n_data_total = -1
-    if f0seqnr_completeness_dict.values() != None and len(f0seqnr_completeness_dict.values()) > 0:
+    if  f0seqnr_completeness_dict is not None and len(f0seqnr_completeness_dict.values()) > 0:
         n_data_total = len(f0seqnr_completeness_dict.values())
         try:
             # Apply a data completeness threshold (percentage) for calculating the number of odd data products and mean
