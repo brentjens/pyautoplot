@@ -1184,15 +1184,15 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_dict, ht
         percentage_complete = file_sizes_dict['percentage_complete']
     
     # Alternative (more truthful) way of calculating output loss figure
-    mean = stdev = variance = 0
-    n_odd_sized_data = 0
-    n_data_total = len(f0seqnr_completeness_dict)
-    try:
-        # Apply a data completeness threshold (percentage) for calculating the number of odd data products and mean
-        th = 100*(1-DATA_INCOMPLETE_THRESHOLD)
-        mean, stdev, variance, (n_odd_sized_data, _) = calculate_statistics(f0seqnr_completeness_dict.values(), (th, None), (None, th), (None, 100.0))
-    except:
-        mean = stdev = variance = -1
+    mean = stdev = variance = n_odd_sized_data = n_data_total = -1
+    if f0seqnr_completeness_dict != None:
+        n_data_total = len(f0seqnr_completeness_dict.values())
+        try:
+            # Apply a data completeness threshold (percentage) for calculating the number of odd data products and mean
+            th = 100*(1-DATA_INCOMPLETE_THRESHOLD)
+            mean, stdev, variance, (n_odd_sized_data, _) = calculate_statistics(f0seqnr_completeness_dict.values(), (th, None), (None, th), (None, 100.0))
+        except Exception as e:
+            logging.warning('SAS %r: calculate_statistics() gave exception: ' % (parset['sas_id'], str(e)))
         
     format_dict = parset.copy()
     format_dict['index_filename']      = INDEX_HTML_FILENAME
