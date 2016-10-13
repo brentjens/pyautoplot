@@ -1239,7 +1239,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_dict, ht
 ''' % format_dict
 
     if ascii_table:
-        html = '''%(sas_prefix)s%(sas_id)s  %(campaign_name)8s  %(target)19s   %(percentage_complete)d%% %(complete_f0seqnr_mean)d%% %(antenna_set)16s  %(band_filter)11s  %(start_time)s -- %(stop_time)s''' % format_dict
+        html = '''%(sas_prefix)s%(sas_id)s  %(campaign_name)8s  %(target)19s   %(percentage_complete)d%% %(complete_f0seqnr_mean)s%% %(antenna_set)16s  %(band_filter)11s  %(start_time)s -- %(stop_time)s''' % format_dict
 
     return html
 
