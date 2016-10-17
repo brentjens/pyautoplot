@@ -508,7 +508,7 @@ def observation_html(parset, file_size_data, f0seqnr_completeness_dict, obs_plot
         # Anonymous helper function to improve readability
         def positive_float_to_html(in_float):
             if in_float < 0:    return "N.A."
-            else:               return "%0.1f" % (in_float)
+            else:               return "%0.1f%%" % (in_float)
             
         if len(file_size_data['odd_sized_data_sets']) == 0:
             odd_sized_html = ''
@@ -517,7 +517,7 @@ def observation_html(parset, file_size_data, f0seqnr_completeness_dict, obs_plot
                 '<h3>Odd size data:</h3><table>'+
                 '<tr>' +
                 '</tr><tr>'.join(
-                    ['<td>%s</td><td>:</td><td>%d MB</td><td></td><td title="Completeness based on f0seqnr-size">(%s%%)</td><td></td>' %
+                    ['<td>%s</td><td>:</td><td>%d MB</td><td></td><td title="Completeness based on f0seqnr-size">(%s)</td><td></td>' %
                      (name, size, positive_float_to_html(f0seqnr_completeness_dict.get(name, -1)))
                      for (name, size) in sorted(
                              file_size_data['odd_sized_data_sets'])]) +
@@ -1203,7 +1203,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_dict, ht
         format_dict['complete_f0seqnr_mean'] = "N.A."
     else:
         format_dict['complete_f0seqnr_tooltip'] += "\n\nData completeness statistics:\nmean = %0.2f\nstdev = %0.2f\nvariance = %0.2f\nodd size data ratio = %r/%r (= %0.2f%%)" % (mean, stdev, variance, n_odd_sized_data, n_data_total, 100*n_odd_sized_data/n_data_total)
-        format_dict['complete_f0seqnr_mean'] = str(int(floor(mean)))
+        format_dict['complete_f0seqnr_mean'] = str(int(floor(mean))) + "%"
 
     if os.path.exists(html_root+'/'+parset['sas_id']+'/Stations/station_beamlets.html'):
         format_dict['station_beamlet_link'] = '<a href="'+parset['sas_id']+'/Stations/station_beamlets.html">BST</a>'
@@ -1218,7 +1218,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_dict, ht
         <td>%(campaign_name)s&nbsp;&nbsp;&nbsp;</td> <td>%(target)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(station_beamlet_link)s&nbsp;&nbsp;&nbsp;</td>
         <td align="right"><a href="%(sas_id)s/%(index_filename)s">%(percentage_complete)d%%</a></td>
-        <td align="right"><a href="%(sas_id)s/%(index_filename)s" title="%(complete_f0seqnr_tooltip)s">%(complete_f0seqnr_mean)s%%</a></td>
+        <td align="right"><a href="%(sas_id)s/%(index_filename)s" title="%(complete_f0seqnr_tooltip)s">%(complete_f0seqnr_mean)s</a></td>
         <td>%(antenna_set)s&nbsp;&nbsp;&nbsp;</td>   <td>%(band_filter)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(start_time)s&nbsp;&nbsp;&nbsp;</td>    <td>%(stop_time)s&nbsp;&nbsp;&nbsp;</td>
         <td>%(clock_mhz)d&nbsp;&nbsp;&nbsp;</td>     <td>%(nr_subbands)s&nbsp;&nbsp;&nbsp;</td>
@@ -1239,7 +1239,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_dict, ht
 ''' % format_dict
 
     if ascii_table:
-        html = '''%(sas_prefix)s%(sas_id)s  %(campaign_name)8s  %(target)19s   %(percentage_complete)d%% %(complete_f0seqnr_mean)s%% %(antenna_set)16s  %(band_filter)11s  %(start_time)s -- %(stop_time)s''' % format_dict
+        html = '''%(sas_prefix)s%(sas_id)s  %(campaign_name)8s  %(target)19s   %(percentage_complete)d%% %(complete_f0seqnr_mean)s %(antenna_set)16s  %(band_filter)11s  %(start_time)s -- %(stop_time)s''' % format_dict
 
     return html
 
