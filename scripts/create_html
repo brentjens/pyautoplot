@@ -935,7 +935,7 @@ def parse_file_sizes(file_name, path_mod_func=lambda x: x):
                  'remaining bytes' not in line and
                  'Write failed: Broken pipe' not in line and
                  'open display' not in line and
-                 'incomprehensible' not in line)]
+                 'Connection timed out' not in line)]
     results = {}
     locus_node = None
     for line in lines:
