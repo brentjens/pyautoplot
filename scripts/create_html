@@ -688,15 +688,13 @@ def find_parset(in_sas_id):
     '''
     
     # Note: parsets with different naming formats (L, T, rtcp-) are all accepted
-    search_path = [os.path.join('/globaldata', 'inspect', str(in_sas_id),
-                                prefix+str(in_sas_id)+'.parset')
+    search_path = [os.path.join('/globaldata', 'inspect', str(in_sas_id), prefix+str(in_sas_id)+'.parset')
                    for prefix in ['L', 'T', 'rtcp-']]
     for path in search_path:
         if os.path.exists(path):
             return path
     
-    search_path = [os.path.join('/globalhome', user, 'log',
-                                prefix+str(in_sas_id)+'.parset')
+    search_path = [os.path.join('/globalhome', user, 'log', prefix+str(in_sas_id)+'.parset')
                    for prefix in ['L', 'T', 'rtcp-']
                    for user in ['lofarsystem', 'lofartest']]
     for path in search_path:
@@ -755,7 +753,7 @@ def parset_summary(sas_id, parset_name):
               'band_filter'  : '',
               'subband_list' : [],
               'subband_freqs_hz': [],
-              'subband_width': 0.0  ,
+              'subband_width': 0.0,
               '200_subband_width': 0.0,
               '160_subband_width': 0.0,
               'file_name'    : None,
@@ -877,7 +875,28 @@ def parset_summary(sas_id, parset_name):
         elif block_size == 0:
             logging.warning('SAS %r: block_size == 0' % parset['sas_id'])
         else:
-            parset['nr_integration_periods'] = floor(duration_seconds * subband_bandwidth_hz / block_size) * nr_integrations_per_block / nr_blocks_per_integration
+            parset['nr_integration_periods'] =  floor(duration_seconds * subband_bandwidth_hz / block_size) * \
+                                                nr_integrations_per_block / nr_blocks_per_integration
+
+            # A (parset['nr_integration_periods'] == 0) is not anticipated, so report this if it occurrs
+            if parset['nr_integration_periods'] == 0:
+                logging.warning("SAS %r: parset['nr_integration_periods'] == 0\
+                                \n\tparset['start_time']=%s\
+                                \n\tparset['stop_time']=%s\
+                                \n\tparset['clock_mhz']=%s\
+                                \n\tparset['block_size']=%s\
+                                \n\tdurations_sec=%r\
+                                \n\tsubband_bandwidth_hz=%r\
+                                \n\tnr_integrations_per_block=%r\
+                                \n\tnr_blocks_per_integration=%r" % (   parset['sas_id'],
+                                                                        parset['start_time'],
+                                                                        parset['stop_time'],
+                                                                        parset['clock_mhz'],
+                                                                        parset['block_size'],
+                                                                        duration_seconds,
+                                                                        subband_bandwidth_hz,
+                                                                        nr_integrations_per_block,
+                                                                        nr_blocks_per_integration))
                 
     if parset['clock_mhz'] == 160:
         parset['subband_width'] = parset['160_subband_width']
