@@ -16,8 +16,8 @@
 TESTLINE = ""
 
 # Normally, one would want to use pyautoplot:latest (PYAUTOPLOT_TAG=latest). This can be overriden however
-PYAUTOPLOT_TAG=completeness
-# PYAUTOPLOT_TAG=latest
+# PYAUTOPLOT_TAG=completeness
+PYAUTOPLOT_TAG=latest
 
 HOSTNAME=`hostname`
 PATH="$PATH:/opt/cep/pyautoplot/bin"
