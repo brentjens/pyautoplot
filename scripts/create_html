@@ -775,112 +775,109 @@ def parset_summary(sas_id, parset_name):
               }
 
 
-    if parset_name:
-        if not os.path.exists(parset_name):
-            logging.warning('SAS %r: Parset not found in: %s' % (parset['sas_id'], parset_name))
-        else:
-            parset['file_name']  = parset_name
-            parset['sas_prefix'] = os.path.basename(parset_name).split('.parset')[0][0]
-            parset_lines = open(parset_name).readlines()
-            for line in parset_lines:
-                if 'Campaign.name' in line:
-                    parset['campaign_name'] = value(line).strip().strip('"\'')
-                elif 'Beam[0].target' in line:
-                    parset['target'] = value(line)
-                elif 'Observation.startTime' in line:
-                    parset['start_time'] = value(line)
-                elif 'Observation.stopTime' in line:
-                    parset['stop_time'] = value(line)
-                elif 'Observation.antennaSet' in line:
-                    parset['antenna_set'] = value(line)
-                elif  'Observation.bandFilter' in line:
-                    parset['band_filter'] = value(line)
-                elif 'Observation.Beam[' in line and '].subbandList' in line:
-                    subband_list = parse_subband_list(value(line))
-                    if len(subband_list) == 0:
-                        logging.warn('Empty subband list in %s', parset_name)
-                    else:
-                        parset['subband_list'] += subband_list
-                elif 'Observation.clockMode' in line:
-                    parset['clock_mhz'] = int(value(line).strip('<<Clock \n\t'))
-                elif 'Observation.subbandWidth' in line:
-                    parset['subband_width'] = float(value(line))
-                elif 'Clock200.subbandWidth' in line:
-                    parset['200_subband_width'] = float(value(line))
-                elif 'Clock160.subbandWidth' in line:
-                    parset['160_subband_width'] = float(value(line))
-                elif 'Observation.DataProducts.Output_Correlated.filenames' in line:
-                    parset['correlator_products'] = [
-                        name.strip()
-                        for name in  value(line).strip('[] ').split(',')
-                        if name.strip() != '']
-                elif 'Observation.DataProducts.Output_Correlated.locations' in line:
-                    parset['correlator_locations'] = [
-                        name.strip().split(':')[0]
-                        for name in  value(line).strip('[] ').split(',')
-                        if name.strip() != '' and name.strip().split(':')[0] != '']
-                elif 'Observation.DataProducts.Output_Beamformed.filenames' in line:
-                    parset['beamformer_products'] += [
-                        name.strip()
-                        for name in  value(line).strip('[] ').split(',')
-                        if name.strip() != '']
-                elif 'Observation.DataProducts.Output_Beamformed.locations' in line:
-                    parset['beamformer_locations'] += [
-                        name.strip().split(':')[0]
-                        for name in  value(line).strip('[] ').split(',')
-                        if name.strip() != '' and name.strip().split(':')[0] != '']
-                elif 'Observation.DataProducts.Output_IncoherentStokes.filenames' in line:
-                    parset['beamformer_products'] += [
-                        name.strip()
-                        for name in  value(line).strip('[] ').split(',')
-                        if name.strip() != '']
-                elif 'Observation.DataProducts.Output_IncoherentStokes.locations' in line:
-                    parset['beamformer_locations'] += [
-                        name.strip().split(':')[0]
-                        for name in  value(line).strip('[] ').split(',')
-                        if name.strip() != '' and name.strip().split(':')[0] != '']
-                elif 'Observation.DataProducts.Output_CoherentStokes.filenames' in line:
-                    parset['beamformer_products'] += [
-                        name.strip()
-                        for name in  value(line).strip('[] ').split(',')
-                        if name.strip() != '']
-                elif 'Observation.DataProducts.Output_CoherentStokes.locations' in line:
-                    parset['beamformer_locations'] += [
-                        name.strip().split(':')[0]
-                        for name in  value(line).strip('[] ').split(',')
-                        if name.strip() != '' and name.strip().split(':')[0] != '']
-                elif 'Cobalt.blockSize' in line:
-                    parset['block_size'] = int(value(line))
-                elif 'Cobalt.Correlator.nrIntegrationsPerBlock' in line:
-                    parset['nr_integrations_per_block'] = int(value(line))
-                elif 'Cobalt.Correlator.nrBlocksPerIntegration' in line:
-                    parset['nr_blocks_per_integration'] = int(value(line))
+    if parset_name and os.path.exists(parset_name):
+        parset['file_name']  = parset_name
+        parset['sas_prefix'] = os.path.basename(parset_name).split('.parset')[0][0]
+        parset_lines = open(parset_name).readlines()
+        for line in parset_lines:
+            if 'Campaign.name' in line:
+                parset['campaign_name'] = value(line).strip().strip('"\'')
+            elif 'Beam[0].target' in line:
+                parset['target'] = value(line)
+            elif 'Observation.startTime' in line:
+                parset['start_time'] = value(line)
+            elif 'Observation.stopTime' in line:
+                parset['stop_time'] = value(line)
+            elif 'Observation.antennaSet' in line:
+                parset['antenna_set'] = value(line)
+            elif  'Observation.bandFilter' in line:
+                parset['band_filter'] = value(line)
+            elif 'Observation.Beam[' in line and '].subbandList' in line:
+                subband_list = parse_subband_list(value(line))
+                if len(subband_list) == 0:
+                    logging.warn('Empty subband list in %s', parset_name)
                 else:
-                    pass
-
-            # Determine number of integration periods (for later use in output loss figure calculation)
-            start_time = stop_time = datetime.datetime.now()
-            try:
-                start_time =                datetime.datetime.strptime(parset['start_time'], ('%Y-%m-%d %H:%M:%S.%f' if '.' in parset['start_time'] else '%Y-%m-%d %H:%M:%S'))
-            except:
-                logging.warning('SAS %r: Datetime format unsupported: parset[\'start_time\'] = %s' % (parset['sas_id'], parset['start_time']))
-            try:
-                stop_time =                 datetime.datetime.strptime(parset['stop_time'], ('%Y-%m-%d %H:%M:%S.%f' if '.' in parset['stop_time'] else '%Y-%m-%d %H:%M:%S'))
-            except:
-                logging.warning('SAS %r: Datetime format unsupported: parset[\'stop_time\'] = %s' % (parset['sas_id'], parset['stop_time']))
-            duration_seconds =              (stop_time - start_time).total_seconds()
-
-            subband_bandwidth_hz =          (1e6 * parset['clock_mhz'] / 1024)
-            block_size =                    parset['block_size']
-            nr_integrations_per_block =     parset['nr_integrations_per_block']
-            nr_blocks_per_integration =     parset['nr_blocks_per_integration']
-
-            if nr_blocks_per_integration == 0:
-                logging.warning('SAS %r: nr_blocks_per_integration == 0' % parset['sas_id'])
-            elif block_size == 0:
-                logging.warning('SAS %r: block_size == 0' % parset['sas_id'])
+                    parset['subband_list'] += subband_list
+            elif 'Observation.clockMode' in line:
+                parset['clock_mhz'] = int(value(line).strip('<<Clock \n\t'))
+            elif 'Observation.subbandWidth' in line:
+                parset['subband_width'] = float(value(line))
+            elif 'Clock200.subbandWidth' in line:
+                parset['200_subband_width'] = float(value(line))
+            elif 'Clock160.subbandWidth' in line:
+                parset['160_subband_width'] = float(value(line))
+            elif 'Observation.DataProducts.Output_Correlated.filenames' in line:
+                parset['correlator_products'] = [
+                    name.strip()
+                    for name in  value(line).strip('[] ').split(',')
+                    if name.strip() != '']
+            elif 'Observation.DataProducts.Output_Correlated.locations' in line:
+                parset['correlator_locations'] = [
+                    name.strip().split(':')[0]
+                    for name in  value(line).strip('[] ').split(',')
+                    if name.strip() != '' and name.strip().split(':')[0] != '']
+            elif 'Observation.DataProducts.Output_Beamformed.filenames' in line:
+                parset['beamformer_products'] += [
+                    name.strip()
+                    for name in  value(line).strip('[] ').split(',')
+                    if name.strip() != '']
+            elif 'Observation.DataProducts.Output_Beamformed.locations' in line:
+                parset['beamformer_locations'] += [
+                    name.strip().split(':')[0]
+                    for name in  value(line).strip('[] ').split(',')
+                    if name.strip() != '' and name.strip().split(':')[0] != '']
+            elif 'Observation.DataProducts.Output_IncoherentStokes.filenames' in line:
+                parset['beamformer_products'] += [
+                    name.strip()
+                    for name in  value(line).strip('[] ').split(',')
+                    if name.strip() != '']
+            elif 'Observation.DataProducts.Output_IncoherentStokes.locations' in line:
+                parset['beamformer_locations'] += [
+                    name.strip().split(':')[0]
+                    for name in  value(line).strip('[] ').split(',')
+                    if name.strip() != '' and name.strip().split(':')[0] != '']
+            elif 'Observation.DataProducts.Output_CoherentStokes.filenames' in line:
+                parset['beamformer_products'] += [
+                    name.strip()
+                    for name in  value(line).strip('[] ').split(',')
+                    if name.strip() != '']
+            elif 'Observation.DataProducts.Output_CoherentStokes.locations' in line:
+                parset['beamformer_locations'] += [
+                    name.strip().split(':')[0]
+                    for name in  value(line).strip('[] ').split(',')
+                    if name.strip() != '' and name.strip().split(':')[0] != '']
+            elif 'Cobalt.blockSize' in line:
+                parset['block_size'] = int(value(line))
+            elif 'Cobalt.Correlator.nrIntegrationsPerBlock' in line:
+                parset['nr_integrations_per_block'] = int(value(line))
+            elif 'Cobalt.Correlator.nrBlocksPerIntegration' in line:
+                parset['nr_blocks_per_integration'] = int(value(line))
             else:
-                parset['nr_integration_periods'] = floor(duration_seconds * subband_bandwidth_hz / block_size) * nr_integrations_per_block / nr_blocks_per_integration
+                pass
+
+        # Determine number of integration periods (for later use in output loss figure calculation)
+        start_time = stop_time = datetime.datetime.now()
+        try:
+            start_time =                datetime.datetime.strptime(parset['start_time'], ('%Y-%m-%d %H:%M:%S.%f' if '.' in parset['start_time'] else '%Y-%m-%d %H:%M:%S'))
+        except:
+            logging.warning('SAS %r: Datetime format unsupported: parset[\'start_time\'] = %s' % (parset['sas_id'], parset['start_time']))
+        try:
+            stop_time =                 datetime.datetime.strptime(parset['stop_time'], ('%Y-%m-%d %H:%M:%S.%f' if '.' in parset['stop_time'] else '%Y-%m-%d %H:%M:%S'))
+        except:
+            logging.warning('SAS %r: Datetime format unsupported: parset[\'stop_time\'] = %s' % (parset['sas_id'], parset['stop_time']))
+        duration_seconds =              (stop_time - start_time).total_seconds()
+
+        subband_bandwidth_hz =          (1e6 * parset['clock_mhz'] / 1024)
+        block_size =                    parset['block_size']
+        nr_integrations_per_block =     parset['nr_integrations_per_block']
+        nr_blocks_per_integration =     parset['nr_blocks_per_integration']
+
+        if nr_blocks_per_integration == 0:
+            logging.warning('SAS %r: nr_blocks_per_integration == 0' % parset['sas_id'])
+        elif block_size == 0:
+            logging.warning('SAS %r: block_size == 0' % parset['sas_id'])
+        else:
+            parset['nr_integration_periods'] = floor(duration_seconds * subband_bandwidth_hz / block_size) * nr_integrations_per_block / nr_blocks_per_integration
                 
     if parset['clock_mhz'] == 160:
         parset['subband_width'] = parset['160_subband_width']
