@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 # -*- python -*-
 
 from getopt import gnu_getopt as getopt
