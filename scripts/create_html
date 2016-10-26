@@ -141,7 +141,7 @@ def create_html_main(argv):
                         shutil.copy2(parset['file_name'], obs_plot_root)    
                         parset['file_name'] = intended_parset_name
                     except:
-                        logging.error('SAS ID: %s. Copying parset from %s to %s failed', parset['sas_id'], parset['file_name'], obs_plot_root)
+                        logging.error('SAS ID: %s. Copying parset from %s to %s failed', (parset['sas_id'], parset['file_name'], obs_plot_root))
             file_size_data = {}
             file_sizes_txt = os.path.join(obs_plot_root, 'file-sizes.txt')
             if os.path.exists(file_sizes_txt):
@@ -159,7 +159,7 @@ def create_html_main(argv):
                              obs_plot_root = obs_plot_root,
                              html_root     = options.html_root)
         except IOError:
-            logging.error('SAS ID: %s. IOError: %', parset['sas_id'], str(sys.exc_info()[1]))
+            logging.error('SAS ID: %s. IOError: %', (parset['sas_id'], str(sys.exc_info()[1])))
 
         if num % 20 == 0:
             main_index_html(plot_root = options.plot_root,
@@ -451,8 +451,7 @@ def observation_html(parset, file_size_data, f0seqnr_completeness_dict, obs_plot
     '''
     logging.info('Creating HTML for observation %s', parset['sas_id'])
     logging.debug(
-        'observation_html(parset = %r, obs_plot_root = %r, html_root = %r)',
-        parset, obs_plot_root, html_root)
+        'observation_html(parset = %r, obs_plot_root = %r, html_root = %r)', (parset, obs_plot_root, html_root))
     obs_html_root = os.path.join(html_root    , parset['sas_id'])
     sb_html_root  = os.path.join(obs_html_root, 'SBpages')
     stn_html_root = os.path.join(obs_html_root, 'Stations')
@@ -539,7 +538,7 @@ def observation_html(parset, file_size_data, f0seqnr_completeness_dict, obs_plot
                missing_html,
                odd_sized_html)
     except:
-        logging.error('%s: %s', str(sys.exc_info()[0].__name__), str(sys.exc_info()[1]))
+        logging.error('%s: %s', (str(sys.exc_info()[0].__name__), str(sys.exc_info()[1])))
 
 
     plot_files = relative_plot_paths(obs_plot_root, sb_html_root)
@@ -575,7 +574,7 @@ def observation_html(parset, file_size_data, f0seqnr_completeness_dict, obs_plot
                         (name, name, subband, freq_hz/1e6)
                         for name, subband, freq_hz in zip(sb_list, station_subbands, subband_freqs_hz)]
     except Exception as e:
-        logging.warning('SAS %r: Could not create sb_page_list, exception message: %s' % parset['sas_id'], str(e))
+        logging.warning('SAS %r: Could not create sb_page_list, exception message: %s' % (parset['sas_id'], str(e)))
         sb_page_list = []
 
     open(observation_index_name, 'w').write('''
@@ -655,8 +654,7 @@ def parse_subband_list(parset_subband_list):
         elif len(sub_list) == 2:
             subbands += range(int(sub_list[0]), int(sub_list[1])+1)
         else:
-            logging.error('%r is not a valid sub_range in a subband list',
-                          sub_list)
+            logging.error('%r is not a valid sub_range in a subband list', sub_list)
             return []
     return subbands
 
@@ -779,7 +777,7 @@ def parset_summary(sas_id, parset_name):
 
     if parset_name:
         if not os.path.exists(parset_name):
-            logging.warning('SAS %r: Parset not found in: %s' % parset['sas_id'], parset_name)
+            logging.warning('SAS %r: Parset not found in: %s' % (parset['sas_id'], parset_name))
         else:
             parset['file_name']  = parset_name
             parset['sas_prefix'] = os.path.basename(parset_name).split('.parset')[0][0]
@@ -865,11 +863,11 @@ def parset_summary(sas_id, parset_name):
             try:
                 start_time =                datetime.datetime.strptime(parset['start_time'], ('%Y-%m-%d %H:%M:%S.%f' if '.' in parset['start_time'] else '%Y-%m-%d %H:%M:%S'))
             except:
-                logging.warning('SAS %r: Datetime format unsupported: parset[\'start_time\'] = %s' % parset['sas_id'], parset['start_time'])
+                logging.warning('SAS %r: Datetime format unsupported: parset[\'start_time\'] = %s' % (parset['sas_id'], parset['start_time']))
             try:
                 stop_time =                 datetime.datetime.strptime(parset['stop_time'], ('%Y-%m-%d %H:%M:%S.%f' if '.' in parset['stop_time'] else '%Y-%m-%d %H:%M:%S'))
             except:
-                logging.warning('SAS %r: Datetime format unsupported: parset[\'stop_time\'] = %s' % parset['sas_id'], parset['stop_time'])
+                logging.warning('SAS %r: Datetime format unsupported: parset[\'stop_time\'] = %s' % (parset['sas_id'], parset['stop_time']))
             duration_seconds =              (stop_time - start_time).total_seconds()
 
             subband_bandwidth_hz =          (1e6 * parset['clock_mhz'] / 1024)
@@ -950,8 +948,7 @@ def parse_file_sizes(file_name, path_mod_func=lambda x: x):
             file_name    = os.path.basename(full_path)
             results[file_name] = (locus_node, full_path, data_size)
         else:
-            logging.warning('parse_file_sizes(): incomprehensible line %r',
-                            line)
+            logging.warning('parse_file_sizes(): incomprehensible line %r', line)
     return results
 
 
@@ -1251,8 +1248,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_dict, ht
 def main_index_html(plot_root, html_root):
     r'''
     '''
-    logging.debug('main_index_html(plot_root = %r, html_root = %r)',
-                  plot_root, html_root)
+    logging.debug('main_index_html(plot_root = %r, html_root = %r)', (plot_root, html_root))
 
     index_name      = os.path.join(html_root, INDEX_HTML_FILENAME)
     index_txt_name  = os.path.join(html_root, INDEX_HTML_FILENAME)
@@ -1380,5 +1376,5 @@ if __name__ == '__main__':
     except SystemExit:
         raise
     except:
-        logging.error('%s: %s', str(sys.exc_info()[0].__name__), str(sys.exc_info()[1]))
+        logging.error('%s: %s', (str(sys.exc_info()[0].__name__), str(sys.exc_info()[1])))
         raise #sys.exit(2)
