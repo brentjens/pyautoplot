@@ -14,8 +14,8 @@ from numpy import array, floor
 # insert TESTLINE in the relevant filenames, e.g. index[TESTLINE].html. Ultimately, TESTLINE could be auto-filled 
 # depending on the TAG environment variable (if it exists and doesn't say 'latest'). For normal use, leave TESTLINE an
 # empty string (""). Note that TESTLINE doesn't necessarily propagate to programs/scripts called from within this one.
-#TESTLINE = "-test"
-TESTLINE = ""
+TESTLINE = "-test"
+# TESTLINE = ""
 
 # Data with a completeness figure below this value is flagged as odd sized
 DATA_INCOMPLETE_THRESHOLD = 0.005  # (=) 0.5%
