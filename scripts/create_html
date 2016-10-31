@@ -80,7 +80,7 @@ def initialize_logging(log_level, log_dir = '/globaldata/inspect/'):
 
 
 if __name__ == '__main__':
-    initialize_logging('INFO')
+    initialize_logging('DEBUG')
 
 try:
     import matplotlib
@@ -1293,6 +1293,9 @@ def main_index_html(plot_root, html_root):
     parsets = sorted(unsorted_parsets,
                      key     = lambda parset: parset['start_time'],
                      reverse = True)
+
+    logging.debug('Been here: main_index_html, done that: gathered parsets')
+
     file_sizes_array = []
     f0seqnr_completeness_array = []
     for parset in parsets:
@@ -1316,12 +1319,16 @@ def main_index_html(plot_root, html_root):
         else:
             parset['file_name'] = None
 
+        logging.debug('Been here: main_index_html, done that: ensuring that observation plots folder exist for parset=%r', parset)
+
         file_size_data = None
         file_sizes_txt = os.path.join(obs_plot_root, 'file-sizes.txt')
         if os.path.exists(file_sizes_txt):
             file_sizes_dict = parse_file_sizes(file_sizes_txt)
             file_size_data  = file_size_analysis(parset, file_sizes_dict)
         file_sizes_array.append(file_size_data)
+
+        logging.debug('Been here: main_index_html, done that: constructed file-sizes for parset=%r', parset)
         
         f0seqnr_completeness_dict = None
         f0seqnr_sizes_txt = os.path.join(obs_plot_root, 'f0seqnr-sizes.txt')
@@ -1330,11 +1337,14 @@ def main_index_html(plot_root, html_root):
             f0seqnr_completeness_dict = f0seqnr_size_analysis(parset, f0seqnr_sizes_dict)
         f0seqnr_completeness_array.append(f0seqnr_completeness_dict)
 
+        logging.debug('Been here: main_index_html, done that: constructed f0seqnr-sizes for parset=%r', parset)
+
     open(index_txt_name, 'w').write('\n'.join(
             [observation_table_row(parset, file_size, f0seqnr_completeness_dict, html_root, ascii_table=True)
              for parset, file_size, f0seqnr_completeness_dict in zip(parsets, file_sizes_array, f0seqnr_completeness_array)
              if parset['start_time'].strip() != '']))
 
+    logging.debug('Been here: main_index_html, done that: wrote %r for parset=%r' % (index_txt_name, parset))
 
     data_completeness_threshold = 100*(1-DATA_INCOMPLETE_THRESHOLD)
     open(index_name, 'w').write('''
@@ -1362,6 +1372,8 @@ def main_index_html(plot_root, html_root):
                    if parset['start_time'].strip() != '' and datetime.datetime.strptime(parset['start_time'], '%Y-%m-%d %H:%M:%S') > beginning_of_short_index]
                   )))
 
+    logging.debug('Been here: main_index_html, done that: wrote %r for parset=%r' % (index_name, parset))
+
     open(long_index_name, 'w').write('''
 <html>
     <head>
@@ -1385,6 +1397,7 @@ def main_index_html(plot_root, html_root):
                    for parset, file_size, f0seqnr_completeness_dict in zip(parsets, file_sizes_array, f0seqnr_completeness_array)]
                   )))
 
+    logging.debug('Been here: main_index_html, done that: wrote %r for parset=%r' % (long_index_name, parset))
 
 if __name__ == '__main__':
     try:
