@@ -141,7 +141,7 @@ def create_html_main(argv):
                         shutil.copy2(parset['file_name'], obs_plot_root)    
                         parset['file_name'] = intended_parset_name
                     except:
-                        logging.error('SAS ID: %s. Copying parset from %s to %s failed', (parset['sas_id'], parset['file_name'], obs_plot_root))
+                        logging.error('SAS ID: %s. Copying parset from %s to %s failed', parset['sas_id'], parset['file_name'], obs_plot_root)
             file_size_data = {}
             file_sizes_txt = os.path.join(obs_plot_root, 'file-sizes.txt')
             if os.path.exists(file_sizes_txt):
@@ -451,7 +451,7 @@ def observation_html(parset, file_size_data, f0seqnr_completeness_dict, obs_plot
     '''
     logging.info('Creating HTML for observation %s', parset['sas_id'])
     logging.debug(
-        'observation_html(parset = %r, obs_plot_root = %r, html_root = %r)', (parset, obs_plot_root, html_root))
+        'observation_html(parset = %r, obs_plot_root = %r, html_root = %r)', parset, obs_plot_root, html_root)
     obs_html_root = os.path.join(html_root    , parset['sas_id'])
     sb_html_root  = os.path.join(obs_html_root, 'SBpages')
     stn_html_root = os.path.join(obs_html_root, 'Stations')
@@ -1252,7 +1252,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_dict, ht
 def main_index_html(plot_root, html_root):
     r'''
     '''
-    logging.debug('main_index_html(plot_root = %r, html_root = %r)', (plot_root, html_root))
+    logging.debug('main_index_html(plot_root = %r, html_root = %r)', plot_root, html_root)
 
     index_name      = os.path.join(html_root, INDEX_HTML_FILENAME)
     index_txt_name  = os.path.join(html_root, INDEX_HTML_FILENAME)
