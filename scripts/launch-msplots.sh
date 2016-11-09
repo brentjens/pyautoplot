@@ -12,12 +12,12 @@
 # insert TESTLINE in the relevant filenames, e.g. index[TESTLINE].html. Ultimately, TESTLINE could be auto-filled 
 # depending on the TAG environment variable (if it exists and doesn't say 'latest'). For normal use, leave TESTLINE an
 # empty string (""). Note that TESTLINE doesn't necessarily propagate to programs/scripts called from within this one.
-TESTLINE="-test"
-#TESTLINE=""
+#TESTLINE="-test"
+TESTLINE=""
 
 # Normally, one would want to use pyautoplot:latest (PYAUTOPLOT_TAG=latest). This can be overriden however
-PYAUTOPLOT_TAG=completeness
-#PYAUTOPLOT_TAG=latest
+#PYAUTOPLOT_TAG=completeness
+PYAUTOPLOT_TAG=latest
 
 HOSTNAME=`hostname`
 PATH="$PATH:/opt/cep/pyautoplot/bin"
