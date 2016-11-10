@@ -129,10 +129,11 @@ def create_html_main(argv):
                for sas_id, parset_name in zip(sas_ids, parset_names)]
 
     for num, parset in enumerate(sorted(parsets)[::-1]):
-        logging.debug('Processing SAS ID: %s', parset['sas_id'])
+        logging.debug('Processing SAS ID: %s, parset=%r', parset['sas_id'], parset)
         try:
             obs_plot_root = os.path.join(options.plot_root, parset['sas_id'])            
             if parset['file_name'] and os.path.exists(parset['file_name']):
+                logging.debug('SAS ID: %s. Parset exists at: %s', parset['sas_id'], parset['file_name'])
                 intended_parset_path = os.path.join(obs_plot_root, os.path.basename(parset['file_name']))
     
                 # Make sure parset is available in the intended location            
@@ -142,16 +143,21 @@ def create_html_main(argv):
                         parset['file_name'] = intended_parset_name
                     except:
                         logging.error('SAS ID: %s. Copying parset from %s to %s failed', parset['sas_id'], parset['file_name'], obs_plot_root)
+            else:
+                logging.debug('SAS ID: %s. Parset doesn\'t exists at: %s', parset['sas_id'], parset['file_name'])
+                
             file_size_data = {}
             file_sizes_txt = os.path.join(obs_plot_root, 'file-sizes.txt')
             if os.path.exists(file_sizes_txt):
                 file_sizes_dict = parse_file_sizes(file_sizes_txt)
                 file_size_data  = file_size_analysis(parset, file_sizes_dict)
+                logging.debug('SAS ID: %s. file_size_data content: %r', parset['sas_id'], file_size_data)
             f0seqnr_completeness_dict = {}
             f0seqnr_sizes_txt = os.path.join(obs_plot_root, 'f0seqnr-sizes.txt')
             if os.path.exists(f0seqnr_sizes_txt):                
                 f0seqnr_sizes_dict = parse_file_sizes(f0seqnr_sizes_txt, os.path.dirname)				
                 f0seqnr_completeness_dict = f0seqnr_size_analysis(parset, f0seqnr_sizes_dict)
+                logging.debug('SAS ID: %s. f0seqnr_completeness_dict content: %r', parset['sas_id'], f0seqnr_completeness_dict)
 
             observation_html(parset,
                              file_size_data,
