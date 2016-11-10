@@ -140,7 +140,7 @@ def create_html_main(argv):
                 if not os.path.samefile(intended_parset_path, parset['file_name']):
                     try:                    
                         shutil.copy2(parset['file_name'], obs_plot_root)    
-                        parset['file_name'] = intended_parset_name
+                        parset['file_name'] = intended_parset_path
                     except:
                         logging.error('SAS ID: %s. Copying parset from %s to %s failed', parset['sas_id'], parset['file_name'], obs_plot_root)
             else:
