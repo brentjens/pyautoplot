@@ -24,6 +24,8 @@ DATA_INCOMPLETE_THRESHOLD = 0.005  # (==) 0.5%
 # Automatically generated definitions:
 
 INDEX_HTML_FILENAME = "index"+TESTLINE+".html"
+FULLINDEX_HTML_FILENAME = "fullindex"+TESTLINE+".html"
+INDEX_TXT_FILENAME = "index"+TESTLINE+".txt"
 CREATE_HTML_LOG_FILENAME = "create_html"+TESTLINE+".log"
 
 
@@ -979,17 +981,12 @@ def file_size_analysis(parset, file_sizes_dict):
     r'''
     Analyze the file sizes agains the expected files as listed in the parset.
     '''
-
-    logging.debug('file_size_analysis(): before iterating')
-
     ms_sizes  = array([value[2]
                        for keyword, value in file_sizes_dict.items()
                        if '.MS'  in keyword])
     raw_sizes = array([value[2]
                        for keyword, value in file_sizes_dict.items()
                        if '.raw' in keyword])
-
-    logging.debug('file_size_analysis(): after iterating')
 
     max_ms_size_mb = 0
     if len(ms_sizes) > 0:
@@ -1266,8 +1263,8 @@ def main_index_html(plot_root, html_root):
     logging.debug('main_index_html(plot_root = %r, html_root = %r)', plot_root, html_root)
 
     index_name      = os.path.join(html_root, INDEX_HTML_FILENAME)
-    index_txt_name  = os.path.join(html_root, INDEX_HTML_FILENAME)
-    long_index_name = os.path.join(html_root, 'full'+INDEX_HTML_FILENAME)
+    index_txt_name  = os.path.join(html_root, INDEX_TXT_FILENAME)
+    long_index_name = os.path.join(html_root, FULLINDEX_HTML_FILENAME)
     beginning_of_short_index = datetime.datetime.now() - datetime.timedelta(7)
 
     plot_sas_id_pattern5 = os.path.join(plot_root, '[0123456789]'*5)
