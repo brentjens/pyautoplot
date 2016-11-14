@@ -1317,9 +1317,6 @@ def main_index_html(plot_root, html_root):
             parset['file_name'] = new_parset_name
         else:
             parset['file_name'] = None
-            logging.debug('In main_index_html(), SAS ID: %r has no parset filename', parset[sas_id])
-
-        logging.debug('Been here: main_index_html, done that: ensuring that observation plots folder exist for parset=%r', parset)
 
         file_size_data = None
         file_sizes_txt = os.path.join(obs_plot_root, 'file-sizes.txt')
