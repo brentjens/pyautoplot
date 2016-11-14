@@ -81,6 +81,7 @@ case `hostname_fqdn` in
                     scp cbm001:/localhome/lofarsystem/parsets/rtcp-${sas_id}.parset ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset
                 else
                     echo "   - no parset found in cbm001:/localhome/lofarsystem/parsets/ for ${sas_id}"
+                fi
             else
                 echo "   - existing parset found: ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset"
             fi
