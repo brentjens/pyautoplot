@@ -75,18 +75,17 @@ case `hostname_fqdn` in
             if [[ -e cbm001:/localhome/lofarsystem/parsets/L${sas_id}.parset ]] ; then
                 echo "   - obtaining L${sas_id}.parset"
                 scp cbm001:/localhome/lofarsystem/parsets/L${sas_id}.parset ${INSPECT_ROOT}/${sas_id}/L${sas_id}.parset
+            elif [[ ! -e  ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset ]] ; then
+                if [[ -e cbm001:/localhome/lofarsystem/parsets/rtcp-${sas_id}.parset ]] ; then
+                    echo "   - obtaining rtcp-${sas_id}.parset"
+                    scp cbm001:/localhome/lofarsystem/parsets/rtcp-${sas_id}.parset ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset
+                else
+                    echo "   - no parset found in cbm001:/localhome/lofarsystem/parsets/ for ${sas_id}"
             else
-                echo "   - no such parset: cbm001:/localhome/lofarsystem/parsets/L${sas_id}.parset"
-            fi
-        elif [[ ! -e  ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset ]] ; then
-            if [[ -e cbm001:/localhome/lofarsystem/parsets/rtcp-${sas_id}.parset ]] ; then
-                echo "   - obtaining rtcp-${sas_id}.parset"
-                scp cbm001:/localhome/lofarsystem/parsets/rtcp-${sas_id}.parset ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset
-            else
-                echo "   - no such parset: cbm001:/localhome/lofarsystem/parsets/rtcp-${sas_id}.parset"
+                echo "   - existing parset found: ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset"
             fi
         else
-            echo "   - parset exists already in ${INSPECT_ROOT}/${sas_id}/"
+            echo "   - existing parset found: ${INSPECT_ROOT}/${sas_id}/L${sas_id}.parset"
         fi
         ;;
 esac
