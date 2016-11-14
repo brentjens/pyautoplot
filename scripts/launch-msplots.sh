@@ -26,7 +26,7 @@ LOG=$INSPECT_ROOT/launch-msplots$TESTLINE.log
 
 
 #Time to wait for stuck processes before killing them
-export ALARMTIME=420
+export ALARMTIME=20m
  
 PARENTPID=$$
 GLOBAL_ARGS=$@
