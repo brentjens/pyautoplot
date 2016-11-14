@@ -72,14 +72,10 @@ case `hostname_fqdn` in
         fi
         sleep 2
         if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset ]] ; then
-                if [[ -e cbm001:/localhome/lofarsystem/parsets/rtcp-${sas_id}.parset ]] ; then
-                    echo "   - obtaining rtcp-${sas_id}.parset"
-                    scp cbm001:/localhome/lofarsystem/parsets/rtcp-${sas_id}.parset ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset
-                else
-                    echo "   - no parset found in cbm001:/localhome/lofarsystem/parsets/ for ${sas_id}"
-                fi
-            else
-                echo "   - existing parset found: ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset"
+            echo "   - obtaining rtcp-${sas_id}.parset"
+            scp cbm001:/localhome/lofarsystem/parsets/rtcp-${sas_id}.parset ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset
+        else
+            echo "   - existing parset found: ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset"
         fi
 #        if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/L${sas_id}.parset ]] ; then
 #            if [[ -e cbm001:/localhome/lofarsystem/parsets/L${sas_id}.parset ]] ; then
