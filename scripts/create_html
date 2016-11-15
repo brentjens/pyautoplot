@@ -883,8 +883,8 @@ def parset_summary(sas_id, parset_name):
         elif block_size == 0:
             logging.warning('SAS %r: block_size == 0' % parset['sas_id'])
         else:
-            parset['nr_integration_periods'] =  floor(duration_seconds * subband_bandwidth_hz / block_size) * \
-                                                nr_integrations_per_block / nr_blocks_per_integration
+            parset['nr_integration_periods'] = floor(floor(duration_seconds * subband_bandwidth_hz / block_size) * \
+                                               nr_integrations_per_block / nr_blocks_per_integration)
 
             # A (parset['nr_integration_periods'] == 0) is not anticipated, so report this if it occurrs
             if parset['nr_integration_periods'] == 0:
