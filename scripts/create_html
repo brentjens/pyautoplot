@@ -783,7 +783,9 @@ def parset_summary(sas_id, parset_name):
 
     if parset_name and os.path.exists(parset_name):
         parset['file_name']  = parset_name
-        parset['sas_prefix'] = os.path.basename(parset_name).split('.parset')[0][0]
+        sas_prefix = os.path.basename(parset_name).split('.parset')[0][0]
+        # If the parset filename has prefix 'rtcp-', treat it as if it were one with prefix 'L'
+        parset['sas_prefix'] = 'L' if sas_prefix is 'r' else sas_prefix
         parset_lines = open(parset_name).readlines()
         for line in parset_lines:
             if 'Campaign.name' in line:
