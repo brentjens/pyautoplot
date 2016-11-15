@@ -73,12 +73,12 @@ case `hostname_fqdn` in
         sleep 2
         # Try to obtain the parset named Lxxxxxx.parset first
         if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/L${sas_id}.parset ]] ; then
-            echo "   - obtaining L${sas_id}.parset"
-            scp cbm001:/localhome/lofarsystem/parsets/L${sas_id}.parset ${INSPECT_ROOT}/${sas_id}/L${sas_id}.parset
+            echo "   - checking for L${sas_id}.parset in /localhome/lofarsystem/log"
+            scp cbm001:/localhome/lofarsystem/log/L${sas_id}.parset ${INSPECT_ROOT}/${sas_id}/L${sas_id}.parset
 
             # If the Lxxxxxx parset has not been copied, try to obtain the parset named rtcp-xxxxxx.parset
             if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/L${sas_id}.parset ]] ; then
-                echo "   - obtaining rtcp-${sas_id}.parset"
+                echo "   - checking for rtcp-${sas_id}.parset in /localhome/lofarsystem/parsets/"
                 scp cbm001:/localhome/lofarsystem/parsets/rtcp-${sas_id}.parset ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset
             else
                 echo "   - existing parset found: ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset"
