@@ -783,7 +783,11 @@ def parset_summary(sas_id, parset_name):
 
     if parset_name and os.path.exists(parset_name):
         parset['file_name']  = parset_name
-        parset['sas_prefix'] = os.path.basename(parset_name).split('.parset')[0][0]
+        # On CEP4, parsets can be named as Lxxxxxx.parset or rtcp-xxxxxx.parset. On the test system they're named
+        # Txxxxxx.parset. According to JDM the prefix is introduced to distinguish between Lxxxxx and Txxxxxx, and not
+        # between those and rtcp-xxxxxx, so the latter should be represented by the 'L' prefix as well
+        sas_prefix = os.path.basename(parset_name).split('.parset')[0][0]
+        parset['sas_prefix'] = 'L' if sas_prefix is 'r' else sas_prefix
         parset_lines = open(parset_name).readlines()
         for line in parset_lines:
             if 'Campaign.name' in line:
