@@ -71,14 +71,6 @@ case `hostname_fqdn` in
             ssh -A cbm001 "egrep 'ERR|WARN|FATAL|runObservation|xception|acktrace|\#(0|1|2|3|4|5|6|7|8|9) |Signalling|Alarm|SIG|feed-back|Result code' log/rtcp-${sas_id}.log"|grep -v Flagging > $INSPECT_ROOT/${sas_id}/rtcp-${sas_id}.errors
         fi
         sleep 2
-
-#        if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset ]] ; then
-#            echo "   - obtaining rtcp-${sas_id}.parset"
-#            scp cbm001:/localhome/lofarsystem/parsets/rtcp-${sas_id}.parset ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset
-#        else
-#            echo "   - existing parset found: ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset"
-#        fi
-
         # Try to obtain the parset named Lxxxxxx.parset first
         if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/L${sas_id}.parset ]] ; then
             echo "   - obtaining L${sas_id}.parset"
