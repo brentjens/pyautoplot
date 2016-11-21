@@ -1197,7 +1197,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_dict, ht
     if file_sizes_dict is not None:
         percentage_complete = file_sizes_dict['percentage_complete']
     
-    # Alternative (more truthful) way of calculating output loss figure
+    # Alternative (more truthful) way of calculating output loss figure (for correlator data)
     mean = stdev = variance = n_odd_sized_data = n_data_total = -1
     if  f0seqnr_completeness_dict is not None and len(f0seqnr_completeness_dict.values()) > 0:
         n_data_total = len(f0seqnr_completeness_dict.values())
@@ -1211,7 +1211,7 @@ def observation_table_row(parset, file_sizes_dict, f0seqnr_completeness_dict, ht
     format_dict = parset.copy()
     format_dict['index_filename']      = INDEX_HTML_FILENAME
     format_dict['nr_subbands']         = len(parset['subband_list'])
-    format_dict['percentage_complete'] = int(floor(percentage_complete))
+    format_dict['percentage_complete'] = int(round(percentage_complete))
     format_dict['complete_f0seqnr_tooltip'] = "Average completeness percentage of data products\n(based on f0seqnr-sizes)"
     if mean < 0:
         format_dict['complete_f0seqnr_mean'] = "N.A."
