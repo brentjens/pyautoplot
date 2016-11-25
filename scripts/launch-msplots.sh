@@ -4,16 +4,29 @@
 # directly to the msplots instances.
 # cexec1 is used because it allows us to address each lce node by the same
 # number as in its name. The script assumes that msplots is in the PATH
-# and that the pyautoplot module is in the PYTHONPATH.
+# and that the pyautoplot module is in the PYTHONPATH. Optionally an 
+# alternative pyautoplot build tag may be placed in TAG
+
+
+# For testing of the inspection plots on the production system without interfering with the existing script one can 
+# insert TESTLINE in the relevant filenames, e.g. index[TESTLINE].html. Ultimately, TESTLINE could be auto-filled 
+# depending on the TAG environment variable (if it exists and doesn't say 'latest'). For normal use, leave TESTLINE an
+# empty string (""). Note that TESTLINE doesn't necessarily propagate to programs/scripts called from within this one.
+#TESTLINE="-test"
+TESTLINE=""
+
+# Normally, one would want to use pyautoplot:latest (PYAUTOPLOT_TAG=latest). This can be overriden however
+#PYAUTOPLOT_TAG=completeness
+PYAUTOPLOT_TAG=latest
 
 HOSTNAME=`hostname`
 PATH="$PATH:/opt/cep/pyautoplot/bin"
 INSPECT_ROOT=/globaldata/inspect
-LOG=$INSPECT_ROOT/launch-msplots.log
+LOG=$INSPECT_ROOT/launch-msplots$TESTLINE.log
 
 
 #Time to wait for stuck processes before killing them
-export ALARMTIME=420
+export ALARMTIME=20m
  
 PARENTPID=$$
 GLOBAL_ARGS=$@
@@ -76,24 +89,28 @@ function create_html_fn() {
 
 function create_html_remotely_fn() {
     REMOTE_HOST=$1
-    CREATE_HTML=`ssh $REMOTE_HOST which create_html`
-    ssh $REMOTE_HOST "echo \"$GLOBAL_ARGS\" | tee -a $LOG"
-    if test "$CREATE_HTML" == ""; then
-        ssh $REMOTE_HOST "echo \"Cannot find create_html: no HTML generated\" | tee -a $LOG"
+    CREATE_HTML=create_html
+    command="$CREATE_HTML $GLOBAL_ARGS"
 
+    ssh $REMOTE_HOST "echo \"$GLOBAL_ARGS\" | tee -a $LOG"
+    ssh $REMOTE_HOST "echo \"Creating HTML using $CREATE_HTML\" | tee -a $LOG"
+    ssh $REMOTE_HOST "echo \"$command\"| tee -a $LOG"
+    # Submit slurm jobs that start docker containers at cpuxx nodes...
+    ssh -n -tt -x lofarsys@head01.cep4.control.lofar \
+        docker-run-slurm.sh --rm -u `id -u` \
+        -e USER=$USER -e HOME=$HOME \
+        -v /data:/data \
+        -v /globaldata/inspect:/globaldata/inspect \
+        pyautoplot:$PYAUTOPLOT_TAG \
+         "$command" 
+    SSH_EXITCODE=$?
+    if test "$SSH_EXITCODE" == "0"; then
+        ssh $REMOTE_HOST "echo \"HTML Created successfully\" | tee -a $LOG"
     else
-        ssh $REMOTE_HOST "echo \"Creating HTML using $CREATE_HTML\" | tee -a $LOG"
-        command="$CREATE_HTML $GLOBAL_ARGS"
-        ssh $REMOTE_HOST "echo \"$command\"| tee -a $LOG"
-        result=`ssh -n -tt -x $REMOTE_HOST "bash -ilc \"use Lofar; use Pyautoplot; $command\""`
-        exit_status="$?"
-        if test "$exit_status" == "0"; then
-            ssh $REMOTE_HOST "echo \"HTML Created successfully\" | tee -a $LOG"
-        else 
-            ssh $REMOTE_HOST "echo \"Problem creating HTML overview for $GLOBAL_ARGS.\" | tee -a $LOG"
-            ssh $REMOTE_HOST "echo \"Exit status: $exit_status\" | tee -a $LOG"
-            ssh $REMOTE_HOST "echo \"$result\" | tee -a $LOG"
-        fi
+        ssh $REMOTE_HOST "echo \"Problem creating HTML overview for $GLOBAL_ARGS.\" | tee -a $LOG"
+        ssh $REMOTE_HOST "echo \"Exit status: $exit_status\" | tee -a $LOG"
+        ssh $REMOTE_HOST "echo \"$result\" | tee -a $LOG"
+        ssh $REMOTE_HOST "echo \"Cannot start create_html: no HTML generated\" | tee -a $LOG"
     fi
 }
 
@@ -129,19 +146,16 @@ function exit_timeout() {
 
 function sigterm_handler() {
     for sas_id in $GLOBAL_ARGS; do
-        ssh -n -tt -x lofarsys@lhn001.cep2.lofar "bash -ilc \"use Lofar; use Pyautoplot; report_global_status ${sas_id}\""
+        ssh -n -tt -x lofarsys@head01.cep4.control.lofar "bash -ilc \"use Lofar; use Pyautoplot; report_global_status ${sas_id}\""
         done
     for sas_id in $GLOBAL_ARGS; do
         ssh -n -x lofarsys@kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
     done
-    create_html_remotely_fn lofarsys@lhn001.cep2.lofar
+    create_html_remotely_fn lofarsys@head01.cep4.control.lofar
     DATE_DONE=`date`
-    ssh lofarsys@lhn001.cep2.lofar "echo \"Done at $DATE_DONE\" | tee -a $LOG"
+    ssh lofarsys@head01.cep4.control.lofar "echo \"Done at $DATE_DONE\" | tee -a $LOG"
     exit
 }
-
-
-
 
 
 case `hostname_fqdn` in
@@ -152,6 +166,7 @@ case `hostname_fqdn` in
         echo "Date: $DATE"|tee -a $LOG
         echo "$0 $@" | tee -a $LOG
         echo "On machine $HOSTNAME" | tee -a $LOG
+        echo "Using pyautoplot:$PYAUTOPLOT_TAG" | tee -a $LOG
         for sas_id in $@; do
             mkdir -v $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id 2>&1 | tee -a $LOG
         done
@@ -188,16 +203,18 @@ case `hostname_fqdn` in
 
     *cep4*)
         DATE=`date`
-        ssh lofarsys@lhn001.cep2.lofar "echo \"\" | tee -a $LOG"
-        ssh lofarsys@lhn001.cep2.lofar "echo \"=======================\" | tee -a $LOG"
-        ssh lofarsys@lhn001.cep2.lofar "echo \"Date: $DATE\"|tee -a $LOG"
-        ssh lofarsys@lhn001.cep2.lofar "echo \"$0 $@\" | tee -a $LOG"
-        ssh lofarsys@lhn001.cep2.lofar "echo \"On machine $HOSTNAME\" | tee -a $LOG"
+        ssh lofarsys@head01.cep4.control.lofar "echo \"\" | tee -a $LOG"
+        ssh lofarsys@head01.cep4.control.lofar "echo \"=======================\" | tee -a $LOG"
+        ssh lofarsys@head01.cep4.control.lofar "echo \"Date: $DATE\"|tee -a $LOG"
+        ssh lofarsys@head01.cep4.control.lofar "echo \"$0 $@\" | tee -a $LOG"
+        ssh lofarsys@head01.cep4.control.lofar "echo \"On machine $HOSTNAME\" | tee -a $LOG"
+        ssh lofarsys@head01.cep4.control.lofar "echo \"Using pyautoplot:$PYAUTOPLOT_TAG\" | tee -a $LOG"
         
         for sas_id in $@; do
-            ssh lofarsys@lhn001.cep2.lofar "mkdir -v $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id 2>&1 | tee -a $LOG"
+            ssh lofarsys@head01.cep4.control.lofar "mkdir -v $INSPECT_ROOT/$sas_id $INSPECT_ROOT/HTML/$sas_id 2>&1 | tee -a $LOG"
         done
         sleep 45 # to make sure writing of metadata in MSses has a reasonable chance to finish before plots are created.
+
 
         SSH_PIDS=""
         for sas_id in $@; do
@@ -207,37 +224,44 @@ case `hostname_fqdn` in
             for product in $data_products_full_path; do
                 # Submit slurm jobs that start docker containers at cpuxx nodes...
                 ssh -n -tt -x lofarsys@localhost \
-                    srun --exclusive --ntasks=1 --cpus-per-task=1 --jobid=$SLURM_JOB_ID --job-name=msplots \
+                    srun --exclusive --ntasks=1 --cpus-per-task=1 --jobid=$SLURM_JOB_ID --job-name="msplots-`basename $product`" \
                     docker-run-slurm.sh --rm -u `id -u` \
                         -e USER=$USER -e HOME=$HOME \
                         -v /data:/data \
                         -v $HOME/.ssh:$HOME/.ssh:ro \
                         --net=host \
-                        pyautoplot:latest \
-                        '/bin/bash -c \\"msplots --prefix=/dev/shm/ --output='$sas_id' --memory=1.0 '$product' ; rsync -a /dev/shm/'$sas_id'/ lofarsys@lhn001.cep2.lofar:'$INSPECT_ROOT'/'$sas_id'/\\"' &
+                        pyautoplot:$PYAUTOPLOT_TAG \
+                        '/bin/bash -c \\"msplots --prefix=/dev/shm/ --output='$sas_id' --memory=1.0 '$product' ; rsync -a /dev/shm/'$sas_id'/ lofarsys@head01.cep4.control.lofar:'$INSPECT_ROOT'/'$sas_id'/\\"' &
                 SSH_PIDS="$SSH_PIDS $!"
             done
-            ssh -n -tt -x lofarsys@localhost \
-                srun --exclusive --ntasks=1 --cpus-per-task=1 \
-                --jobid=$SLURM_JOB_ID \
-                --job-name=report_global_status_${sas_id} \
-                docker-run-slurm.sh --rm -u `id -u` \
-                -e USER=$USER -e HOME=$HOME \
-                -v /data:/data \
-                -v $HOME/.ssh:$HOME/.ssh:ro \
-                --net=host \
-                pyautoplot:latest \
-                '/bin/bash -c \\"report_global_status '$sas_id'; rsync -a /dev/shm/'$sas_id'/ lofarsys@lhn001.cep2.lofar:'$INSPECT_ROOT'/'$sas_id'/\\"' &
-                SSH_PIDS="$SSH_PIDS $!"
             
-        done
-        wait $SSH_PIDS
+            # Wait for PIDs to terminate, before launching the next command(s)
+            wait $SSH_PIDS
+
+            SSH_PIDS=""
+            for sas_id in $@; do
+                ssh -n -tt -x lofarsys@localhost \
+                    srun --exclusive --ntasks=1 --cpus-per-task=1 \
+                    --jobid=$SLURM_JOB_ID \
+                    --job-name=report_global_status_${sas_id} \
+                    docker-run-slurm.sh --rm -u `id -u` \
+                    -e USER=$USER -e HOME=$HOME \
+                    -v /data:/data \
+                    -v $HOME/.ssh:$HOME/.ssh:ro \
+                    --net=host \
+                    pyautoplot:$PYAUTOPLOT_TAG \
+                    '/bin/bash -c \\"report_global_status '$sas_id'; rsync -a /dev/shm/'$sas_id'/ lofarsys@head01.cep4.control.lofar:'$INSPECT_ROOT'/'$sas_id'/\\"' &
+                    SSH_PIDS="$SSH_PIDS $!"
+                
+            done
+            wait $SSH_PIDS
+        done        
 
         for sas_id in $@; do
             ssh -n -x lofarsys@kis001 "/home/fallows/inspect_bsts_msplots.bash $sas_id"
         done
     
-        create_html_remotely_fn lofarsys@lhn001.cep2.lofar
+        create_html_remotely_fn lofarsys@head01.cep4.control.lofar
         ;;
 
     

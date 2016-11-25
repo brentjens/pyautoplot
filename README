@@ -1,0 +1,49 @@
+------------------------------------------------------------------------------------------------------------------------
+DEPLOYMENT FOR PRODUCTION USE
+------------------------------------------------------------------------------------------------------------------------
+
+In script/create_html.py:       TESTLINE = ""               must be active
+In script/launch-msplots.sh:    TESTLINE = ""               must be active
+                                PYAUTOPLOT_TAG=latest       must be active
+
+
+------------------------------------------------------------------------------------------------------------------------
+DEPLOYMENT FOR TESTING ON THE PRODUCTION SYSTEM
+------------------------------------------------------------------------------------------------------------------------
+
+In order to test the script on the production system in parallel to the stable script, please ensure that the TESTLINE
+parameter is set to some text in both shell- and python-script, e.g:
+
+TESTLINE = "-test"
+
+Additionally, set the PYAUTOPILOT_TAG to a text different from latest, in order to distinguish it from the stable
+pyautoplot:latest on the production system, e.g:
+
+PYAUTOPLOT_TAG=my_test
+
+Additionally, make sure to run in the docker-launch-msplots.sh script with environment variable TAG set to my_test (or
+whatever you defined for PYAUTOPLOT_TAG). Therefore copy the default inspection-plots-observations.sh script and modify
+the --export=TAG=latest line, e.g:
+
+----------------------------------------------------
+
+#!/bin/bash
+OBSID=$1
+
+exec sbatch \
+    --partition=cobalt \
+    --nice=1000 \
+    --mem=4000 \
+    --nodes=20-50 --cpus-per-task=2 \
+    --job-name="inspection-$OBSID" \
+    --output=/data/log/inspection-plots-$OBSID.log \
+    --export=TAG=my_test \                              <-- instead of --export=TAG=latest
+    docker-launch-msplots.sh "$@"
+
+----------------------------------------------------
+
+Now you can manually run the inspection-plots script with some SAS ID, completely separate from the one used in the
+production flow.
+
+NOTE: DON'T FORGET TO REVERT TO AN EMPTY 'TESTLINE' AND 'PYAUTOPLOT_TAG=latest' ONCE YOU'RE DONE TESTING AND WANT TO USE
+THE SCRIPT IN THE PRODUCTION FLOW!

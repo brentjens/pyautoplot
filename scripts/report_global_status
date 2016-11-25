@@ -48,12 +48,17 @@ case `hostname_fqdn` in
 
 
     *)
-        INSPECT_ROOT=/dev/shm/
+        INSPECT_ROOT=/dev/shm
         echo "report_global_status for ${sas_id}"
         mkdir -p ${INSPECT_ROOT}/${sas_id}
         if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/file-sizes.txt ]] ; then
             echo "  - determining file sizes"
             du -b --apparent-size -sm /data/projects/${project_id}/L${sas_id}/*/* > ${INSPECT_ROOT}/${sas_id}/file-sizes.txt
+        fi
+        sleep 2
+        if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/f0seqnr-sizes.txt ]] ; then
+            echo "  - determining f0seqnr sizes"
+            du -b --apparent-size /data/projects/${project_id}/L${sas_id}/uv/*/table.f0seqnr > ${INSPECT_ROOT}/${sas_id}/f0seqnr-sizes.txt
         fi
         sleep 2
         if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.loss ]] ; then
@@ -64,6 +69,22 @@ case `hostname_fqdn` in
         if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.errors ]] ; then
             echo "  - determining warnings / errors"
             ssh -A cbm001 "egrep 'ERR|WARN|FATAL|runObservation|xception|acktrace|\#(0|1|2|3|4|5|6|7|8|9) |Signalling|Alarm|SIG|feed-back|Result code' log/rtcp-${sas_id}.log"|grep -v Flagging > $INSPECT_ROOT/${sas_id}/rtcp-${sas_id}.errors
+        fi
+        sleep 2
+        # Try to obtain the parset named Lxxxxxx.parset first
+        if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/L${sas_id}.parset ]] ; then
+            echo "   - checking for L${sas_id}.parset in /localhome/lofarsystem/log"
+            scp cbm001:/localhome/lofarsystem/log/L${sas_id}.parset ${INSPECT_ROOT}/${sas_id}/L${sas_id}.parset
+
+            # If the Lxxxxxx parset has not been copied, try to obtain the parset named rtcp-xxxxxx.parset
+            if [[ ! -e  ${INSPECT_ROOT}/${sas_id}/L${sas_id}.parset ]] ; then
+                echo "   - checking for rtcp-${sas_id}.parset in /localhome/lofarsystem/parsets/"
+                scp cbm001:/localhome/lofarsystem/parsets/rtcp-${sas_id}.parset ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset
+            else
+                echo "   - existing parset found: ${INSPECT_ROOT}/${sas_id}/rtcp-${sas_id}.parset"
+            fi
+        else
+            echo "   - existing parset found: ${INSPECT_ROOT}/${sas_id}/L${sas_id}.parset"
         fi
         ;;
 esac
